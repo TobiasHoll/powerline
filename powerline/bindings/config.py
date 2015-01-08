@@ -8,11 +8,12 @@ import sys
 from powerline.config import POWERLINE_ROOT, TMUX_CONFIG_DIRECTORY
 from powerline.lib.config import ConfigLoader
 from powerline import generate_config_finder, load_config, create_logger, PowerlineLogger, finish_common_config
-from powerline.tmux import TmuxPowerline
+from powerline.shell import ShellPowerline
 from powerline.lib.shell import which
 from powerline.bindings.tmux import TmuxVersionInfo, run_tmux_command, set_tmux_environment, get_tmux_version
 from powerline.lib.encoding import get_preferred_output_encoding
-from powerline.renderers.tmux import attr_to_tmux_attr
+from powerline.renderers.tmux import attrs_to_tmux_attrs
+from powerline.commands.main import finish_args
 
 
 CONFIG_FILE_NAME = re.compile(r'powerline_tmux_(?P<major>\d+)\.(?P<minor>\d+)(?P<suffix>[a-z]+)?(?:_(?P<mod>plus|minus))?\.conf')
@@ -77,10 +78,19 @@ def source_tmux_files(pl, args):
 	run_tmux_command('refresh-client')
 
 
+class EmptyArgs(object):
+	def __init__(self, ext, config_path):
+		self.ext = ext
+		self.config_path = None
+
+	def __getattr__(self, attr):
+		return None
+
+
 def init_environment(pl, args):
 	'''Initialize tmux environment from tmux configuration
 	'''
-	powerline = TmuxPowerline(args.config_path)
+	powerline = ShellPowerline(finish_args(EmptyArgs('tmux', args.config_path)))
 	# TODO Move configuration files loading out of Powerline object and use it 
 	# directly
 	powerline.update_renderer()
@@ -116,27 +126,27 @@ def init_environment(pl, args):
 			powerline.renderer.hlstyle(
 				fg=prev_highlight['bg'],
 				bg=next_highlight['bg'],
-				attr=0,
+				attrs=0,
 			)[2:-1]
 		)
 	for varname, attr, group in (
 		('_POWERLINE_ACTIVE_WINDOW_FG', 'fg', 'active_window_status'),
 		('_POWERLINE_WINDOW_STATUS_FG', 'fg', 'window_status'),
 		('_POWERLINE_ACTIVITY_STATUS_FG', 'fg', 'activity_status'),
-		('_POWERLINE_ACTIVITY_STATUS_ATTR', 'attr', 'activity_status'),
+		('_POWERLINE_ACTIVITY_STATUS_ATTR', 'attrs', 'activity_status'),
 		('_POWERLINE_BELL_STATUS_FG', 'fg', 'bell_status'),
-		('_POWERLINE_BELL_STATUS_ATTR', 'attr', 'bell_status'),
+		('_POWERLINE_BELL_STATUS_ATTR', 'attrs', 'bell_status'),
 		('_POWERLINE_BACKGROUND_FG', 'fg', 'background'),
 		('_POWERLINE_BACKGROUND_BG', 'bg', 'background'),
 		('_POWERLINE_SESSION_FG', 'fg', 'session'),
 		('_POWERLINE_SESSION_BG', 'bg', 'session'),
-		('_POWERLINE_SESSION_ATTR', 'attr', 'session'),
+		('_POWERLINE_SESSION_ATTR', 'attrs', 'session'),
 		('_POWERLINE_SESSION_PREFIX_FG', 'fg', 'session:prefix'),
 		('_POWERLINE_SESSION_PREFIX_BG', 'bg', 'session:prefix'),
-		('_POWERLINE_SESSION_PREFIX_ATTR', 'attr', 'session:prefix'),
+		('_POWERLINE_SESSION_PREFIX_ATTR', 'attrs', 'session:prefix'),
 	):
-		if attr == 'attr':
-			attrs = attr_to_tmux_attr(get_highlighting(group)[attr])
+		if attr == 'attrs':
+			attrs = attrs_to_tmux_attrs(get_highlighting(group)[attr])
 			set_tmux_environment(varname, ']#['.join(attrs))
 			set_tmux_environment(varname + '_LEGACY', ','.join(attrs))
 		else:

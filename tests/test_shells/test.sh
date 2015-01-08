@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 : ${PYTHON:=python}
 FAIL_SUMMARY=""
 FAILED=0
@@ -70,12 +71,18 @@ run() {
 		TEST_CLIENT="${TEST_CLIENT}" \
 		SH="${SH}" \
 		DIR1="${DIR1}" \
+		POWERLINE_NO_ZSH_ZPYTHON="$(test $TEST_TYPE = zpython || echo 1)" \
 		DIR2="${DIR2}" \
 		XDG_CONFIG_HOME="$PWD/tests/shell/fish_home" \
 		IPYTHONDIR="$PWD/tests/shell/ipython_home" \
+		PYTHONPATH="${PWD}${PYTHONPATH:+:}$PYTHONPATH" \
+		POWERLINE_CONFIG_OVERRIDES="${POWERLINE_CONFIG_OVERRIDES}" \
+		POWERLINE_THEME_OVERRIDES="${POWERLINE_THEME_OVERRIDES}" \
 		POWERLINE_SHELL_CONTINUATION=$additional_prompts \
 		POWERLINE_SHELL_SELECT=$additional_prompts \
-		POWERLINE_COMMAND="${POWERLINE_COMMAND} -p $PWD/powerline/config_files" \
+		POWERLINE_CONFIG_PATHS="$PWD/powerline/config_files" \
+		POWERLINE_COMMAND_ARGS="${POWERLINE_COMMAND_ARGS}" \
+		POWERLINE_COMMAND="${POWERLINE_COMMAND}" \
 		"$@"
 }
 
@@ -299,7 +306,8 @@ if test -z "${ONLY_SHELL}" || test "x${ONLY_SHELL%sh}" != "x${ONLY_SHELL}" || te
 			if test "x$ONLY_TEST_CLIENT" != "x" && test "x$TEST_CLIENT" != "x$ONLY_TEST_CLIENT" ; then
 				continue
 			fi
-			POWERLINE_COMMAND="$POWERLINE_COMMAND --socket $ADDRESS"
+			POWERLINE_COMMAND_ARGS="--socket $ADDRESS"
+			POWERLINE_COMMAND="$POWERLINE_COMMAND"
 			export POWERLINE_COMMAND
 			echo ">> powerline command is ${POWERLINE_COMMAND:-empty}"
 			J=-1
@@ -369,13 +377,28 @@ if ! test -z "$(cat tests/shell/daemon_log_2)" ; then
 	FAIL_SUMMARY="${FAIL_SUMMARY}${NL}L"
 fi
 
+if ( test "x${ONLY_SHELL}" = "x" || test "x${ONLY_SHELL}" = "xzsh" ) \
+	&& ( test "x${ONLY_TEST_TYPE}" = "x" || test "x${ONLY_TEST_TYPE}" = "xzpython" ) \
+	&& zsh -f -c 'zmodload libzpython' 2>/dev/null; then
+	echo "> zpython"
+	if ! run_test zpython zpython zsh -f -i ; then
+		FAILED=1
+		FAIL_SUMMARY="${FAIL_SUMMARY}${NL}T zpython zsh -f -i"
+	fi
+fi
+
 if test "x${ONLY_SHELL}" = "x" || test "x${ONLY_SHELL}" = "xipython" ; then
 	if which ipython >/dev/null ; then
+		# Define some overrides which should be ignored by IPython.
+		POWERLINE_CONFIG_OVERRIDES='common.term_escape_style=fbterm'
+		POWERLINE_THEME_OVERRIDES='in.segments.left=[]'
 		echo "> $(which ipython)"
 		if ! run_test ipython ipython ipython ; then
 			FAILED=1
 			FAIL_SUMMARY="${FAIL_SUMMARY}${NL}T ipython"
 		fi
+		unset POWERLINE_THEME_OVERRIDES
+		unset POWERLINE_CONFIG_OVERRIDES
 	fi
 fi
 

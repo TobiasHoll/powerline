@@ -5,8 +5,8 @@ Installation
 Generic requirements
 ====================
 
-* Python 2.6 or later, 3.2 or later, PyPy 2.0 or later. It is the only 
-  non-optional requirement.
+* Python 2.6 or later, 3.2 or later, PyPy 2.0 or later, PyPy3 2.3 or later. It 
+  is the only non-optional requirement.
 
   .. warning:
      It is highly advised to use UCS-4 version of Python because UCS-2 version 
@@ -40,40 +40,41 @@ Generic requirements
 Pip installation
 ================
 
-This project is currently unavailable from PyPI due to a naming conflict with an 
-unrelated project, thus you will have to use the following command to install 
-powerline with ``pip``:
+Due to a naming conflict with an unrelated project powerline is available on 
+PyPI under the ``powerline-status`` name:
 
 .. code-block:: sh
 
-    pip install --user git+git://github.com/Lokaltog/powerline
+    pip install powerline-status
 
-. You may also choose to clone powerline repository somewhere and use
+is the preferred method because this will get you the latest release. To get 
+current development version
+
+.. code-block:: sh
+
+    pip install --user git+git://github.com/powerline/powerline
+
+may be used. If powerline was already checked out into some directory
 
 .. code-block:: sh
 
     pip install --user --editable={path_to_powerline}
 
-, but note that in this case ``pip`` will not install ``powerline`` executable 
-and you will have to do something like
+is useful, but note that in this case ``pip`` will not install ``powerline`` 
+executable and something like
 
 .. code-block:: sh
 
     ln -s {path_to_powerline}/scripts/powerline ~/.local/bin
 
-(:file:`~/.local/bin` should be replaced with some path present in ``$PATH``).
+will have to be done (:file:`~/.local/bin` should be replaced with some path 
+present in ``$PATH``).
 
 .. note::
     If your ISP blocks git protocol for some reason github also provides ``ssh`` 
-    (``git+ssh://git@github.com/Lokaltog/powerline``) and ``https`` 
-    (``git+https://github.com/Lokaltog/powerline``) protocols. ``git`` protocol 
+    (``git+ssh://git@github.com/powerline/powerline``) and ``https`` 
+    (``git+https://github.com/powerline/powerline``) protocols. ``git`` protocol 
     should be the fastest, but least secure one though.
-
-To install release version uploaded to PyPI use
-
-.. code-block:: sh
-
-   pip install powerline-status
 
 Fonts installation
 ==================
@@ -103,7 +104,7 @@ Download the font of your choice from `powerline-fonts`_. If you can’t find
 your preferred font in the `powerline-fonts`_ repo, you’ll have to patch your 
 own font instead.
 
-.. _powerline-fonts: https://github.com/Lokaltog/powerline-fonts
+.. _powerline-fonts: https://github.com/powerline/fonts
 
 After downloading this font refer to platform-specific instructions.
 

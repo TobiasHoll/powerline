@@ -27,7 +27,7 @@ def _get_battery(pl):
 			try:
 				up = bus.get_object(interface, '/org/freedesktop/UPower')
 			except dbus.exceptions.DBusException as e:
-				if getattr(e, '_dbus_error_name', '').endswidth('ServiceUnknown'):
+				if getattr(e, '_dbus_error_name', '').endswith('ServiceUnknown'):
 					pl.debug('Not using DBUS+UPower as UPower is not available via dbus')
 				else:
 					pl.exception('Failed to get UPower service with dbus: {0}', str(e))
@@ -200,21 +200,21 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
 		ret.append({
 			'contents': full_heart * numer,
 			'draw_inner_divider': False,
-			'highlight_group': ['battery_full', 'battery_gradient', 'battery'],
+			'highlight_groups': ['battery_full', 'battery_gradient', 'battery'],
 			# Using zero as “nothing to worry about”: it is least alert color.
 			'gradient_level': 0,
 		})
 		ret.append({
 			'contents': empty_heart * (denom - numer),
 			'draw_inner_divider': False,
-			'highlight_group': ['battery_empty', 'battery_gradient', 'battery'],
+			'highlight_groups': ['battery_empty', 'battery_gradient', 'battery'],
 			# Using a hundred as it is most alert color.
 			'gradient_level': 100,
 		})
 	else:
 		ret.append({
 			'contents': format.format(capacity=(capacity / 100.0)),
-			'highlight_group': ['battery_gradient', 'battery'],
+			'highlight_groups': ['battery_gradient', 'battery'],
 			# Gradients are “least alert – most alert” by default, capacity has 
 			# the opposite semantics.
 			'gradient_level': 100 - capacity,

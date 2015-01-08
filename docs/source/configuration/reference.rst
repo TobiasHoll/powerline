@@ -26,6 +26,29 @@ Common configuration is a subdictionary that is a value of ``common`` key in
     to the terminal emulator. See the :ref:`term-feature-support-matrix` for 
     information on whether your terminal emulator supports 24-bit colors.
 
+    This variable is forced to be ``false`` if :ref:`term_escape_style 
+    <config-common-term_escape_style>` option is set to ``"fbterm"`` or if it is 
+    set to ``"auto"`` and powerline detected fbterm.
+
+.. _config-common-term_escape_style:
+
+``term_escape_style``
+    Defines what escapes sequences should be used. Accepts three variants:
+
+    =======  ===================================================================
+    Variant  Description
+    =======  ===================================================================
+    auto     ``xterm`` or ``fbterm`` depending on ``$TERM`` variable value: 
+             ``TERM=fbterm`` implies ``fbterm`` escaping style, all other values 
+             select ``xterm`` escaping.
+    xterm    Uses ``\e[{fb};5;{color}m`` for colors (``{fb}`` is either ``38`` 
+             (foreground) or ``48`` (background)). Should be used for most 
+             terminals.
+    fbterm   Uses ``\e[{fb};{color}}`` for colors (``{fb}`` is either ``1`` 
+             (foreground) or ``2`` (background)). Should be used for fbterm: 
+             framebuffer terminal.
+    =======  ===================================================================
+
 .. _config-common-ambiwidth:
 
 ``ambiwidth``
@@ -74,6 +97,8 @@ Common configuration is a subdictionary that is a value of ``common`` key in
 ``log_file``
     Defines path which will hold powerline logs. If not present, logging will be 
     done to stderr.
+
+.. _config-common-log_level:
 
 ``log_level``
     String, determines logging level. Defaults to ``WARNING``.
@@ -225,7 +250,7 @@ override those from each previous file. It is required that either
            Background color. Must be defined in :ref:`colors 
            <config-colors-colors>`.
 
-       ``attr``
+       ``attrs``
            List of attributes. Valid values are one or more of ``bold``, 
            ``italic`` and ``underline``. Note that some attributes may be 
            unavailable in some applications or terminal emulators. If you do not 
@@ -273,6 +298,7 @@ with the following top themes:
 Theme                       Description
 ==========================  ====================================================
 powerline                   Default powerline theme with fancy powerline symbols
+powerline_unicode7          Theme with powerline dividers and unicode-7 symbols
 unicode                     Theme without any symbols from private use area
 unicode_terminus            Theme containing only symbols from terminus PCF font
 unicode_terminus_condensed  Like above, but occupies as less space as possible
@@ -386,8 +412,8 @@ ascii                       Theme without any unicode characters at all
         ``string``
             A static string segment where the contents is defined in the 
             :ref:`contents option <config-themes-seg-contents>`, and the 
-            highlighting group is defined in the :ref:`highlight_group 
-            option <config-themes-seg-highlight_group>`.
+            highlighting group is defined in the :ref:`highlight_groups option 
+            <config-themes-seg-highlight_groups>`.
 
         ``segments_list``
             Sub-list of segments. This list only allows :ref:`function 
@@ -419,9 +445,9 @@ ascii                       Theme without any unicode characters at all
         or ``{function}``. If ``{module}`` is omitted :ref:`default_module 
         option <config-themes-default_module>` is used.
 
-    .. _config-themes-seg-highlight_group:
+    .. _config-themes-seg-highlight_groups:
 
-    ``highlight_group``
+    ``highlight_groups``
         Highlighting group for this segment. Consists of a prioritized list of 
         highlighting groups, where the first highlighting group that is 
         available in the colorscheme is used.

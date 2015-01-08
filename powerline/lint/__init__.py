@@ -9,7 +9,7 @@ from functools import partial
 
 from powerline import generate_config_finder, get_config_paths, load_config
 from powerline.segments.vim import vim_modes
-from powerline.lib import mergedicts_copy
+from powerline.lib.dict import mergedicts_copy
 from powerline.lib.config import ConfigLoader
 from powerline.lib.unicode import unicode
 from powerline.lint.markedjson import load
@@ -19,7 +19,8 @@ from powerline.lint.checks import (check_matcher_func, check_ext, check_config, 
                                    check_segment_module, check_exinclude_function, type_keys,
                                    check_segment_function, check_args, get_one_segment_function,
                                    check_highlight_groups, check_highlight_group, check_full_segment_data,
-                                   get_all_possible_functions, check_segment_data_key, register_common_name)
+                                   get_all_possible_functions, check_segment_data_key, register_common_name,
+                                   highlight_group_spec)
 from powerline.lint.spec import Spec
 from powerline.lint.context import Context
 
@@ -57,6 +58,7 @@ main_spec = (Spec(
 	common=Spec(
 		default_top_theme=top_theme_spec().optional(),
 		term_truecolor=Spec().type(bool).optional(),
+		term_escape_style=Spec().type(unicode).oneof(set(('auto', 'xterm', 'fbterm'))).optional(),
 		# Python is capable of loading from zip archives. Thus checking path 
 		# only for existence of the path, not for it being a directory
 		paths=Spec().list(
@@ -141,7 +143,7 @@ group_name_spec = Spec().ident().copy
 group_spec = Spec().either(Spec(
 	fg=color_spec(),
 	bg=color_spec(),
-	attr=Spec().list(Spec().type(unicode).oneof(set(('bold', 'italic', 'underline')))),
+	attrs=Spec().list(Spec().type(unicode).oneof(set(('bold', 'italic', 'underline')))),
 ), group_name_spec().func(check_group)).copy
 groups_spec = Spec().unknown_spec(
 	group_name_spec(),
@@ -193,7 +195,6 @@ args_spec = Spec(
 	pl=Spec().error('pl object must be set by powerline').optional(),
 	segment_info=Spec().error('Segment info dictionary must be set by powerline').optional(),
 ).unknown_spec(Spec(), Spec()).optional().copy
-highlight_group_spec = Spec().type(unicode).copy
 segment_module_spec = Spec().type(unicode).func(check_segment_module).optional().copy
 sub_segments_spec = Spec()
 exinclude_spec = Spec().re(function_name_re).func(check_exinclude_function).copy
@@ -217,7 +218,7 @@ segment_spec = Spec(
 	align=Spec().oneof(set('lr')).optional(),
 	args=args_spec().func(lambda *args, **kwargs: check_args(get_one_segment_function, *args, **kwargs)),
 	contents=Spec().printable().optional(),
-	highlight_group=Spec().list(
+	highlight_groups=Spec().list(
 		highlight_group_spec().re(
 			'^(?:(?!:divider$).)+$',
 			(lambda value: 'it is recommended that only divider highlight group names end with ":divider"')
