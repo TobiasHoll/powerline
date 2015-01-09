@@ -27,7 +27,7 @@ if __name__ == '__main__':
 			ln += powerline.render(side='left')
 			ln += '%{r}'
 			ln += powerline.render(side='right')
-			print( ln.encode('utf-8') )
+			print( ln )
 			sys.stdout.flush()
 
 	sub = i3.Subscription(render, 'workspace')
