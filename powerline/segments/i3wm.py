@@ -15,13 +15,15 @@ def calcgrp(w):
 	group.append('workspace')
 	return group
 
+current_mode = 'default'
 
 def workspaces(pl):
 	'''Return workspace list
 
 	Highlight groups used: ``workspace``, ``w_visible``, ``w_focused``, ``w_urgent``
 	'''
-	return [{
+	if current_mode == 'default':
+	    return [{
 		'contents': w['name'],
 		'highlight_groups': calcgrp(w)
-	} for w in i3.get_workspaces()]
+	    } for w in i3.get_workspaces()]
