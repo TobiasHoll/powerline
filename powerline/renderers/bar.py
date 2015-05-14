@@ -25,15 +25,14 @@ class BarRenderer(Renderer):
 
 		if fg is not None:
 			if fg is not False and fg[1] is not False:
-				text +=  '%{{F#ff{0:06x}}}'.format(fg[1])
+				text += '%{{F#ff{0:06x}}}'.format(fg[1])
 		if bg is not None:
 			if bg is not False and bg[1] is not False:
-				text +=  '%{{B#ff{0:06x}}}'.format(bg[1])
+				text += '%{{B#ff{0:06x}}}'.format(bg[1])
 
 		if attrs & ATTR_UNDERLINE:
 			text += '%{+u}'
 
 		return text + contents + '%{F-B--u}'
-
 
 renderer = BarRenderer

@@ -1,5 +1,7 @@
 #!/bin/sh
-set -e
+. tests/bot-ci/scripts/common/main.sh
+set +x
+
 : ${PYTHON:=python}
 FAIL_SUMMARY=""
 FAILED=0
@@ -45,50 +47,27 @@ check_screen_log() {
 	fi
 }
 
-run() {
-	TEST_TYPE="$1"
-	shift
-	TEST_CLIENT="$1"
-	shift
-	SH="$1"
-	shift
-	local local_path="$PWD/tests/shell/path:$PWD/scripts"
-	if test "x$SH" = "xfish" ; then
-		local_path="${local_path}:/usr/bin:/bin"
-	fi
-	if test $TEST_TYPE = daemon ; then
-		local additional_prompts=1
-	else
-		local additional_prompts=
-	fi
-	env -i \
-		LANG=en_US.UTF-8 \
-		PATH="$local_path" \
-		TERM="screen-256color" \
-		COLUMNS="${COLUMNS}" \
-		LINES="${LINES}" \
-		TEST_TYPE="${TEST_TYPE}" \
-		TEST_CLIENT="${TEST_CLIENT}" \
-		SH="${SH}" \
-		DIR1="${DIR1}" \
-		POWERLINE_NO_ZSH_ZPYTHON="$(test $TEST_TYPE = zpython || echo 1)" \
-		DIR2="${DIR2}" \
-		XDG_CONFIG_HOME="$PWD/tests/shell/fish_home" \
-		IPYTHONDIR="$PWD/tests/shell/ipython_home" \
-		PYTHONPATH="${PWD}${PYTHONPATH:+:}$PYTHONPATH" \
-		POWERLINE_CONFIG_OVERRIDES="${POWERLINE_CONFIG_OVERRIDES}" \
-		POWERLINE_THEME_OVERRIDES="${POWERLINE_THEME_OVERRIDES}" \
-		POWERLINE_SHELL_CONTINUATION=$additional_prompts \
-		POWERLINE_SHELL_SELECT=$additional_prompts \
-		POWERLINE_CONFIG_PATHS="$PWD/powerline/config_files" \
-		POWERLINE_COMMAND_ARGS="${POWERLINE_COMMAND_ARGS}" \
-		POWERLINE_COMMAND="${POWERLINE_COMMAND}" \
-		"$@"
-}
-
 # HACK: get newline for use in strings given that "\n" and $'' do not work.
 NL="$(printf '\nE')"
 NL="${NL%E}"
+
+print_full_output() {
+	TEST_TYPE="$1"
+	TEST_CLIENT="$2"
+	SH="$3"
+	echo "Full output:"
+	echo '============================================================'
+	cat tests/shell/${SH}.${TEST_TYPE}.${TEST_CLIENT}.full.log
+	echo
+	echo '____________________________________________________________'
+	if test "x$POWERLINE_TEST_NO_CAT_V" != "x1" ; then
+		echo "Full output (cat -v):"
+		echo '============================================================'
+		cat -v tests/shell/${SH}.${TEST_TYPE}.${TEST_CLIENT}.full.log
+		echo
+		echo '____________________________________________________________'
+	fi
+}
 
 do_run_test() {
 	TEST_TYPE="$1"
@@ -96,49 +75,27 @@ do_run_test() {
 	TEST_CLIENT="$1"
 	shift
 	SH="$1"
-	SESNAME="powerline-shell-test-${SH}-$$"
 
-	# Note: when running screen with setuid libc unsets LD_LIBRARY_PATH, so it 
-	# cannot be added to the `env -i` call above.
-	run "${TEST_TYPE}" "${TEST_CLIENT}" "${SH}" \
-		screen -L -c tests/test_shells/screenrc -d -m -S "$SESNAME" \
-			env LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" \
-			"$@"
-	while ! screen -S "$SESNAME" -X readreg a tests/test_shells/input.$SH ; do
-		sleep 0.1s
-	done
-	# Wait for screen to initialize
-	sleep 1
-	while ! screen -S "$SESNAME" -p 0 -X width 300 1 ; do
-		sleep 0.1s
-	done
+	local wait_for_echo_arg=
 	if ( \
-		test "x${SH}" = "xdash" ||
-		( \
-			test "x${SH}" = "xipython" \
-			&& ${PYTHON} -c 'import platform, sys; sys.exit(1 - (platform.python_implementation() == "PyPy"))' \
+		test "x${SH}" = "xdash" \
+		|| ( \
+			test "x${SH}" = "xpdb" \
+			&& ( \
+				( \
+					test "$PYTHON_VERSION_MAJOR" -eq 3 \
+					&& test "$PYTHON_VERSION_MINOR" -eq 2 \
+					&& test "$PYTHON_IMPLEMENTATION" = "CPython" \
+				) \
+				|| test "$PYTHON_IMPLEMENTATION" = "PyPy" \
+			) \
 		) \
 	) ; then
-		# If I do not use this hack for dash then output will look like
-		#
-		#     command1
-		#     command2
-		#     …
-		#     prompt1> prompt2> …
-		while read -r line ; do
-			screen -S "$SESNAME" -p 0 -X stuff "$line$NL"
-			sleep 1
-		done < tests/test_shells/input.$SH
-	else
-		screen -S "$SESNAME" -p 0 -X paste a
+		wait_for_echo_arg="--wait-for-echo"
 	fi
-	# Wait for screen to exit (sending command to non-existing screen session 
-	# fails; when launched instance exits corresponding session is deleted)
-	while screen -S "$SESNAME" -X blankerprg "" > /dev/null ; do
-		sleep 0.1s
-	done
-	${PYTHON} ./tests/test_shells/postproc.py ${TEST_TYPE} ${TEST_CLIENT} ${SH}
-	rm -f tests/shell/3rd/pid
+	"${PYTHON}" tests/test_shells/run_script.py \
+		$wait_for_echo_arg --type=${TEST_TYPE} --client=${TEST_CLIENT} --shell=${SH} \
+		"$@"
 	if ! check_screen_log ${TEST_TYPE} ${TEST_CLIENT} ${SH} ; then
 		echo '____________________________________________________________'
 		if test "x$POWERLINE_TEST_NO_CAT_V" != "x1" ; then
@@ -148,16 +105,8 @@ do_run_test() {
 			check_screen_log  ${TEST_TYPE} ${TEST_CLIENT} ${SH} | cat -v
 			echo '____________________________________________________________'
 		fi
-		echo "Failed ${SH}. Full output:"
-		echo '============================================================'
-		cat tests/shell/${SH}.${TEST_TYPE}.${TEST_CLIENT}.full.log
-		echo '____________________________________________________________'
-		if test "x$POWERLINE_TEST_NO_CAT_V" != "x1" ; then
-			echo "Full output (cat -v):"
-			echo '============================================================'
-			cat -v tests/shell/${SH}.${TEST_TYPE}.${TEST_CLIENT}.full.log
-			echo '____________________________________________________________'
-		fi
+		echo -n "Failed ${SH}. "
+		print_full_output ${TEST_TYPE} ${TEST_CLIENT} ${SH}
 		case ${SH} in
 			*ksh)
 				${SH} -c 'echo ${KSH_VERSION}'
@@ -185,6 +134,9 @@ run_test() {
 	TEST_CLIENT="$2"
 	SH="$3"
 	local attempts=3
+	if test -n "$ONLY_SHELL$ONLY_TEST_TYPE$ONLY_TEST_CLIENT" ; then
+		attempts=1
+	fi
 	while test $attempts -gt 0 ; do
 		rm -f tests/shell/${SH}.${TEST_TYPE}.${TEST_CLIENT}.log
 		rm -f tests/shell/${SH}.${TEST_TYPE}.${TEST_CLIENT}.full.log
@@ -217,7 +169,6 @@ cp -r tests/test_shells/ipython_home tests/shell
 
 mkdir tests/shell/path
 ln -s "$(which "${PYTHON}")" tests/shell/path/python
-ln -s "$(which screen)" tests/shell/path
 ln -s "$(which env)" tests/shell/path
 ln -s "$(which git)" tests/shell/path
 ln -s "$(which sleep)" tests/shell/path
@@ -237,17 +188,21 @@ ln -s "$(which mktemp)" tests/shell/path
 ln -s "$(which grep)" tests/shell/path
 ln -s "$(which sed)" tests/shell/path
 ln -s "$(which rm)" tests/shell/path
+ln -s "$(which tr)" tests/shell/path
 ln -s "$(which uname)" tests/shell/path
 ln -s "$(which test)" tests/shell/path
 ln -s "$(which pwd)" tests/shell/path
+ln -s "$(which hostname)" tests/shell/path
 ln -s ../../test_shells/bgscript.sh tests/shell/path
 ln -s ../../test_shells/waitpid.sh tests/shell/path
 if which socat ; then
 	ln -s "$(which socat)" tests/shell/path
 fi
-for pexe in powerline powerline-config ; do
+for pexe in powerline powerline-config powerline-render powerline.sh powerline.py ; do
 	if test -e scripts/$pexe ; then
 		ln -s "$PWD/scripts/$pexe" tests/shell/path
+	elif test -e client/$pexe ; then
+		ln -s "$PWD/client/$pexe" tests/shell/path
 	elif which $pexe ; then
 		ln -s "$(which $pexe)" tests/shell/path
 	else
@@ -255,6 +210,11 @@ for pexe in powerline powerline-config ; do
 		exit 1
 	fi
 done
+
+ln -s python tests/shell/path/pdb
+PDB_PYTHON=pdb
+ln -s python tests/shell/path/ipython
+IPYTHON_PYTHON=ipython
 
 if test -z "$POWERLINE_RC_EXE" ; then
 	if which rc-status >/dev/null ; then
@@ -270,17 +230,66 @@ if which "$POWERLINE_RC_EXE" >/dev/null ; then
 	ln -s "$(which $POWERLINE_RC_EXE)" tests/shell/path/rc
 fi
 
-for exe in bash zsh busybox fish tcsh mksh dash ipython ; do
+for exe in bash zsh busybox fish tcsh mksh dash ; do
 	if which $exe >/dev/null ; then
+		if test "$exe" = "fish" ; then
+			fish_version="$(fish --version 2>&1)"
+			fish_version="${fish_version##* }"
+			fish_version_major="${fish_version%%.*}"
+			if test "$fish_version_major" != "$fish_version" ; then
+				# No dot is in development version compiled by bot-ci
+				fish_version_minor="${fish_version#*.}"
+				fish_version_patch="${fish_version_minor#*.}"
+				fish_version_dev="${fish_version_patch#*-}"
+				if test "$fish_version_dev" = "$fish_version_patch" ; then
+					fish_version_dev=""
+				fi
+				fish_version_minor="${fish_version_minor%%.*}"
+				fish_version_patch="${fish_version_patch%%-*}"
+				if test $fish_version_major -lt 2 || ( \
+					test $fish_version_major -eq 2 && (\
+						test $fish_version_minor -lt 1 || (\
+							test $fish_version_minor -eq 1 &&
+							test $fish_version_patch -lt 2 && \
+							test -z "$fish_version_dev"
+						) \
+					) \
+				) ; then
+					continue
+				fi
+			fi
+		fi
 		ln -s "$(which $exe)" tests/shell/path
 	fi
 done
+
+mkdir tests/shell/home
+export HOME="$PWD/tests/shell/home"
 
 unset ENV
 
 export ADDRESS="powerline-ipc-test-$$"
 export PYTHON
 echo "Powerline address: $ADDRESS"
+
+check_test_client() {
+	local executable="$1"
+	local client_type="$2"
+	local actual_mime_type="$(file --mime-type --brief --dereference "tests/shell/path/$executable" | cut -d/ -f1)"
+	local expected_mime_type
+	case "$client_type" in
+		C)      expected_mime_type="application/x-executable" ;;
+		python) expected_mime_type="text/x-python" ;;
+		render) expected_mime_type="text/x-python" ;;
+		shell)  expected_mime_type="text/x-shellscript" ;;
+	esac
+	expected_mime_type="${expected_mime_type%/*}"
+	if test "$expected_mime_type" != "$actual_mime_type" ; then
+		echo "Expected $executable to have MIME type $expected_mime_type, but got $actual_mime_type"
+		FAILED=1
+		FAIL_SUMMARY="${FAIL_SUMMARY}${NL}M ${executable}"
+	fi
+}
 
 if test -z "${ONLY_SHELL}" || test "x${ONLY_SHELL%sh}" != "x${ONLY_SHELL}" || test "x${ONLY_SHELL}" = xbusybox || test "x${ONLY_SHELL}" = xrc ; then
 	scripts/powerline-config shell command
@@ -308,17 +317,18 @@ if test -z "${ONLY_SHELL}" || test "x${ONLY_SHELL%sh}" != "x${ONLY_SHELL}" || te
 		echo "> Testing $TEST_TYPE"
 		I=-1
 		for POWERLINE_COMMAND in \
-			$PWD/scripts/powerline \
-			$PWD/scripts/powerline-render \
-			$PWD/client/powerline.py \
-			$PWD/client/powerline.sh
+			powerline \
+			powerline-render \
+			powerline.py \
+			powerline.sh
 		do
 			case "$POWERLINE_COMMAND" in
-				*powerline)        TEST_CLIENT=C ;;
-				*powerline-render) TEST_CLIENT=render ;;
-				*powerline.py)     TEST_CLIENT=python ;;
-				*powerline.sh)     TEST_CLIENT=shell ;;
+				powerline)        TEST_CLIENT=C ;;
+				powerline-render) TEST_CLIENT=render ;;
+				powerline.py)     TEST_CLIENT=python ;;
+				powerline.sh)     TEST_CLIENT=shell ;;
 			esac
+			check_test_client "$POWERLINE_COMMAND" $TEST_CLIENT
 			if test "$TEST_CLIENT" = render && test "$TEST_TYPE" = daemon ; then
 				continue
 			fi
@@ -330,15 +340,14 @@ if test -z "${ONLY_SHELL}" || test "x${ONLY_SHELL%sh}" != "x${ONLY_SHELL}" || te
 					continue
 				fi
 			fi
-			if test "$TEST_CLIENT" = "shell" && ! which socat >/dev/null ; then
+			if test "$TEST_CLIENT" = "shell" && ! test -x tests/shell/path/socat ; then
 				continue
 			fi
 			if test "x$ONLY_TEST_CLIENT" != "x" && test "x$TEST_CLIENT" != "x$ONLY_TEST_CLIENT" ; then
 				continue
 			fi
-			POWERLINE_COMMAND_ARGS="--socket $ADDRESS"
-			POWERLINE_COMMAND="$POWERLINE_COMMAND"
-			export POWERLINE_COMMAND
+			export POWERLINE_COMMAND_ARGS="--socket $ADDRESS"
+			export POWERLINE_COMMAND="$POWERLINE_COMMAND"
 			echo ">> powerline command is ${POWERLINE_COMMAND:-empty}"
 			J=-1
 			for TEST_COMMAND in \
@@ -360,6 +369,9 @@ if test -z "${ONLY_SHELL}" || test "x${ONLY_SHELL%sh}" != "x${ONLY_SHELL}" || te
 				SH="${TEST_COMMAND%% *}"
 				# dash tests are not stable, see #931
 				if test x$FAST$SH = x1dash ; then
+					continue
+				fi
+				if test x$FAST$SH = x1fish ; then
 					continue
 				fi
 				if test "x$ONLY_SHELL" != "x" && test "x$ONLY_SHELL" != "x$SH" ; then
@@ -410,7 +422,7 @@ fi
 
 if ( test "x${ONLY_SHELL}" = "x" || test "x${ONLY_SHELL}" = "xzsh" ) \
 	&& ( test "x${ONLY_TEST_TYPE}" = "x" || test "x${ONLY_TEST_TYPE}" = "xzpython" ) \
-	&& zsh -f -c 'zmodload libzpython' 2>/dev/null; then
+	&& zsh tests/test_shells/zsh_test_script.zsh 2>/dev/null; then
 	echo "> zpython"
 	if ! run_test zpython zpython zsh -f -i ; then
 		FAILED=1
@@ -418,13 +430,36 @@ if ( test "x${ONLY_SHELL}" = "x" || test "x${ONLY_SHELL}" = "xzsh" ) \
 	fi
 fi
 
+if  test "x${ONLY_SHELL}" = "x" || test "x${ONLY_SHELL}" = "xpdb" ; then
+	if test "$PYTHON_IMPLEMENTATION" != "PyPy" ; then
+		if test "x${ONLY_TEST_TYPE}" = "x" || test "x${ONLY_TEST_TYPE}" = "xsubclass" ; then
+			echo "> pdb subclass"
+			if ! run_test subclass python $PDB_PYTHON "$PWD/tests/test_shells/pdb-main.py" ; then
+				FAILED=1
+				FAIL_SUMMARY="${FAIL_SUMMARY}${NL}T pdb $PDB_PYTHON $PWD/tests/test_shells/pdb-main.py"
+			fi
+		fi
+		if test "x${ONLY_TEST_TYPE}" = "x" || test "x${ONLY_TEST_TYPE}" = "xmodule" ; then
+			echo "> pdb module"
+			MODULE="powerline.bindings.pdb"
+			if test "$PYTHON_MM" = "2.6" ; then
+				MODULE="powerline.bindings.pdb.__main__"
+			fi
+			if ! run_test module python $PDB_PYTHON -m$MODULE "$PWD/tests/test_shells/pdb-script.py" ; then
+				FAILED=1
+				FAIL_SUMMARY="${FAIL_SUMMARY}${NL}T pdb $PDB_PYTHON -m$MODULE $PWD/tests/test_shells/pdb-script"
+			fi
+		fi
+	fi
+fi
+
 if test "x${ONLY_SHELL}" = "x" || test "x${ONLY_SHELL}" = "xipython" ; then
-	if which ipython >/dev/null ; then
+	if "${PYTHON}" -c "try: import IPython${NL}except ImportError: raise SystemExit(1)" ; then
 		# Define some overrides which should be ignored by IPython.
-		POWERLINE_CONFIG_OVERRIDES='common.term_escape_style=fbterm'
-		POWERLINE_THEME_OVERRIDES='in.segments.left=[]'
-		echo "> $(which ipython)"
-		if ! run_test ipython ipython ipython ; then
+		export POWERLINE_CONFIG_OVERRIDES='common.term_escape_style=fbterm'
+		export POWERLINE_THEME_OVERRIDES='in.segments.left=[]'
+		echo "> ipython"
+		if ! run_test ipython ipython ${IPYTHON_PYTHON} -mIPython ; then
 			FAILED=1
 			FAIL_SUMMARY="${FAIL_SUMMARY}${NL}T ipython"
 		fi

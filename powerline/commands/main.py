@@ -53,6 +53,7 @@ def finish_args(environ, args):
 		[path for path in environ.get('POWERLINE_CONFIG_PATHS', '').split(':') if path]
 		+ (args.config_path or [])
 	)
+	args.side = args.side[0]
 	return args
 
 
@@ -71,7 +72,7 @@ def get_argparser(ArgumentParser=argparse.ArgumentParser):
 		     '(usually `shell\' or `tmux\').'
 	)
 	parser.add_argument(
-		'side', nargs='?', choices=('left', 'right', 'above', 'aboveleft'),
+		'side', nargs=1, choices=('left', 'right', 'above', 'aboveleft'),
 		help='Side: `left\' and `right\' represent left and right side '
 		     'respectively, `above\' emits lines that are supposed to be printed '
 		     'just above the prompt and `aboveleft\' is like concatenating '
@@ -150,7 +151,7 @@ def get_argparser(ArgumentParser=argparse.ArgumentParser):
 	return parser
 
 
-def write_output(args, powerline, segment_info, write, encoding):
+def write_output(args, powerline, segment_info, write):
 	if args.renderer_arg:
 		segment_info.update(args.renderer_arg)
 	if args.side.startswith('above'):
@@ -159,8 +160,8 @@ def write_output(args, powerline, segment_info, write, encoding):
 			segment_info=segment_info,
 			mode=segment_info.get('mode', None),
 		):
-			write(line.encode(encoding, 'replace'))
-			write(b'\n')
+			if line:
+				write(line + '\n')
 		args.side = args.side[len('above'):]
 
 	if args.side:
@@ -170,4 +171,4 @@ def write_output(args, powerline, segment_info, write, encoding):
 			segment_info=segment_info,
 			mode=segment_info.get('mode', None),
 		)
-		write(rendered.encode(encoding, 'replace'))
+		write(rendered)

@@ -3,17 +3,22 @@
 from __future__ import (unicode_literals, division, absolute_import, print_function)
 
 import os
+import sys
 
 from time import sleep
 from subprocess import check_call
 from itertools import groupby
 from difflib import ndiff
+from glob import glob1
 
 from powerline.lib.unicode import u
 from powerline.bindings.tmux import get_tmux_version
 from powerline import get_fallback_logger
 
 from tests.lib.terminal import ExpectProcess
+
+
+VTERM_TEST_DIR = os.path.abspath('tests/vterm')
 
 
 def cell_properties_key_to_shell_escape(cell_properties_key):
@@ -27,18 +32,85 @@ def cell_properties_key_to_shell_escape(cell_properties_key):
 	))
 
 
-def main():
-	VTERM_TEST_DIR = os.path.abspath('tests/vterm')
+def test_expected_result(p, expected_result, cols, rows, print_logs):
+	last_line = []
+	for col in range(cols):
+		last_line.append(p[rows - 1, col])
+	attempts = 3
+	result = None
+	while attempts:
+		result = tuple((
+			(key, ''.join((i.text for i in subline)))
+			for key, subline in groupby(last_line, lambda i: i.cell_properties_key)
+		))
+		if result == expected_result:
+			return True
+		attempts -= 1
+		print('Actual result does not match expected. Attempts left: {0}.'.format(attempts))
+		sleep(2)
+	print('Result:')
+	shesc_result = ''.join((
+		'{0}{1}\x1b[m'.format(cell_properties_key_to_shell_escape(key), text)
+		for key, text in result
+	))
+	print(shesc_result)
+	print('Expected:')
+	shesc_expected_result = ''.join((
+		'{0}{1}\x1b[m'.format(cell_properties_key_to_shell_escape(key), text)
+		for key, text in expected_result
+	))
+	print(shesc_expected_result)
+	p.send(b'powerline-config tmux setup\n')
+	sleep(5)
+	print('Screen:')
+	screen = []
+	for i in range(rows):
+		screen.append([])
+		for j in range(cols):
+			screen[-1].append(p[i, j])
+	print('\n'.join(
+		''.join((
+			'{0}{1}\x1b[m'.format(
+				cell_properties_key_to_shell_escape(i.cell_properties_key),
+				i.text
+			) for i in line
+		))
+		for line in screen
+	))
+	a = shesc_result.replace('\x1b', '\\e') + '\n'
+	b = shesc_expected_result.replace('\x1b', '\\e') + '\n'
+	print('_' * 80)
+	print('Diff:')
+	print('=' * 80)
+	print(''.join((u(line) for line in ndiff([a], [b]))))
+	if print_logs:
+		for f in glob1(VTERM_TEST_DIR, '*.log'):
+			print('_' * 80)
+			print(os.path.basename(f) + ':')
+			print('=' * 80)
+			with open(f, 'r') as F:
+				for line in F:
+					sys.stdout.write(line)
+			os.unlink(f)
+	return False
+
+
+def main(attempts=3):
 	vterm_path = os.path.join(VTERM_TEST_DIR, 'path')
-	socket_path = os.path.join(VTERM_TEST_DIR, 'tmux-socket')
+	socket_path = 'tmux-socket'
 	rows = 50
 	cols = 200
 
 	tmux_exe = os.path.join(vterm_path, 'tmux')
 
+	if os.path.exists('tests/bot-ci/deps/libvterm/libvterm.so'):
+		lib = 'tests/bot-ci/deps/libvterm/libvterm.so'
+	else:
+		lib = os.environ.get('POWERLINE_LIBVTERM', 'libvterm.so')
+
 	try:
 		p = ExpectProcess(
-			lib='tests/bot-ci/deps/libvterm/libvterm.so',
+			lib=lib,
 			rows=rows,
 			cols=cols,
 			cmd=tmux_exe,
@@ -89,7 +161,7 @@ def main():
 				'TERMINFO': os.path.join(VTERM_TEST_DIR, 'terminfo'),
 				'TERM': 'st-256color',
 				'PATH': vterm_path,
-				'SHELL': os.path.join(''),
+				'SHELL': os.path.join(VTERM_TEST_DIR, 'path', 'bash'),
 				'POWERLINE_CONFIG_PATHS': os.path.abspath('powerline/config_files'),
 				'POWERLINE_COMMAND': 'powerline-render',
 				'POWERLINE_THEME_OVERRIDES': (
@@ -103,14 +175,27 @@ def main():
 			},
 		)
 		p.start()
-		sleep(10)
-		last_line = []
-		for col in range(cols):
-			last_line.append(p[rows - 1, col])
-		result = tuple((
-			(key, ''.join((i.text for i in subline)))
-			for key, subline in groupby(last_line, lambda i: i.cell_properties_key)
-		))
+		sleep(2)
+		expected_result_2_0 = (
+			(((0, 0, 0), (243, 243, 243), 1, 0, 0), ' 0 '),
+			(((243, 243, 243), (11, 11, 11), 0, 0, 0), ' '),
+			(((255, 255, 255), (11, 11, 11), 0, 0, 0), ' S2 string here '),
+			(((133, 133, 133), (11, 11, 11), 0, 0, 0), ' 0 '),
+			(((88, 88, 88), (11, 11, 11), 0, 0, 0), '| '),
+			(((188, 188, 188), (11, 11, 11), 0, 0, 0), 'bash  '),
+			(((255, 255, 255), (11, 11, 11), 0, 0, 0), ' '),
+			(((133, 133, 133), (11, 11, 11), 0, 0, 0), ' 1 '),
+			(((88, 88, 88), (11, 11, 11), 0, 0, 0), '| '),
+			(((0, 102, 153), (11, 11, 11), 0, 0, 0), 'bash  '),
+			(((255, 255, 255), (11, 11, 11), 0, 0, 0), ' '),
+			(((11, 11, 11), (0, 102, 153), 0, 0, 0), ' '),
+			(((102, 204, 255), (0, 102, 153), 0, 0, 0), '2 | '),
+			(((255, 255, 255), (0, 102, 153), 1, 0, 0), 'bash '),
+			(((0, 102, 153), (11, 11, 11), 0, 0, 0), ' '),
+			(((255, 255, 255), (11, 11, 11), 0, 0, 0), ' ' * 128),
+			(((88, 88, 88), (11, 11, 11), 0, 0, 0), ' '),
+			(((199, 199, 199), (88, 88, 88), 0, 0, 0), ' S1 string here '),
+		)
 		expected_result_new = (
 			(((0, 0, 0), (243, 243, 243), 1, 0, 0), ' 0 '),
 			(((243, 243, 243), (11, 11, 11), 0, 0, 0), ' '),
@@ -127,7 +212,7 @@ def main():
 			(((102, 204, 255), (0, 102, 153), 0, 0, 0), '2 | '),
 			(((255, 255, 255), (0, 102, 153), 1, 0, 0), 'bash '),
 			(((0, 102, 153), (11, 11, 11), 0, 0, 0), ' '),
-			(((255, 255, 255), (11, 11, 11), 0, 0, 0), '                                                                                                                               '),
+			(((255, 255, 255), (11, 11, 11), 0, 0, 0), ' ' * 127),
 			(((88, 88, 88), (11, 11, 11), 0, 0, 0), ' '),
 			(((199, 199, 199), (88, 88, 88), 0, 0, 0), ' S1 string here '),
 		)
@@ -147,59 +232,31 @@ def main():
 			(((102, 204, 255), (0, 102, 153), 0, 0, 0), '2 | '),
 			(((255, 255, 255), (0, 102, 153), 1, 0, 0), 'bash '),
 			(((0, 102, 153), (11, 11, 11), 0, 0, 0), ' '),
-			(((255, 255, 255), (11, 11, 11), 0, 0, 0), '                                                                                                                               '),
+			(((255, 255, 255), (11, 11, 11), 0, 0, 0), ' ' * 127),
 			(((88, 88, 88), (11, 11, 11), 0, 0, 0), ' '),
 			(((199, 199, 199), (88, 88, 88), 0, 0, 0), ' S1 string here '),
 		)
-		print('Result:')
-		shesc_result = ''.join((
-			'{0}{1}\x1b[m'.format(cell_properties_key_to_shell_escape(key), text)
-			for key, text in result
-		))
-		print(shesc_result)
-		print('Expected:')
 		tmux_version = get_tmux_version(get_fallback_logger())
-		if tmux_version < (1, 8):
-			expected_result = expected_result_old
-		else:
+		if tmux_version >= (2, 0):
+			expected_result = expected_result_2_0
+		elif tmux_version >= (1, 8):
 			expected_result = expected_result_new
-		shesc_expected_result = ''.join((
-			'{0}{1}\x1b[m'.format(cell_properties_key_to_shell_escape(key), text)
-			for key, text in expected_result
-		))
-		print(shesc_expected_result)
-		if result == expected_result:
-			return True
 		else:
-			p.send(b'powerline-config tmux setup\n')
-			sleep(5)
-			print('Screen:')
-			screen = []
-			for i in range(rows):
-				screen.append([])
-				for j in range(cols):
-					screen[-1].append(p[i, j])
-			print('\n'.join(
-				''.join((
-					'{0}{1}\x1b[m'.format(
-						cell_properties_key_to_shell_escape(i.cell_properties_key),
-						i.text
-					) for i in line
-				))
-				for line in screen
-			))
-			a = shesc_result.replace('\x1b', '\\e') + '\n'
-			b = shesc_expected_result.replace('\x1b', '\\e') + '\n'
-			print('_' * 80)
-			print('Diff:')
-			print('=' * 80)
-			print(''.join((u(line) for line in ndiff([a], [b]))))
-			return False
+			expected_result = expected_result_old
+		if not test_expected_result(p, expected_result, cols, rows, not attempts):
+			if attempts:
+				pass
+				# Will rerun main later.
+			else:
+				return False
+		else:
+			return True
 	finally:
 		check_call([tmux_exe, '-S', socket_path, 'kill-server'], env={
 			'PATH': vterm_path,
 			'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH', ''),
-		})
+		}, cwd=VTERM_TEST_DIR)
+	return main(attempts=(attempts - 1))
 
 
 if __name__ == '__main__':

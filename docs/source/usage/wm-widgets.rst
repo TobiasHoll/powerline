@@ -31,15 +31,20 @@ Add the following to :file:`~/.config/qtile/config.py`:
 
 .. code-block:: python
 
-   from powerline.bindings.qtile.widget import Powerline
+   from libqtile.bar import Bar
+   from libqtile.config import Screen
+   from libqtile.widget import Spacer
+
+   from powerline.bindings.qtile.widget import PowerlineTextBox
 
    screens = [
        Screen(
-           top=bar.Bar([
-                   # ...
-                   Powerline(timeout=2),
-                   # ...
+           top=Bar([
+                   PowerlineTextBox(update_interval=2, side='left'),
+                   Spacer(),
+                   PowerlineTextBox(update_interval=2, side='right'),
                ],
+               35 # width
            ),
        ),
    ]
@@ -62,13 +67,30 @@ to run with i3, simply ``exec`` this in your i3 config file::
     exec python powerline-bar.py | bar -f "-xos4-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 See the `bar documentation <https://github.com/LemonBoy/bar>`_ for more information and options.
+=======
+LemonBoy’s bar
+==============
 
-I3 bar
-======
+To run the bar simply pipe the output of the binding script into ``bar`` and 
+specify appropriate options, for example like this::
 
+    python /path/to/powerline/bindings/bar/powerline-bar.py | bar
+
+to run with i3, simply ``exec`` this in i3 config file::
+
+    exec python /path/to/powerline/bindings/bar/powerline-bar.py --i3 | bar
+
+See the `bar documentation <https://github.com/LemonBoy/bar>`_ for more 
+information and options.
 .. note:: As the patch to include background-colors in i3bar is likely not to be merged,
           it is recommended to instead run ``bar`` (see above).
           The source for i3bgbar is however still available `here <https://github.com/S0lll0s/i3bgbar>`_.
+=======
+.. note::
+   As the patch to include background-colors in i3bar is likely not to be 
+   merged, it is recommended to instead run ``bar`` (see above). The source for 
+   i3bgbar is however still available `here 
+   <https://github.com/S0lll0s/i3bgbar>`_.
 
 Add the following to :file:`~/.i3/config`::
 

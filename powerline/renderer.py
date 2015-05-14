@@ -124,8 +124,10 @@ class Renderer(object):
 		'getcwd': getattr(os, 'getcwdu', os.getcwd),
 		'home': os.environ.get('HOME'),
 	}
-	'''Basic segment info. Is merged with local segment information by 
-	``.get_segment_info()`` method. Keys:
+	'''Basic segment info
+
+	Is merged with local segment information by :py:meth:`get_segment_info` 
+	method. Keys:
 
 	``environ``
 		Object containing environment variables. Must define at least the 
@@ -279,9 +281,10 @@ class Renderer(object):
 			string_width)``. Returns a three-tuple if ``output_raw`` is also 
 			``True``: ``(colored_string, colorless_string, string_width)``.
 		:param dict segment_info:
-			Segment information. See also ``.get_segment_info()`` method.
+			Segment information. See also :py:meth:`get_segment_info` method.
 		:param matcher_info:
-			Matcher information. Is processed in ``.get_theme()`` method.
+			Matcher information. Is processed in :py:meth:`get_segment_info` 
+			method.
 		'''
 		theme = self.get_theme(matcher_info)
 		return self.do_render(
@@ -375,7 +378,9 @@ class Renderer(object):
 		elif output_width:
 			current_width = self._render_length(theme, segments, divider_widths)
 
-		rendered_highlighted = ''.join([segment['_rendered_hl'] for segment in self._render_segments(theme, segments)]) + self.hlstyle()
+		rendered_highlighted = ''.join([segment['_rendered_hl'] for segment in self._render_segments(theme, segments)])
+		if rendered_highlighted:
+			rendered_highlighted += self.hlstyle()
 
 		return construct_returned_value(rendered_highlighted, segments, current_width, output_raw, output_width)
 
@@ -504,7 +509,7 @@ class Renderer(object):
 	def hl(self, contents, fg=None, bg=None, attrs=None):
 		'''Output highlighted chunk.
 
-		This implementation just outputs ``.hlstyle()`` joined with 
+		This implementation just outputs :py:meth:`hlstyle` joined with 
 		``contents``.
 		'''
 		return self.hlstyle(fg, bg, attrs) + (contents or '')

@@ -31,12 +31,18 @@ user = os.environ['USER']
 REFS_RE = re.compile(r'^\[\d+ refs\]\n')
 IPYPY_DEANSI_RE = re.compile(r'\033(?:\[(?:\?\d+[lh]|[^a-zA-Z]+[a-ln-zA-Z])|[=>])')
 
+start_str = 'cd tests/shell/3rd'
+if shell == 'pdb':
+	start_str = 'class Foo(object):'
+
 with codecs.open(fname, 'r', encoding='utf-8') as R:
 	with codecs.open(new_fname, 'w', encoding='utf-8') as W:
 		found_cd = False
+		i = -1
 		for line in (R if shell != 'fish' else R.read().split('\n')):
+			i += 1
 			if not found_cd:
-				found_cd = ('cd tests/shell/3rd' in line)
+				found_cd = (start_str in line)
 				continue
 			if 'true is the last line' in line:
 				break
@@ -64,7 +70,7 @@ with codecs.open(fname, 'r', encoding='utf-8') as R:
 				try:
 					start = line.index('\033[0;')
 					end = line.index(' ', start)
-					line = line[start:end] + '\033[0m\n'
+					line = line[start:end] + '\n'
 				except ValueError:
 					line = ''
 			elif shell == 'mksh':
@@ -101,4 +107,19 @@ with codecs.open(fname, 'r', encoding='utf-8') as R:
 			elif shell == 'rc':
 				if line == 'read() failed: Connection reset by peer\n':
 					line = ''
+			elif shell == 'pdb':
+				if is_pypy:
+					if line == '\033[?1h\033=\033[?25l\033[1A\n':
+						line = ''
+					line = IPYPY_DEANSI_RE.subn('', line)[0]
+					if line == '\n':
+						line = ''
+				if line.startswith(('>',)):
+					line = ''
+				elif line == '-> self.quitting = 1\n':
+					line = '-> self.quitting = True\n'
+				elif line == '\n':
+					line = ''
+				if line == '-> self.quitting = True\n':
+					break
 			W.write(line)

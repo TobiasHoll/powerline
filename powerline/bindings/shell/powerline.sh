@@ -66,7 +66,7 @@ _powerline_set_append_trap() {
 
 _powerline_create_temp() {
 	if test -z "$_POWERLINE_TEMP" || ! test -e "$_POWERLINE_TEMP" ; then
-		_POWERLINE_TEMP="$(mktemp)"
+		_POWERLINE_TEMP="$(mktemp "${TMPDIR:-/tmp}/powerline.XXXXXXXX")"
 		_powerline_append_trap 'rm $_POWERLINE_TEMP' EXIT
 	fi
 }
@@ -74,7 +74,7 @@ _powerline_create_temp() {
 _powerline_set_set_jobs() {
 	if _powerline_has_jobs_in_subshell "$@" ; then
 		_powerline_set_jobs() {
-			_POWERLINE_JOBS="$(jobs -p|wc -l)"
+			_POWERLINE_JOBS="$(jobs -p|wc -l|tr -d ' ')"
 		}
 	else
 		_powerline_set_append_trap "$@"
@@ -90,7 +90,7 @@ _powerline_set_set_jobs() {
 			kill -USR1 $_POWERLINE_PID
 			# Note: most likely this will read data from the previous run. Tests 
 			# show that it is OK for some reasons.
-			_POWERLINE_JOBS="$(wc -l < $_POWERLINE_TEMP)"
+			_POWERLINE_JOBS="$(wc -l < $_POWERLINE_TEMP | tr -d ' ')"
 		}
 	fi
 	_powerline_set_set_jobs() {
@@ -224,8 +224,7 @@ fi
 
 # Strips the leading `-`: it may be present when shell is a login shell
 _POWERLINE_USED_SHELL=${0#-}
-_POWERLINE_USED_SHELL=${_POWERLINE_USED_SHELL#/usr}
-_POWERLINE_USED_SHELL=${_POWERLINE_USED_SHELL#/bin/}
+_POWERLINE_USED_SHELL=${_POWERLINE_USED_SHELL##*/}
 
 if "${POWERLINE_CONFIG_COMMAND}" shell uses tmux ; then
 	_powerline_init_tmux_support $_POWERLINE_USED_SHELL
