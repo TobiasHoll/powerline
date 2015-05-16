@@ -26,11 +26,12 @@ def calcgrp(w):
 	return group
 
 @requires_segment_info
-def workspaces(pl, segment_info, enable_workspace=False):
+def workspaces(pl, segment_info, include_only=None):
 	'''Return list of used workspaces
 
-	:param bool enable_workspace:
-		Specifies whether to integrate the current non-default wonkspace
+	:param include_only:
+		Specifies the workspace types that should be returned.
+		Use ``None`` to include all types.
 
 	Highlight groups used: ``workspace``, ``w_visible``, ``w_focused``, ``w_urgent``
 	'''
@@ -38,22 +39,30 @@ def workspaces(pl, segment_info, enable_workspace=False):
 	global conn
 	if not conn: conn = i3ipc.Connection()
 	
-	current_mode = segment_info['mode']
-
-	if not current_mode or not enable_workspace or current_mode == 'default':
+	if not include_only:
 	    return [{
 		'contents': w['name'],
 		'highlight_groups': calcgrp(w)
 	    } for w in conn.get_workspaces()]
 	else:
+	    if not include_only.keys().__contains__('focused'):
+		    include_only['focused'] = False
+	    if not include_only.keys().__contains__('visible'):
+		    include_only['visible'] = False
+	    if not include_only.keys().__contains__('normal'):
+		    include_only['normal'] = False
+	    if not include_only.keys().__contains__('urgent'):
+		    include_only['urgent'] = False
+
 	    return [{
-		'contents': current_mode,
-		'highlight_groups':['w_urgent', 'workspace']}] + [{
 		'contents': w['name'],
 		'highlight_groups': calcgrp(w)
-	    } for w in conn.get_workspaces() if w['focused'] ]
+	    } for w in conn.get_workspaces() if include_only['focused'] and w['focused'] 
+						or include_only['visible'] and w['visible'] 
+						or include_only['urgent'] and w['urgent'] 
+						or include_only['normal'] and not (w['focused'] or w['visible'] or w['urgent']) ]
 
-@requires_segment_info
+grequires_segment_info
 def mode(pl, segment_info, default=None):
 	'''Returns current i3 mode
 
