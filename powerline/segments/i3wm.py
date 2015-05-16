@@ -45,13 +45,13 @@ def workspaces(pl, segment_info, include_only=None):
 		'highlight_groups': calcgrp(w)
 	    } for w in conn.get_workspaces()]
 	else:
-	    if not include_only.keys().__contains__('focused'):
+	    if not 'focused' in include_only:
 		    include_only['focused'] = False
-	    if not include_only.keys().__contains__('visible'):
+	    if not 'visible' in include_only:
 		    include_only['visible'] = False
-	    if not include_only.keys().__contains__('normal'):
+	    if not 'normal' in include_only:
 		    include_only['normal'] = False
-	    if not include_only.keys().__contains__('urgent'):
+	    if not 'urgent' in include_only:
 		    include_only['urgent'] = False
 
 	    return [{
