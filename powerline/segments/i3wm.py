@@ -25,9 +25,8 @@ def calcgrp(w):
 	group.append('workspace')
 	return group
 
-current_mode = 'default'
-
-def workspaces(pl, enable_workspace=False, dirty=False):
+@requires_segment_info
+def workspaces(pl, segment_info, enable_workspace=False):
 	'''Return list of used workspaces
 
 	:param bool enable_workspace:
@@ -38,8 +37,8 @@ def workspaces(pl, enable_workspace=False, dirty=False):
 	
 	global conn
 	if not conn: conn = i3ipc.Connection()
-
-	global current_mode
+	
+	current_mode = segment_info['mode']
 
 	if not current_mode or not enable_workspace or current_mode == 'default':
 	    return [{
@@ -55,23 +54,17 @@ def workspaces(pl, enable_workspace=False, dirty=False):
 	    } for w in conn.get_workspaces() if w['focused'] ]
 
 @requires_segment_info
-def mode(pl, segment_info, default=None, disable_output=False):
+def mode(pl, segment_info, default=None):
 	'''Returns current i3 mode
 
 	:param str default:
 		Specifies the name to be displayed instead of "default".
 		By default the segment is left out in the default mode.
 
-	:param bool disable_output:
-		Specifies whether to disable the output.
-
 	Highligh groups used: ``mode``
 	'''
 
-	global current_mode
 	current_mode = segment_info['mode']
-	if disable_output:
-		return None
 
 	if not current_mode or current_mode == 'default':
 		return default
