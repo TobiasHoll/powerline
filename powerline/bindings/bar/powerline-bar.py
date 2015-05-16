@@ -20,10 +20,6 @@ class BarPowerline(Powerline):
 		super(BarPowerline, self).init(ext='wm', renderer_module='bar')
 		self.mode = None
 
-	def render(self, *args, **kwargs):
-		return super(BarPowerline, self).render(mode=self.mode, *args, **kwargs)
-
-
 if __name__ == '__main__':
 	parser = ArgumentParser(description='Powerline BAR bindings.')
 	parser.add_argument(
@@ -31,8 +27,9 @@ if __name__ == '__main__':
 		help='Subscribe for i3 events.'
 	)
 	args = parser.parse_args()
-	line = BarPowerline()
+	powerline = BarPowerline()
 	lock = Lock()
+	modes = ["default"]
 	write = get_unicode_writer(encoding='utf-8')
 
 	def render(reschedule=False):
@@ -41,12 +38,12 @@ if __name__ == '__main__':
 
 		global lock
 		with lock:
-			write(line.render())
+			write(powerline.render(mode=modes[0]))
 			write('\n')
 			sys.stdout.flush()
 
-	def update(mode):
-		line.mode = mode
+	def update(evt):
+		modes[0] = evt.change
 		render()
 
 	render(reschedule=True)
@@ -60,8 +57,8 @@ if __name__ == '__main__':
 		else:
 			conn = i3ipc.Connection()
 			conn.on('workspace::focus', lambda conn, evt: render())
-			conn.on('mode', lambda conn, evt: update(evt.change))
+			conn.on('mode', lambda conn, evt: update(evt))
 			conn.main()
 
 	while True:
-		time.sleep(0.5)
+		time.sleep(1e10)
