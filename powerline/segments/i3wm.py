@@ -61,6 +61,6 @@ def mode(pl, segment_info, names={"default":None}):
 
 	current_mode = segment_info['mode']
 
-	if current_modes in names:
+	if current_mode in names:
 		return names[current_mode]
 	return current_mode
