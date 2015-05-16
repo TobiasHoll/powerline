@@ -25,8 +25,7 @@ def calcgrp(w):
 	group.append('workspace')
 	return group
 
-@requires_segment_info
-def workspaces(pl, segment_info, include_only=None):
+def workspaces(pl, include_only=None):
 	'''Return list of used workspaces
 
 	:param include_only:
