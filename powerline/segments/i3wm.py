@@ -3,6 +3,7 @@ from __future__ import (unicode_literals, division, absolute_import, print_funct
 
 from threading import Thread
 
+from powerline.theme import requires_segment_info
 from powerline.segments import Segment, with_docstring
 
 
@@ -42,31 +43,17 @@ def workspaces(pl, strip=0):
 		'highlight_groups': calcgrp(w)
 	} for w in conn.get_workspaces()]
 
-class ModeSegment(Segment):
-	def startup(self, pl, shutdown_event):
-		self.mode = 'default'
+@requires_segment_info
+def mode(pl, segment_info, default=None):
+	'''Returns current i3 mode
 
-		def callback(conn, e):
-			self.mode = e.change
+	:param str default:
+		Specifies the name to be displayed instead of "default".
+		By default the segment is left out in the default mode.
 
-		conn = i3ipc.Connection()
-		conn.on('mode', callback)
-		self.thread = Thread(target=conn.main)
-		self.thread.daemon = True
-		self.thread.start()
-
-	def __call__(self, pl, default=None):
-		if self.mode == 'default':
-			return default
-		return self.mode
-
-
-mode = with_docstring(ModeSegment(),
-'''Returns the current i3 mode
-
-:param str default:
-	Specifies the name to be displayed instead of "default".
-	By default the segment is left out in the default mode.
-
-Highligh groups used: ``mode``
-''')
+	Highligh groups used: ``mode``
+	'''
+	mode = segment_info['mode']
+	if not mode or mode == 'default':
+		return default
+	return mode
