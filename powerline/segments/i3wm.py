@@ -25,9 +25,10 @@ def calcgrp(w):
 	group.append('workspace')
 	return group
 
-mode = 'default'
+current_mode = 'default'
 
-def workspaces(pl, enable_workspace=False):
+@requires_segment_info
+def workspaces(pl, segment_info, enable_workspace=False):
 	'''Return list of used workspaces
 
 	:param bool enable_workspace:
@@ -38,15 +39,16 @@ def workspaces(pl, enable_workspace=False):
 	
 	global conn
 	if not conn: conn = i3ipc.Connection()
+	current_mode = segment_info['mode']
 
-	if mode == 'default' or not mode:
+	if not current_mode or not enable_workspace or current_mode == 'default':
 	    return [{
 		'contents': w['name'],
 		'highlight_groups': calcgrp(w)
 	    } for w in conn.get_workspaces()]
 	else:
 	    return [{
-		'contents': mode,
+		'contents': current_mode,
 		'highlight_groups':['w_urgent', 'workspace']}] + [{
 		'contents': w['name'],
 		'highlight_groups': calcgrp(w)
@@ -65,10 +67,10 @@ def mode(pl, segment_info, default=None, disable_output=False):
 
 	Highligh groups used: ``mode``
 	'''
-	mode = segment_info['mode']
+	current_mode = segment_info['mode']
 	if disable_output:
 		return None
 
-	if not mode or mode == 'default':
+	if not current_mode or current_mode == 'default':
 		return default
-	return mode
+	return current_mode
