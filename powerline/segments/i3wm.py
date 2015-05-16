@@ -33,10 +33,6 @@ def workspaces(pl, enable_workspace=False, dirty=False):
 	:param bool enable_workspace:
 		Specifies whether to integrate the current non-default wonkspace
 
-	:param bool dirty:
-		Get the current mode VERY dirty.
-		(Works only with a real dirty i3-hack)
-
 	Highlight groups used: ``workspace``, ``w_visible``, ``w_focused``, ``w_urgent``
 	'''
 	
@@ -44,15 +40,6 @@ def workspaces(pl, enable_workspace=False, dirty=False):
 	if not conn: conn = i3ipc.Connection()
 
 	global current_mode
-	if dirty:
-		import os
-		if os.path.exists( '/tmp/i3_bindings_mode' ):
-			f = open('/tmp/i3_bindings_mode', 'r')
-			current_mode = f.readline()
-			f.close()
-		else:
-			current_mode = 'default'
-
 
 	if not current_mode or not enable_workspace or current_mode == 'default':
 	    return [{
