@@ -49,7 +49,7 @@ def workspaces(pl, segment_info, include_only=None):
 		or 'normal' in include_only and not (w['focused'] or w['visible'] or w['urgent']) ]
 
 @requires_segment_info
-def mode(pl, segment_info, default=None):
+def mode(pl, segment_info, names={"default":None}):
 	'''Returns current i3 mode
 
 	:param str default:
@@ -61,6 +61,6 @@ def mode(pl, segment_info, default=None):
 
 	current_mode = segment_info['mode']
 
-	if not current_mode or current_mode == 'default':
-		return default
+	if current_modes in names:
+		return names[current_mode]
 	return current_mode
