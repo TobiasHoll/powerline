@@ -114,6 +114,41 @@ def _get_battery_status(pl):
 
 	raise NotImplementedError
 
+def _get_battery_rem_time(pl):
+	if os.path.isdir('/sys/class/power_supply'):
+		linux_bat_fmt = '/sys/class/power_supply/{0}/current_now'
+		for linux_bat in os.listdir('/sys/class/power_supply'):
+			cap_path = linux_bat_fmt.format(linux_bat)
+			if linux_bat.startswith('BAT') and os.path.exists(cap_path):
+				pl.debug('Using /sys/class/power_supply with battery {0}', linux_bat)
+
+				def _get_rem_time(pl):
+					curr = 0
+					charge = 0
+					full = 0
+					stat = ''
+					with open(cap_path, 'r') as f:
+						curr = int(f.readline().split()[0])
+					if curr == 0:
+						return 0
+					with open('/sys/class/power_supply/' + linux_bat + '/charge_now', 'r') as f:
+						charge = int(f.readline().split()[0])
+					with open('/sys/class/power_supply/' + linux_bat + '/charge_full', 'r') as f:
+						full = int(f.readline().split()[0])
+					with open('/sys/class/power_supply/' + linux_bat + '/status', 'r') as f:
+						stat = (f.readline().split()[0])
+					
+					if stat == 'Charging':
+						return (full - charge) / curr
+					else:
+						return charge / curr
+				return _get_rem_time
+		pl.debug('Not using /sys/class/power_supply as no batteries were found')
+	else:
+		pl.debug('Not using /sys/class/power_supply: no directory')
+
+	raise NotImplementedError
+
 def _get_capacity(pl):
 	global _get_capacity
 	global show_original
@@ -132,7 +167,6 @@ def _get_capacity(pl):
 
 def _get_status(pl):
 	global _get_status
-	global show_original
 
 	def _failing_get_status(pl):
 		raise NotImplementedError
@@ -146,6 +180,20 @@ def _get_status(pl):
 		_get_status = _failing_get_status
 	return _get_status(pl)
 
+def _get_rem_time(pl):
+	global _get_rem_time
+
+	def _failing_get_rem_time(pl):
+		raise NotImplementedError
+
+	try:
+		_get_rem_time = _get_battery_rem_time(pl)
+	except NotImplementedError:
+		_get_rem_time = _failing_get_rem_time
+	except Exception as e:
+		pl.exception('Exception while obtaining battery capacity getter: {0}', str(e))
+		_get_rem_time = _failing_get_rem_time
+	return _get_rem_time(pl)
 
 def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O', empty_heart='O', original_health=False):
 	'''Return battery charge status.
@@ -191,6 +239,20 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
 	if 'status' in format and status == '':
 		return None
 
+	try:
+		rem_time = _get_rem_time(pl)
+	except NotImplementedError:
+		pl.info('Unable to get remaining time.')
+		if 'rem_time' in format:
+			return None
+	if 'rem_time' in format and rem_time == 0:
+		return None
+
+	rem_sec = int(rem_time * 3600)
+	rem_hours = int(rem_sec / 3600)
+	rem_sec -= rem_hours * 3600
+	rem_minutes = int(rem_sec / 60)
+	
 	ret = []
 	if gamify:
 		denom = int(steps)
@@ -211,7 +273,7 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
 		})
 	else:
 		ret.append({
-			'contents': format.format(capacity=(capacity / 100.0), status=status),
+			'contents': format.format(capacity=(capacity / 100.0), status=status, rem_time_hours=rem_hours, rem_time_minutes=rem_minutes),
 			'highlight_groups': ['battery_gradient', 'battery'],
 			# Gradients are “least alert – most alert” by default, capacity has 
 			# the opposite semantics.
