@@ -29,7 +29,7 @@ def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 	return socket.gethostname()
 
 
-def _external_ip(query_url='http://ipv4.icanhazip.com/'):
+def _external_ip(query_url='http://ipv6.icanhazip.com/'):
 	return urllib_read(query_url).strip()
 
 
