@@ -28,6 +28,35 @@ def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 		return socket.gethostname().split('.')[0]
 	return socket.gethostname()
 
+def wireless(pl, device, format='{quality:3.0%} at {essid}'):
+	'''Return the current connection quality
+
+	:param string device:
+		the device to use
+	:param string format:
+		the output format
+	
+	highlight groups used: ``qualty_gradient`` (gradient)
+	'''
+
+	try:
+		import iwlib
+	except ImportError:
+		pl.info("Couldn't load iwlib")
+		return None
+	
+	stats = iwlib.get_iwconfig(device)
+	essid = stats['ESSID']
+	quality = stats['stats']['quality']
+	frequency = stats['Frequency']
+
+	if essid == '' or quality == 0:
+		return None
+	return [{
+	    'contents': format.format(quality=quality/70, essid=essid.decode(), frequency=frequency),
+	    'highlight_groups': ['quality_gradient'],
+	    'gradient_level': 100 * (70 - quality) / 70
+	    }]
 
 def _external_ip(query_url='http://ipv6.icanhazip.com/'):
 	return urllib_read(query_url).strip()

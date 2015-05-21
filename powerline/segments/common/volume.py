@@ -4,12 +4,10 @@ from __future__ import (unicode_literals, division, absolute_import, print_funct
 import alsaaudio
 
 
-def vol( pl, format='♪: {0}%', control='Master', id= 0 ):
+def vol( pl, format='♪ {volume:3.0%}', format_muted='♪ {volume}', control='Master', id= 0 ):
 	'''Return the current volume.
 
-	Divider highlight group used: ``time:divider``.
-
-	Highlight groups used: ``time`` or ``date``.
+	Highlight groups used: ``volume_gradient`` (gradient).
 	'''
 
 	avg = 0;
@@ -20,7 +18,7 @@ def vol( pl, format='♪: {0}%', control='Master', id= 0 ):
 	    avg += a;
 
 	return [{
-		'contents':	    (format.format('--') if alsaaudio.Mixer(control,id).getmute()[0] == 1 else format.format( int(a / len( res )))),
+		'contents':(format_muted.format(volume='--') if alsaaudio.Mixer(control,id).getmute()[0] == 1 else format.format(volume=avg/(100*len(res)))),
 		'highlight_groups': ['volume_gradient'],
 		'divider_highlight_group': None,
 		'gradient_level': int(a / len( res )),

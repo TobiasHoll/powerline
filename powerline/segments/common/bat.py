@@ -83,7 +83,7 @@ def _get_battery(pl):
 					else:
 						with open(cap_path2, 'r') as f:
 							full = int(float(f.readline().split()[0]))
-					return int(current * 100/full)
+					return (current * 100/full)
 
 				return _get_capacity
 		pl.debug('Not using /sys/class/power_supply as no batteries were found')
