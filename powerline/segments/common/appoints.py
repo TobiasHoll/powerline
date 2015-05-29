@@ -16,7 +16,7 @@ def _concat( a ):
 		result += ' ' + a[i]
 	return result
 
-def appoint(pl, count=1, time_before={0:0, 1:30}):
+def appoint(pl, count=1, time_before={"0":0, "1":30}):
 	'''Return the next ``count`` appoints
 
 	:param int count:
@@ -51,6 +51,8 @@ def appoint(pl, count=1, time_before={0:0, 1:30}):
 	upcoming = {prio:[] for prio in appoints.keys()}
 	current = {prio:[] for prio in appoints.keys()}
 
+	time_before = {int(a):time_before[a] for a in time_before}
+
 	lst = 0
 	for i in range(0, 1+max(appoints.keys())):
 		if i in time_before:
@@ -67,7 +69,7 @@ def appoint(pl, count=1, time_before={0:0, 1:30}):
 		far_away = {prio:far_away[prio]+[a for a in appoints[prio] if now < a[0]-timedelta(0,time_before[prio]*60)] for prio in keys}
 		upcoming = {prio:upcoming[prio]+[a for a in appoints[prio] if a[0]>now and now>a[0]-timedelta(0,time_before[prio]*60)] for prio in keys}
 		current = {prio:current[prio]+[a for a in appoints[prio] if a[0] < now and now < a[1]] for prio in keys}
-		past = {prio:[a for a in appoints[prio] if a[1] < now and a[2] != timedelta()] for prio in keys}
+		past = {prio:[a for a in appoints[prio] if a[1] < now and a[2] != [0,0,0,0]] for prio in keys}
 	
 		appoints = {prio:[(a[0]+_calc_td(a),a[1]+_calc_td(a),a[2],a[3]) for a in past[prio]] for prio in past.keys()}
 		appoints = {prio:appoints[prio] for prio in appoints.keys() if appoints[prio] != []}
