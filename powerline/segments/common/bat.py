@@ -14,52 +14,6 @@ from powerline.lib.shell import run_cmd
 show_original=False
 
 def _get_battery(pl):
-	try:
-		import dbus
-	except ImportError:
-		pl.debug('Not using DBUS+UPower as dbus is not available')
-	else:
-		try:
-			bus = dbus.SystemBus()
-		except Exception as e:
-			pl.exception('Failed to connect to system bus: {0}', str(e))
-		else:
-			interface = 'org.freedesktop.UPower'
-			try:
-				up = bus.get_object(interface, '/org/freedesktop/UPower')
-			except dbus.exceptions.DBusException as e:
-				if getattr(e, '_dbus_error_name', '').endswith('ServiceUnknown'):
-					pl.debug('Not using DBUS+UPower as UPower is not available via dbus')
-				else:
-					pl.exception('Failed to get UPower service with dbus: {0}', str(e))
-			else:
-				devinterface = 'org.freedesktop.DBus.Properties'
-				devtype_name = interface + '.Device'
-				for devpath in up.EnumerateDevices(dbus_interface=interface):
-					dev = bus.get_object(interface, devpath)
-					devget = lambda what: dev.Get(
-						devtype_name,
-						what,
-						dbus_interface=devinterface
-					)
-					if int(devget('Type')) != 2:
-						pl.debug('Not using DBUS+UPower with {0}: invalid type', devpath)
-						continue
-					if not bool(devget('IsPresent')):
-						pl.debug('Not using DBUS+UPower with {0}: not present', devpath)
-						continue
-					if not bool(devget('PowerSupply')):
-						pl.debug('Not using DBUS+UPower with {0}: not a power supply', devpath)
-						continue
-					pl.debug('Using DBUS+UPower with {0}', devpath)
-					return lambda pl: float(
-						dbus.Interface(dev, dbus_interface=devinterface).Get(
-							devtype_name,
-							'Percentage'
-						)
-					)
-				pl.debug('Not using DBUS+UPower as no batteries were found')
-
 	if os.path.isdir('/sys/class/power_supply'):
 		linux_bat_fmt = '/sys/class/power_supply/{0}/charge_now'
 		linux_bat_fmt1 = '/sys/class/power_supply/{0}/charge_full'
