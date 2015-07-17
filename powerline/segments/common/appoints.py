@@ -16,7 +16,12 @@ def _concat( a ):
 		result += ' ' + a[i]
 	return result
 
-def appoint(pl, count=1, time_before={"0":0, "1":30}):
+def _rewrite_str( s ):
+	ln = s.split()
+	ln = [ a if a[ 0 ] != '#' else '#' + str( 1 + int(a[1:]) ) for a in ln]
+	return _concat(ln)
+
+def appoint(pl, count=1, time_before={"0":0, "1":30}, file_path=os.path.expanduser('~') + '/.appointlist'):
 	'''Return the next ``count`` appoints
 
 	:param int count:
@@ -27,12 +32,12 @@ def appoint(pl, count=1, time_before={"0":0, "1":30}):
 	Highlight groups used: ``appoint``, ``appoint_urgent``.
 	'''
 	#Don't do anything if the appointlist is locked
-	if os.path.exists(os.path.expanduser('~') + '/.appointlist.lock'):
+	if os.path.exists(file_path + '.lock'):
 		return None
 
 	#Read appoints data from appointlist
-	if os.path.exists(os.path.expanduser('~') + '/.appointlist'):
-		f = open(os.path.expanduser('~') + '/.appointlist', 'r')
+	if os.path.exists(file_path):
+		f = open(file_path, 'r')
 	else:
 		return None
 
@@ -42,7 +47,10 @@ def appoint(pl, count=1, time_before={"0":0, "1":30}):
 	appoints = [(_dtfa(_int(lines[4*i])), _dtfa(_int(lines[4*i+1])), _int(lines[4*i+2]), _concat(lines[4*i+3])) for i in range(0, int(len(lines)/4))]
 	#seperate the appoints after their priority
 	appoints = [((a[0], a[1], [a[2][i] for i in range(0,4)], a[3]), a[2][4]) for a in appoints]
-	appoints = {prio: [a[0] for a in appoints if a[1] == prio] for prio in range(0, max([b[1] for b in appoints])+1)}
+	appoints = {prio: [a[0] for a in appoints if a[1] == prio] for prio in range(0, max([0]+[b[1] for b in appoints])+1)}
+
+	if appoints == None or len(appoints) == 0:
+		return None
 
 	now = datetime.now()
 
@@ -51,7 +59,7 @@ def appoint(pl, count=1, time_before={"0":0, "1":30}):
 	upcoming = {prio:[] for prio in appoints.keys()}
 	current = {prio:[] for prio in appoints.keys()}
 
-	time_before = {int(a):time_before[a] for a in time_before}
+	time_before = {int(a):int(time_before[a]) for a in time_before}
 
 	lst = 0
 	for i in range(0, 1+max(appoints.keys())):
@@ -71,7 +79,7 @@ def appoint(pl, count=1, time_before={"0":0, "1":30}):
 		current = {prio:current[prio]+[a for a in appoints[prio] if a[0] < now and now < a[1]] for prio in keys}
 		past = {prio:[a for a in appoints[prio] if a[1] < now and a[2] != [0,0,0,0]] for prio in keys}
 	
-		appoints = {prio:[(a[0]+_calc_td(a),a[1]+_calc_td(a),a[2],a[3]) for a in past[prio]] for prio in past.keys()}
+		appoints = {prio:[(a[0]+_calc_td(a),a[1]+_calc_td(a),a[2],_rewrite_str(a[3])) for a in past[prio]] for prio in past.keys()}
 		appoints = {prio:appoints[prio] for prio in appoints.keys() if appoints[prio] != []}
 
 	keys = [k for k in keys]
@@ -90,7 +98,7 @@ def appoint(pl, count=1, time_before={"0":0, "1":30}):
 		} for a in current[k]]
 
 	#Write the changed appoints
-	f = open(os.path.expanduser('~') + '/.appointlist', 'w')
+	f = open(file_path, 'w')
 	f.write( "# List of appoints\n"\
 		 "#\n"\
 		 "# Line 1: Start date\n"\
@@ -98,7 +106,9 @@ def appoint(pl, count=1, time_before={"0":0, "1":30}):
 		 "# Line 3: Next repitition and priority\n"\
 		 "# Line 4: Subject\n"\
 		 "#\n"\
-		 "# Empty Lines and lines starting with a # will be ignored\n")
+		 "# Empty Lines and lines starting with a # will be ignored\n"\
+		 "# Any line that gets ignored once will be deleted; excluding this paragraph.\n"\
+		 "# Any part of the subject starting with a # will be incremented on every event.\n")
 	
 	appoints = {prio:current[prio]+upcoming[prio]+far_away[prio] for prio in keys}
 	for k in keys:
