@@ -16,9 +16,15 @@ def _concat( a ):
 		result += ' ' + a[i]
 	return result
 
+#Auto-increment counters
 def _rewrite_str( s ):
 	ln = s.split()
-	ln = [ a if a[ 0 ] != '#' else '#' + str( 1 + int(a[1:]) ) for a in ln]
+	ln = [a if a[ 0 ] != '#' else '#' + str( 1 + int(a[1:]) ) for a in ln]
+	return _concat(ln)
+#Remove Locations
+def _simplify( s ):
+	ln = s.split()
+	ln = [a for a in ln if a[0] != '@']
 	return _concat(ln)
 
 def appoint(pl, count=1, time_before={"0":0, "1":30}, file_path=os.path.expanduser('~') + '/.appointlist'):
@@ -88,12 +94,12 @@ def appoint(pl, count=1, time_before={"0":0, "1":30}, file_path=os.path.expandus
 	result = []
 	for k in keys:
 		result += [{
-		    'contents': a[3],
+		    'contents': _simplify(a[3]),
 		    'highlight_groups': ['appoint_urgent']
 		} for a in upcoming[k]]
 	for k in keys:
 		result += [{
-		    'contents': a[3],
+		    'contents': _simplify(a[3]),
 		    'highlight_groups': ['appoint']
 		} for a in current[k]]
 
