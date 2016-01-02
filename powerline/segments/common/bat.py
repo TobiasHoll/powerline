@@ -11,6 +11,7 @@ from powerline.lib.shell import run_cmd
 # segment is imported into powerline.segments.common module.
 
 show_original=False
+capacity_full_design=-1
 
 def _get_battery(pl):
     if os.path.isdir('/sys/class/power_supply'):
@@ -28,14 +29,17 @@ def _get_battery(pl):
                     current = 0
                     full = 1
                     global show_original
+                    global capacity_full_design
                     with open(cap_path, 'r') as f:
                         current = int(float(f.readline().split()[0]))
                         if not show_original:
                             with open(cap_path1, 'r') as f:
                                 full = int(float(f.readline().split()[0]))
-                        else:
+                        elif capacity_full_design == -1:
                             with open(cap_path2, 'r') as f:
                                 full = int(float(f.readline().split()[0]))
+                        else:
+                            full = capacity_full_design
                         return (current * 100/full)
 
                 return _get_capacity
@@ -146,7 +150,7 @@ def _get_rem_time(pl):
         _get_rem_time = _failing_get_rem_time
     return _get_rem_time(pl)
 
-def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O', empty_heart='O', original_health=False):
+def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O', empty_heart='O', original_health=False, full_design=-1):
     '''Return battery charge status.
 
         :param str format:
@@ -175,7 +179,10 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
         '''
     try:
         global show_original
+        global capacity_full_design
         show_original = original_health
+        capacity_full_design = full_design
+
         capacity = _get_capacity(pl)
     except NotImplementedError:
         pl.info('Unable to get battery capacity.')
@@ -198,8 +205,10 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
             rem_time = _get_rem_time(pl)
         except NotImplementedError:
             pl.info('Unable to get remaining time.')
-            if 'rem_time' in format:
-                return None
+            return None
+        except OSError:
+            pl.info('Your BIOS is screwed.')
+            return None
         if rem_time == 0:
             return None
 
