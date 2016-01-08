@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	powerline.update_renderer()
 	bars = []
 	active_screens = [match.groupdict() for match in re.finditer(
-		'^(?P<name>[0-9A-Z-]+) connected (?P<width>\d+)x(?P<height>\d+)\+(?P<x>\d+)\+(?P<y>\d+)',
+		'^(?P<name>[0-9A-Za-z-]+) connected (?P<width>\d+)x(?P<height>\d+)\+(?P<x>\d+)\+(?P<y>\d+)',
 		run_cmd(powerline.pl, ['xrandr', '-q']),
 		re.MULTILINE
 	)]
