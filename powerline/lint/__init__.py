@@ -66,7 +66,7 @@ main_spec = (Spec(
 		default_top_theme=top_theme_spec().optional(),
 		term_truecolor=Spec().type(bool).optional(),
 		term_escape_style=Spec().type(unicode).oneof(set(('auto', 'xterm', 'fbterm'))).optional(),
-		# Python is capable of loading from zip archives. Thus checking path 
+		# Python is capable of loading from zip archives. Thus checking path
 		# only for existence of the path, not for it being a directory
 		paths=Spec().list(
 			(lambda value, *args: (True, True, not os.path.exists(os.path.expanduser(value.value)))),
@@ -128,7 +128,7 @@ main_spec = (Spec(
 		).optional(),
 		wm=ext_spec().update(
 			local_themes=Spec().unknown_spec(
-				Spec().re('^[A-Z0-9-]+$'),
+				Spec().re('^[0-9A-Za-z-]+$'),
 				ext_theme_spec()
 			).optional()
 		).optional(),
@@ -395,17 +395,17 @@ def check(paths=None, debug=False, echoerr=echoerr, require_ext=None):
 	:param list paths:
 		Paths from which configuration should be loaded.
 	:param bool debug:
-		Determines whether some information useful for debugging linter should 
+		Determines whether some information useful for debugging linter should
 		be output.
 	:param function echoerr:
-		Function that will be used to echo the error(s). Should accept four 
-		optional keyword parameters: ``problem`` and ``problem_mark``, and 
+		Function that will be used to echo the error(s). Should accept four
+		optional keyword parameters: ``problem`` and ``problem_mark``, and
 		``context`` and ``context_mark``.
 	:param str require_ext:
 		Require configuration for some extension to be present.
 
 	:return:
-		``False`` if user configuration seems to be completely sane and ``True`` 
+		``False`` if user configuration seems to be completely sane and ``True``
 		if some problems were found.
 	'''
 	hadproblem = False

@@ -38,8 +38,8 @@ class LemonbarRenderer(Renderer):
 
 	def render(self, *args, **kwargs):
 		return '%{{l}}{0}%{{r}}{1}'.format(
-			super(LemonbarRenderer, self).render(side='left', segment_info={'output': kwargs.get('segment_info')}, *args, **kwargs),
-			super(LemonbarRenderer, self).render(side='right', segment_info={'output': kwargs.get('segment_info')}, *args, **kwargs),
+			super(LemonbarRenderer, self).render(side='left', segment_info={'output': kwargs.get('matcher_info')}, *args, **kwargs),
+			super(LemonbarRenderer, self).render(side='right', segment_info={'output': kwargs.get('matcher_info')}, *args, **kwargs),
 		)
 
 	def get_theme(self, matcher_info):

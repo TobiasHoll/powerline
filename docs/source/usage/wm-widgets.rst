@@ -80,6 +80,12 @@ All ``powerline-lemonbar.py`` arguments:
    :prog: powerline-lemonbar.py
    :minimal: true
 
+All ``powerline-lemonbar.py`` arguments:
+
+.. automan:: powerline.commands.lemonbar
+   :prog: powerline-lemonbar.py
+   :minimal: true
+
 I3 bar
 ======
 
