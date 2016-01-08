@@ -37,6 +37,19 @@ Generic requirements
     Until mercurial and bazaar support Python-3 or PyPy powerline will not 
     support repository information when running in these interpreters.
 
+.. _repository-root:
+
+.. note::
+   When using ``pip`` ``{repository_root}`` directory referenced in 
+   documentation may be found using ``pip show powerline-status``. In the output 
+   of ``pip show`` there is a line like ``Location: {path}``, that ``{path}`` is 
+   ``{repository_root}``. Unless it is ``--editable`` installation this is only 
+   applicable for ``{repository_root}/powerline/…`` paths: something like 
+   ``{repository_root}/scripts/powerline-render`` is not present.
+
+   When using other packages referenced paths may not exist, in this case refer 
+   to package documentation.
+
 Pip installation
 ================
 
@@ -100,8 +113,7 @@ install a patched font.
 Patched fonts
 -------------
 
-This method is the fallback method and works for every terminal, with the 
-exception of :ref:`rxvt-unicode <tips-and-tricks-urxvt>`.
+This method is the fallback method and works for every terminal.
 
 Download the font from `powerline-fonts`_. If preferred font can’t be found in 
 the `powerline-fonts`_ repo, then patching the preferred font is needed instead.

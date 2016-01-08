@@ -381,7 +381,10 @@ def check_segment_function(function_name, data, context, echoerr):
 		hl_groups = []
 		divider_hl_group = None
 
+		hadproblem = False
+
 		if func.__doc__:
+			NO_H_G_USED_STR = 'No highlight groups are used (literal segment).'
 			H_G_USED_STR = 'Highlight groups used: '
 			LHGUS = len(H_G_USED_STR)
 			D_H_G_USED_STR = 'Divider highlight group used: '
@@ -391,6 +394,20 @@ def check_segment_function(function_name, data, context, echoerr):
 			for i, line in enumerate(func.__doc__.split('\n')):
 				if H_G_USED_STR in line:
 					idx = line.index(H_G_USED_STR) + LHGUS
+					if hl_groups is None:
+						idx -= LHGUS
+						mark = Mark(mark_name, i + 1, idx + 1, func.__doc__, pointer + idx)
+						echoerr(
+							context='Error while checking theme (key {key})'.format(key=context.key),
+							context_mark=function_name.mark,
+							problem=(
+								'found highlight group definition in addition to sentense stating that '
+								'no highlight groups are used'
+							),
+							problem_mark=mark,
+						)
+						hadproblem = True
+						continue
 					hl_groups.append((
 						line[idx:],
 						(mark_name, i + 1, idx + 1, func.__doc__),
@@ -400,9 +417,23 @@ def check_segment_function(function_name, data, context, echoerr):
 					idx = line.index(D_H_G_USED_STR) + LDHGUS + 2
 					mark = Mark(mark_name, i + 1, idx + 1, func.__doc__, pointer + idx)
 					divider_hl_group = MarkedUnicode(line[idx:-3], mark)
+				elif NO_H_G_USED_STR in line:
+					idx = line.index(NO_H_G_USED_STR)
+					if hl_groups:
+						mark = Mark(mark_name, i + 1, idx + 1, func.__doc__, pointer + idx)
+						echoerr(
+							context='Error while checking theme (key {key})'.format(key=context.key),
+							context_mark=function_name.mark,
+							problem=(
+								'found sentense stating that no highlight groups are used '
+								'in addition to highlight group definition'
+							),
+							problem_mark=mark,
+						)
+						hadproblem = True
+						continue
+					hl_groups = None
 				pointer += len(line) + len('\n')
-
-		hadproblem = False
 
 		if divider_hl_group:
 			r = hl_exists(divider_hl_group, data, context, echoerr, allow_gradients=True)
@@ -466,7 +497,7 @@ def check_segment_function(function_name, data, context, echoerr):
 								h[0], list_sep.join(r))
 						)
 					hadproblem = True
-		else:
+		elif hl_groups is not None:
 			r = hl_exists(function_name, data, context, echoerr, allow_gradients=True)
 			if r:
 				echoerr(
@@ -768,4 +799,68 @@ def check_exinclude_function(name, data, context, echoerr):
 	func = import_function('selector', name, data, context, echoerr, module=module)
 	if not func:
 		return True, False, True
+	return True, False, False
+
+
+def check_log_file_level(this_level, data, context, echoerr):
+	'''Check handler level specified in :ref:`log_file key <config-common-log>`
+
+	This level must be greater or equal to the level in :ref:`log_level key 
+	<config-common-log_level>`.
+	'''
+	havemarks(this_level)
+	hadproblem = False
+	top_level = context[0][1].get('common', {}).get('log_level', 'WARNING')
+	top_level_str = top_level
+	top_level_mark = getattr(top_level, 'mark', None)
+	if (
+		not isinstance(top_level, unicode) or not hasattr(logging, top_level)
+		or not isinstance(this_level, unicode) or not hasattr(logging, this_level)
+	):
+		return True, False, hadproblem
+	top_level = getattr(logging, top_level)
+	this_level_str = this_level
+	this_level_mark = this_level.mark
+	this_level = getattr(logging, this_level)
+	if this_level < top_level:
+		echoerr(
+			context='Error while checking log level index (key {key})'.format(
+				key=context.key),
+			context_mark=this_level_mark,
+			problem='found level that is less critical then top level ({0} < {0})'.format(
+				this_level_str, top_level_str),
+			problem_mark=top_level_mark,
+		)
+		hadproblem = True
+	return True, False, hadproblem
+
+
+def check_logging_handler(handler_name, data, context, echoerr):
+	havemarks(handler_name)
+	import_paths = [os.path.expanduser(path) for path in context[0][1].get('common', {}).get('paths', [])]
+
+	handler_module, separator, handler_class = handler_name.rpartition('.')
+	if not separator:
+		handler_module = 'logging.handlers'
+		handler_class = handler_name
+	with WithPath(import_paths):
+		try:
+			handler = getattr(__import__(str(handler_module), fromlist=[str(handler_class)]), str(handler_class))
+		except ImportError:
+			echoerr(context='Error while loading logger class (key {key})'.format(key=context.key),
+			        problem='failed to load module {0}'.format(handler_module),
+			        problem_mark=handler_name.mark)
+			return True, False, True
+		except AttributeError:
+			echoerr(context='Error while loading logger class (key {key})'.format(key=context.key),
+			        problem='failed to load handler class {0}'.format(handler_class),
+			        problem_mark=handler_name.mark)
+			return True, False, True
+
+	if not issubclass(handler, logging.Handler):
+		echoerr(context='Error while loading logger class (key {key})'.format(key=context.key),
+		        problem='loaded class {0} is not a logging.Handler subclass'.format(handler_class),
+		        problem_mark=handler_name.mark)
+		return True, False, True
+
 	return True, False, False

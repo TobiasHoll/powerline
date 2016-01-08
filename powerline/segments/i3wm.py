@@ -1,17 +1,10 @@
 # vim:fileencoding=utf-8:noet
 from __future__ import (unicode_literals, division, absolute_import, print_function)
 
-from threading import Thread
-
 from powerline.theme import requires_segment_info
-from powerline.segments import Segment, with_docstring
 
 
 conn = None
-try:
-    import i3ipc
-except ImportError:
-    import i3 as conn
 
 
 def calcgrp(w):
@@ -25,50 +18,49 @@ def calcgrp(w):
 	group.append('workspace')
 	return group
 
-def workspaces(pl, include_only=None, separate_outputs=False):
+@requires_segment_info
+def workspaces(pl, segment_info, only_show=None, output=None, strip=0):
 	'''Return list of used workspaces
 
-	:param include_only:
-		Specifies the workspace types that should be returned.
-		Use ``None`` to include all types.
+	:param list only_show:
+		Specifies which workspaces to show. Valid entries are ``"visible"``,
+		``"urgent"`` and ``"focused"``. If omitted or ``null`` all workspaces
+		are shown.
 
-	:param separate_outputs:
-		Specifies whether the workspaces shall be grouped after the
-		outputs they are visible on if there are at least 2 active outputs
+	:param str output:
+		May be set to the name of an X output. If specified, only workspaces
+		on that output are shown. Overrides automatic output detection by
+		the lemonbar renderer and bindings.
 
-	Highlight groups used: ``workspace``, ``w_visible``, ``w_focused``, ``w_urgent``, ``output``
+	:param int strip:
+		Specifies how many characters from the front of each workspace name
+		should be stripped (e.g. to remove workspace numbers). Defaults to zero.
+
+	Highlight groups used: ``workspace`` or ``w_visible``, ``workspace`` or ``w_focused``, ``workspace`` or ``w_urgent``.
 	'''
-	
+
 	global conn
-	if not conn: conn = i3ipc.Connection()
-	r1 = [o['name'] for o in conn.get_outputs() if o['active']]
-	
-	if not separate_outputs or len(r1) <= 1:
-	    return [{
-		'contents': w['name'],
+	if not conn:
+		try:
+			import i3ipc
+		except ImportError:
+			import i3 as conn
+		else:
+			conn = i3ipc.Connection()
+
+	output = output or segment_info.get('output')
+
+	return [{
+		'contents': w['name'][min(len(w['name']), strip):],
 		'highlight_groups': calcgrp(w)
-	    } for w in conn.get_workspaces() if not include_only 
-		or 'focused' in include_only and w['focused'] 
-		or 'visible' in include_only and w['visible'] 
-		or 'urgent' in include_only and w['urgent'] 
-		or 'normal' in include_only and not (w['focused'] or w['visible'] or w['urgent']) ]
-	else:
-	    r2 = []
-	    for n in r1:
-		    r2 += [{
-			'contents': n,
-			'highlight_groups': ['output']
-		    }] + [{
-			'contents': w['name'],
-			'highlight_groups': calcgrp(w)
-		    } for w in conn.get_workspaces() if w['output'] == n and 
-			(not include_only or 'focused' in include_only and w['focused'] 
-			or 'visible' in include_only and w['visible']
-			or 'urgent' in include_only and w['urgent']
-			or 'normal' in include_only and not (w['focused'] or w['visible'] or w['urgent']))]
-	    return r2
+	} for w in conn.get_workspaces()
+		if (not only_show or any(w[typ] for typ in only_show))
+		and (not output or w['output'] == output)
+	]
+
+
 @requires_segment_info
-def mode(pl, segment_info, names={"default":None}):
+def mode(pl, segment_info, names={'default': None}):
 	'''Returns current i3 mode
 
 	:param str default:

@@ -153,9 +153,33 @@ All keys in segments returned by the function override those obtained from
 
 Detailed description of used dictionary keys:
 
+.. _dev-segments-contents:
+
 ``contents``
     Text displayed by segment. Should be a ``unicode`` (Python2) or ``str`` 
     (Python3) instance.
+
+``literal_contents``
+    Text that needs to be output literally (i.e. without passing through 
+    :py:meth:`powerline.renderer.strwidth` to determine length, through
+    :py:meth:`powerline.renderer.escape` to escape special characters and 
+    through :py:meth:`powerline.renderer.hl` to highlight it). Should be a tuple
+    ``(contents_length, contents)`` where ``contents_length`` is an integer and 
+    ``contents`` is a ``unicode`` (Python2) or ``str`` (Python3) instance.
+
+    If this key is present and its second value is true then other contents keys 
+    (:ref:`contents <dev-segments-contents>`, :ref:`after
+    <config-themes-seg-after>`, :ref:`before <config-themes-seg-before>`) will 
+    be ignored.
+
+    .. note::
+       If target is inclusion of the segment in powerline upstream all segment 
+       functions that output *only* subsegments with ``literal_contents`` key
+       must contain the following string in documentation::
+
+           No highlight groups are used (literal segment).
+
+       String must be present on the separate line.
 
 .. _dev-segments-draw_inner_divider:
 
@@ -443,7 +467,8 @@ Shell
 
         ``client_id``
             Identifier unique to one shell instance. Is used to record instance 
-            state by powerline daemon.
+            state by powerline daemon. In tmux this is the same as :ref:`pane_id 
+            <dev-seginfo-shell-renarg-pane_id>`.
 
             It is not guaranteed that existing client ID will not be retaken 
             when old shell with this ID quit: usually process PID is used as 
@@ -456,6 +481,14 @@ Shell
         ``local_theme``
             Local theme that will be used by shell. One should not rely on the 
             existence of this key.
+
+        .. _dev-seginfo-shell-renarg-pane_id:
+
+        ``pane_id``
+            Identifier unique to each tmux pane. Is always an integer, optional. 
+            Obtained by using ``tmux display -p '#D'``, then all leading spaces 
+            and per cent signs are stripped and the result is converted into an 
+            integer.
 
         Other keys, if any, are specific to segments.
 
