@@ -738,6 +738,29 @@ class TestVcs(TestCommon):
 					'divider_highlight_group': None
 				}])
 
+	def test_stash(self):
+		pl = Pl()
+		create_watcher = get_fallback_create_watcher()
+		stash = partial(self.module.stash, pl=pl, create_watcher=create_watcher, segment_info={'getcwd': os.getcwd})
+
+		def forge_stash(n):
+		    return replace_attr(self.module, 'guess', get_dummy_guess(stash=lambda: n, directory='/tmp/tests'))
+
+		with forge_stash(0):
+			self.assertEqual(stash(), None)
+		with forge_stash(1):
+			self.assertEqual(stash(), [{
+				'highlight_groups': ['stash'],
+				'contents': '1',
+				'divider_highlight_group': None
+			}])
+		with forge_stash(2):
+			self.assertEqual(stash(), [{
+				'highlight_groups': ['stash'],
+				'contents': '2',
+				'divider_highlight_group': None
+			}])
+
 
 class TestTime(TestCommon):
 	module_name = 'time'
@@ -811,6 +834,12 @@ class TestSys(TestCommon):
 					{'contents': '4 ', 'highlight_groups': ['system_load_gradient', 'system_load'], 'divider_highlight_group': 'background:divider', 'gradient_level': 100},
 					{'contents': '2', 'highlight_groups': ['system_load_gradient', 'system_load'], 'divider_highlight_group': 'background:divider', 'gradient_level': 75.0}
 				])
+				self.assertEqual(self.module.system_load(pl=pl, short=True), [
+					{'contents': '7.5', 'highlight_groups': ['system_load_gradient', 'system_load'], 'divider_highlight_group': 'background:divider', 'gradient_level': 100},
+				])
+				self.assertEqual(self.module.system_load(pl=pl, format='{avg:.0f}', threshold_good=0, threshold_bad=1, short=True), [
+					{'contents': '8', 'highlight_groups': ['system_load_gradient', 'system_load'], 'divider_highlight_group': 'background:divider', 'gradient_level': 100},
+				])
 
 	def test_cpu_load_percent(self):
 		try:
@@ -838,59 +867,63 @@ class TestWthr(TestCommon):
 		pl = Pl()
 		with replace_attr(self.module, 'urllib_read', urllib_read):
 			self.assertEqual(self.module.weather(pl=pl), [
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_partly_cloudy_day', 'weather_condition_cloudy', 'weather_conditions', 'weather'], 'contents': 'CLOUDS '},
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '-9°C', 'gradient_level': 30.0}
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_blustery', 'weather_condition_windy', 'weather_conditions', 'weather'], 'contents': 'WINDY '},
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '14°C', 'gradient_level': 62.857142857142854}
 			])
 			self.assertEqual(self.module.weather(pl=pl, temp_coldest=0, temp_hottest=100), [
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_partly_cloudy_day', 'weather_condition_cloudy', 'weather_conditions', 'weather'], 'contents': 'CLOUDS '},
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '-9°C', 'gradient_level': 0}
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_blustery', 'weather_condition_windy', 'weather_conditions', 'weather'], 'contents': 'WINDY '},
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '14°C', 'gradient_level': 14.0}
 			])
 			self.assertEqual(self.module.weather(pl=pl, temp_coldest=-100, temp_hottest=-50), [
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_partly_cloudy_day', 'weather_condition_cloudy', 'weather_conditions', 'weather'], 'contents': 'CLOUDS '},
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '-9°C', 'gradient_level': 100}
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_blustery', 'weather_condition_windy', 'weather_conditions', 'weather'], 'contents': 'WINDY '},
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '14°C', 'gradient_level': 100}
 			])
-			self.assertEqual(self.module.weather(pl=pl, icons={'cloudy': 'o'}), [
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_partly_cloudy_day', 'weather_condition_cloudy', 'weather_conditions', 'weather'], 'contents': 'o '},
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '-9°C', 'gradient_level': 30.0}
+			self.assertEqual(self.module.weather(pl=pl, icons={'blustery': 'o'}), [
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_blustery', 'weather_condition_windy', 'weather_conditions', 'weather'], 'contents': 'o '},
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '14°C', 'gradient_level': 62.857142857142854}
 			])
-			self.assertEqual(self.module.weather(pl=pl, icons={'partly_cloudy_day': 'x'}), [
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_partly_cloudy_day', 'weather_condition_cloudy', 'weather_conditions', 'weather'], 'contents': 'x '},
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '-9°C', 'gradient_level': 30.0}
+			self.assertEqual(self.module.weather(pl=pl, icons={'windy': 'x'}), [
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_blustery', 'weather_condition_windy', 'weather_conditions', 'weather'], 'contents': 'x '},
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '14°C', 'gradient_level': 62.857142857142854}
 			])
 			self.assertEqual(self.module.weather(pl=pl, unit='F'), [
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_partly_cloudy_day', 'weather_condition_cloudy', 'weather_conditions', 'weather'], 'contents': 'CLOUDS '},
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '16°F', 'gradient_level': 30.0}
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_blustery', 'weather_condition_windy', 'weather_conditions', 'weather'], 'contents': 'WINDY '},
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '57°F', 'gradient_level': 62.857142857142854}
 			])
 			self.assertEqual(self.module.weather(pl=pl, unit='K'), [
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_partly_cloudy_day', 'weather_condition_cloudy', 'weather_conditions', 'weather'], 'contents': 'CLOUDS '},
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '264K', 'gradient_level': 30.0}
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_blustery', 'weather_condition_windy', 'weather_conditions', 'weather'], 'contents': 'WINDY '},
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '287K', 'gradient_level': 62.857142857142854}
 			])
 			self.assertEqual(self.module.weather(pl=pl, temp_format='{temp:.1e}C'), [
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_partly_cloudy_day', 'weather_condition_cloudy', 'weather_conditions', 'weather'], 'contents': 'CLOUDS '},
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '-9.0e+00C', 'gradient_level': 30.0}
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_blustery', 'weather_condition_windy', 'weather_conditions', 'weather'], 'contents': 'WINDY '},
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '1.4e+01C', 'gradient_level': 62.857142857142854}
 			])
 		with replace_attr(self.module, 'urllib_read', urllib_read):
 			self.module.weather.startup(pl=pl, location_query='Meppen,06,DE')
 			self.assertEqual(self.module.weather(pl=pl), [
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_partly_cloudy_day', 'weather_condition_cloudy', 'weather_conditions', 'weather'], 'contents': 'CLOUDS '},
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '-9°C', 'gradient_level': 30.0}
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_blustery', 'weather_condition_windy', 'weather_conditions', 'weather'], 'contents': 'WINDY '},
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '14°C', 'gradient_level': 62.857142857142854}
 			])
 			self.assertEqual(self.module.weather(pl=pl, location_query='Moscow,RU'), [
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_partly_cloudy_day', 'weather_condition_cloudy', 'weather_conditions', 'weather'], 'contents': 'CLOUDS '},
-				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '19°C', 'gradient_level': 70.0}
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_condition_fair_night', 'weather_condition_night', 'weather_conditions', 'weather'], 'contents': 'NIGHT '},
+				{'divider_highlight_group': 'background:divider', 'highlight_groups': ['weather_temp_gradient', 'weather_temp', 'weather'], 'contents': '9°C', 'gradient_level': 55.714285714285715}
 			])
 			self.module.weather.shutdown()
 
 
 class TestI3WM(TestCase):
-	def test_workspaces(self):
-		pl = Pl()
-		with replace_attr(i3wm, 'conn', Args(get_workspaces=lambda: iter([
+	@staticmethod
+	def get_workspaces():
+		return iter([
 			{'name': '1: w1', 'output': 'LVDS1', 'focused': False, 'urgent': False, 'visible': False},
 			{'name': '2: w2', 'output': 'LVDS1', 'focused': False, 'urgent': False, 'visible': True},
 			{'name': '3: w3', 'output': 'HDMI1', 'focused': False, 'urgent': True, 'visible': True},
 			{'name': '4: w4', 'output': 'DVI01', 'focused': True, 'urgent': True, 'visible': True},
-		]))):
+		])
+
+	def test_workspaces(self):
+		pl = Pl()
+		with replace_attr(i3wm, 'get_i3_connection', lambda: Args(get_workspaces=self.get_workspaces)):
 			segment_info = {}
 
 			self.assertEqual(i3wm.workspaces(pl=pl, segment_info=segment_info), [
@@ -936,12 +969,74 @@ class TestI3WM(TestCase):
 				{'contents': 'w2', 'highlight_groups': ['w_visible', 'workspace']},
 			])
 
+	def test_workspace(self):
+		pl = Pl()
+		with replace_attr(i3wm, 'get_i3_connection', lambda: Args(get_workspaces=self.get_workspaces)):
+			segment_info = {}
+
+			self.assertEqual(i3wm.workspace(pl=pl, segment_info=segment_info, workspace='1: w1'), [
+				{'contents': '1: w1', 'highlight_groups': ['workspace']},
+			])
+			self.assertEqual(i3wm.workspace(pl=pl, segment_info=segment_info, workspace='3: w3', strip=True), [
+				{'contents': 'w3', 'highlight_groups': ['w_urgent', 'w_visible', 'workspace']},
+			])
+			self.assertEqual(i3wm.workspace(pl=pl, segment_info=segment_info, workspace='9: w9'), None)
+			self.assertEqual(i3wm.workspace(pl=pl, segment_info=segment_info), [
+				{'contents': '4: w4', 'highlight_groups': ['w_focused', 'w_urgent', 'w_visible', 'workspace']},
+			])
+			segment_info['workspace'] = next(self.get_workspaces())
+			self.assertEqual(i3wm.workspace(pl=pl, segment_info=segment_info, workspace='4: w4'), [
+				{'contents': '4: w4', 'highlight_groups': ['w_focused', 'w_urgent', 'w_visible', 'workspace']},
+			])
+			self.assertEqual(i3wm.workspace(pl=pl, segment_info=segment_info, strip=True), [
+				{'contents': 'w1', 'highlight_groups': ['workspace']},
+			])
+
 	def test_mode(self):
 		pl = Pl()
 		self.assertEqual(i3wm.mode(pl=pl, segment_info={'mode': 'default'}), None)
 		self.assertEqual(i3wm.mode(pl=pl, segment_info={'mode': 'test'}), 'test')
 		self.assertEqual(i3wm.mode(pl=pl, segment_info={'mode': 'default'}, names={'default': 'test'}), 'test')
 		self.assertEqual(i3wm.mode(pl=pl, segment_info={'mode': 'test'}, names={'default': 'test', 'test': 't'}), 't')
+
+	def test_scratchpad(self):
+		class Conn(object):
+			def get_tree(self):
+				return self
+
+			def descendents(self):
+				nodes_unfocused = [Args(focused = False)]
+				nodes_focused = [Args(focused = True)]
+
+				workspace_scratch = lambda: Args(name='__i3_scratch')
+				workspace_noscratch = lambda: Args(name='2: www')
+				return [
+					Args(scratchpad_state='fresh', urgent=False, workspace=workspace_scratch, nodes=nodes_unfocused),
+					Args(scratchpad_state='changed', urgent=True, workspace=workspace_noscratch, nodes=nodes_focused),
+					Args(scratchpad_state='fresh', urgent=False, workspace=workspace_scratch, nodes=nodes_unfocused),
+					Args(scratchpad_state=None, urgent=False, workspace=workspace_noscratch, nodes=nodes_unfocused),
+					Args(scratchpad_state='fresh', urgent=False, workspace=workspace_scratch, nodes=nodes_focused),
+					Args(scratchpad_state=None, urgent=True, workspace=workspace_noscratch, nodes=nodes_unfocused),
+				]
+
+		pl = Pl()
+		with replace_attr(i3wm, 'get_i3_connection', lambda: Conn()):
+			self.assertEqual(i3wm.scratchpad(pl=pl), [
+				{'contents': 'O', 'highlight_groups': ['scratchpad']},
+				{'contents': 'X', 'highlight_groups': ['scratchpad:urgent', 'scratchpad:focused', 'scratchpad:visible', 'scratchpad']},
+				{'contents': 'O', 'highlight_groups': ['scratchpad']},
+				{'contents': 'X', 'highlight_groups': ['scratchpad:visible', 'scratchpad']},
+				{'contents': 'O', 'highlight_groups': ['scratchpad:focused', 'scratchpad']},
+				{'contents': 'X', 'highlight_groups': ['scratchpad:urgent', 'scratchpad:visible', 'scratchpad']},
+			])
+			self.assertEqual(i3wm.scratchpad(pl=pl, icons={'changed': '-', 'fresh': 'o'}), [
+				{'contents': 'o', 'highlight_groups': ['scratchpad']},
+				{'contents': '-', 'highlight_groups': ['scratchpad:urgent', 'scratchpad:focused', 'scratchpad:visible', 'scratchpad']},
+				{'contents': 'o', 'highlight_groups': ['scratchpad']},
+				{'contents': '-', 'highlight_groups': ['scratchpad:visible', 'scratchpad']},
+				{'contents': 'o', 'highlight_groups': ['scratchpad:focused', 'scratchpad']},
+				{'contents': '-', 'highlight_groups': ['scratchpad:urgent', 'scratchpad:visible', 'scratchpad']},
+			])
 
 
 class TestMail(TestCommon):
@@ -1317,6 +1412,30 @@ class TestVim(TestCase):
 					self.assertEqual(branch(segment_info=segment_info, status_colors=True, ignore_statuses=['U']), [
 						{'divider_highlight_group': 'branch:divider', 'highlight_groups': ['branch_clean', 'branch'], 'contents': 'foo'}
 					])
+
+	def test_stash(self):
+		pl = Pl()
+		create_watcher = get_fallback_create_watcher()
+		with vim_module._with('buffer', '/foo') as segment_info:
+			stash = partial(self.vim.stash, pl=pl, create_watcher=create_watcher, segment_info=segment_info)
+
+			def forge_stash(n):
+				return replace_attr(self.vcs, 'guess', get_dummy_guess(stash=lambda: n))
+
+			with forge_stash(0):
+				self.assertEqual(stash(), None)
+			with forge_stash(1):
+				self.assertEqual(stash(), [{
+					'divider_highlight_group': 'stash:divider',
+					'highlight_groups': ['stash'],
+					'contents': '1'
+				}])
+			with forge_stash(2):
+				self.assertEqual(stash(), [{
+					'divider_highlight_group': 'stash:divider',
+					'highlight_groups': ['stash'],
+					'contents': '2'
+				}])
 
 	def test_file_vcs_status(self):
 		pl = Pl()
