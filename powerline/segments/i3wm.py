@@ -5,7 +5,7 @@ import re
 from powerline.theme import requires_segment_info
 from powerline.bindings.wm import get_i3_connection
 
-
+conn = None
 WORKSPACE_REGEX = re.compile(r'^[0-9]+: ?')
 
 def calcgrp(w):
