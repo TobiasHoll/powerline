@@ -5,10 +5,11 @@ import re
 from powerline.theme import requires_segment_info
 from powerline.bindings.wm import get_i3_connection
 
-conn = None
+
 WORKSPACE_REGEX = re.compile(r'^[0-9]+: ?')
 
-def calcgrp(w):
+
+def workspace_groups(w):
     group = []
     if w['focused']:
         group.append('w_focused')
@@ -24,37 +25,23 @@ def format_name(name, strip=False):
         return WORKSPACE_REGEX.sub('', name, count=1)
     return name
 
-
 @requires_segment_info
 def workspaces(pl, segment_info, only_show=None, output=None, strip=0):
     '''Return list of used workspaces
-
         :param list only_show:
                 Specifies which workspaces to show. Valid entries are ``"visible"``,
                 ``"urgent"`` and ``"focused"``. If omitted or ``null`` all workspaces
                 are shown.
-
         :param str output:
                 May be set to the name of an X output. If specified, only workspaces
                 on that output are shown. Overrides automatic output detection by
                 the lemonbar renderer and bindings.
                 Use "__all__" to show workspaces on all outputs.
-
         :param int strip:
                 Specifies how many characters from the front of each workspace name
                 should be stripped (e.g. to remove workspace numbers). Defaults to zero.
-
         Highlight groups used: ``workspace`` or ``w_visible``, ``workspace`` or ``w_focused``, ``workspace`` or ``w_urgent``.
         '''
-
-    global conn
-    if not conn:
-        try:
-            import i3ipc
-        except ImportError:
-            import i3 as conn
-        else:
-            conn = i3ipc.Connection()
 
     if not output == "__all__":
         output = output or segment_info.get('output')
@@ -63,12 +50,13 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0):
     if output:
         output = [output]
     else:
-        output = [o['name'] for o in conn.get_outputs() if o['active']]
+        output = [o['name'] for o in get_i3_connection().get_outputs() if o['active']]
+
     if len(output) <= 1:
         return [{
             'contents': w['name'][min(len(w['name']), strip):],
-            'highlight_groups': calcgrp(w)
-            } for w in conn.get_workspaces()
+            'highlight_groups': workspace_groups(w)
+            } for w in get_i3_connection().get_workspaces()
             if (not only_show or any(w[typ] for typ in only_show))
             and w['output'] == output[0]
             ]
@@ -77,60 +65,18 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0):
         for n in output:
             res += [{ 'contents': n, 'highlight_groups': ['output']}]
             res += [{'contents': w['name'][min(len(w['name']), strip):],
-                'highlight_groups': calcgrp(w)} for w in conn.get_workspaces()
+                'highlight_groups': workspace_groups(w)} for w in get_i3_connection().get_workspaces()
                 if (not only_show or any(w[typ] for typ in only_show))
                 and w['output'] == n
                 ]
-            return res
-
-@requires_segment_info
-def workspace(pl, segment_info, workspace=None, strip=False):
-    '''Return the specified workspace name
-
-        :param str workspace:
-                Specifies which workspace to show. If unspecified, may be set by the
-                ``list_workspaces`` lister if used, otherwise falls back to
-                currently focused workspace.
-
-        :param bool strip:
-                Specifies whether workspace numbers (in the ``1: name`` format) should
-                be stripped from workspace names before being displayed. Defaults to false.
-
-        Highlight groups used: ``workspace`` or ``w_visible``, ``workspace`` or ``w_focused``, ``workspace`` or ``w_urgent``.
-        '''
-    if workspace:
-        try:
-            w = next((
-                w for w in get_i3_connection().get_workspaces()
-                if w['name'] == workspace
-                ))
-        except StopIteration:
-            return None
-    elif segment_info.get('workspace'):
-        w = segment_info['workspace']
-    else:
-        try:
-            w = next((
-                w for w in get_i3_connection().get_workspaces()
-                if w['focused']
-                ))
-        except StopIteration:
-            return None
-
-        return [{
-            'contents': format_name(w['name'], strip=strip),
-            'highlight_groups': workspace_groups(w)
-            }]
-
+        return res
 
 @requires_segment_info
 def mode(pl, segment_info, names={'default': None}):
     '''Returns current i3 mode
-
         :param str default:
-                Specifies the name to be displayed instead of "default".
+            Specifies the name to be displayed instead of "default".
                 By default the segment is left out in the default mode.
-
         Highligh groups used: ``mode``
         '''
 
@@ -153,23 +99,20 @@ def scratchpad_groups(w):
 
 
 SCRATCHPAD_ICONS = {
-    'fresh': 'O',
-    'changed': 'X',
-    }
+        'fresh': 'O',
+        'changed': 'X',
+        }
 
 
 def scratchpad(pl, icons=SCRATCHPAD_ICONS):
     '''Returns the windows currently on the scratchpad
-
         :param dict icons:
-                Specifies the strings to show for the different scratchpad window states. Must
+            Specifies the strings to show for the different scratchpad window states. Must
                 contain the keys ``fresh`` and ``changed``.
-
         Highlight groups used: ``scratchpad`` or ``scratchpad:visible``, ``scratchpad`` or ``scratchpad:focused``, ``scratchpad`` or ``scratchpad:urgent``.
         '''
 
-    return [{
-        'contents': icons.get(w.scratchpad_state, icons['changed']),
+    return [{'contents': icons.get(w.scratchpad_state, icons['changed']),
         'highlight_groups': scratchpad_groups(w)
         } for w in get_i3_connection().get_tree().descendents()
         if w.scratchpad_state != 'none']
