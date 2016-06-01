@@ -234,6 +234,7 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
             # Using a hundred as it is most alert color.
             'gradient_level': 100,
             })
+        return ret
     else:
         ret.append({
             'contents': format.format(capacity=(capacity / 100.0), status=status, rem_time_hours=rem_hours, rem_time_minutes=rem_minutes),
