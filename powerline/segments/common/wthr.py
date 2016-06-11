@@ -39,13 +39,13 @@ weather_conditions_codes = (
 	('haze',                    'foggy' ),  # 21
 	('smoky',                   'foggy' ),  # 22
 	('blustery',                'windy' ),  # 23
-	('windy',                           ),  # 24
+	('windy',		    'windy' ),  # 24
 	('cold',                    'day'   ),  # 25
 	('clouds',                  'cloudy'),  # 26
 	('mostly_cloudy_night',     'cloudy'),  # 27
 	('mostly_cloudy_day',       'cloudy'),  # 28
-	('partly_cloudy_night',     'cloudy'),  # 29
-	('partly_cloudy_day',       'cloudy'),  # 30
+	('partly_cloudy_night',     'night' ),  # 29
+	('partly_cloudy_day',       'day'   ),  # 30
 	('clear_night',             'night' ),  # 31
 	('sun',                     'sunny' ),  # 32
 	('fair_night',              'night' ),  # 33

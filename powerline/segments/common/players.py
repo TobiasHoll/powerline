@@ -13,6 +13,9 @@ STATE_SYMBOLS = {
 	'play': '>',
 	'pause': '~',
 	'stop': 'X',
+	'shuffle': '~>?',
+	'repeat': ':|',
+	'loop': ':|1',
 }
 
 
@@ -34,20 +37,31 @@ def _convert_seconds(seconds):
 
 
 class PlayerSegment(Segment):
-	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', state_symbols=STATE_SYMBOLS, **kwargs):
+	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', state_symbols=STATE_SYMBOLS, progress_args={'full':'#', 'empty':'_', 'steps': 5}, **kwargs):
 		stats = {
 			'state': 'fallback',
+			'shuffle': 'fallback',
+			'repeat': 'fallback',
 			'album': None,
 			'artist': None,
 			'title': None,
 			'elapsed': None,
 			'total': None,
+			'progress': None
 		}
 		func_stats = self.get_player_status(**kwargs)
 		if not func_stats:
 			return None
 		stats.update(func_stats)
 		stats['state_symbol'] = state_symbols.get(stats['state'])
+		stats['shuffle_symbol'] = state_symbols.get(stats['shuffle'])
+		stats['repeat_symbol'] = state_symbols.get(stats['repeat'])
+		if stats['total_raw'] and stats['elapsed_raw']:
+			stats['progress'] = progress_args['full'] * int( stats['elapsed_raw'] *
+				int(progress_args['steps']) / stats['total_raw'] ) + \
+				progress_args['empty'] * int( 1 + int(progress_args['steps']) -
+				stats['elapsed_raw'] * int(progress_args['steps']) /
+				stats['total_raw'] )
 		return [{
 			'contents': format.format(**stats),
 			'highlight_groups': ['player_' + (stats['state'] or 'fallback'), 'player'],
@@ -80,7 +94,7 @@ This player segment should be added like this:
 Highlight groups used: ``player_fallback`` or ``player``, ``player_play`` or ``player``, ``player_pause`` or ``player``, ``player_stop`` or ``player``.
 
 :param str format:
-	Format used for displaying data from player. Should be a str.format-like 
+	Format used for displaying data from player. Should be a str.format-like
 	string with the following keyword parameters:
 
 	+------------+-------------------------------------------------------------+
@@ -117,6 +131,54 @@ Highlight groups used: ``player_fallback`` or ``player``, ``player_play`` or ``p
 
 _player = with_docstring(PlayerSegment(), _common_args.format('_player'))
 
+class GPMDPlayerSegment(PlayerSegment):
+	def get_player_status(self, pl):
+		'''Return Google Play Music Desktop player information'''
+		import json
+		from os.path import expanduser
+
+		home = expanduser('~')
+		try:
+			with open(home + '/.config/Google Play Music Desktop Player/' +
+				'json_store/playback.json') as f:
+				data = f.read()
+		except:
+			with open(home + '/GPMDP_STORE/playback.json') as f:
+				data = f.read()
+		data = json.loads(data)
+
+		def parse_playing(st, b):
+			if not b:
+				return 'stop'
+			return 'play' if st else 'pause'
+		def parse_shuffle(st):
+			return 'shuffle' if st == 'ALL_SHUFFLE' else 'fallback'
+		def parse_repeat(st):
+			if st == 'LIST_REPEAT':
+				return 'repeat'
+			elif st == 'SINGLE_REPEAT':
+				return 'loop'
+			else:
+				return 'fallback'
+
+		return {
+			'status': parse_playing(data['playing'],data['song']['album']),
+			'shuffle': parse_shuffle(data['shuffle']),
+			'repeat': parse_repeat(data['repeat']),
+			'album': data['song']['album'],
+			'artist': data['song']['artist'],
+			'title': data['song']['title'],
+			'elapsed': _convert_seconds(data['time']['current'] / 1000),
+			'total': _convert_seconds(data['time']['total'] / 1000),
+			'elapsed_raw': int(data['time']['current']),
+			'total_raw': int(data['time']['total']),
+			}
+
+gpmdp = with_docstring(GPMDPlayerSegment(),
+('''Return Google Play Music Desktop information
+
+{0}
+''').format(_common_args.format('gpmdp')))
 
 class CmusPlayerSegment(PlayerSegment):
 	def get_player_status(self, pl):
@@ -154,6 +216,8 @@ class CmusPlayerSegment(PlayerSegment):
 			'title': now_playing.get('title'),
 			'elapsed': _convert_seconds(now_playing.get('position', 0)),
 			'total': _convert_seconds(now_playing.get('duration', 0)),
+			'elapsed_raw': int(now_playing.get('position', 0)),
+			'total_raw': int(now_playing.get('duration', 0)),
 		}
 
 
@@ -210,6 +274,8 @@ class MpdPlayerSegment(PlayerSegment):
 				'title': now_playing.get('title'),
 				'elapsed': _convert_seconds(status.get('elapsed', 0)),
 				'total': _convert_seconds(now_playing.get('time', 0)),
+				'elapsed_raw': int(status.get('elapsed', 0)),
+				'total_raw': int(now_playing.get('time', 0)),
 			}
 
 
@@ -280,7 +346,7 @@ class DbusPlayerSegment(PlayerSegment):
 dbus_player = with_docstring(DbusPlayerSegment(),
 ('''Return generic dbus player state
 
-Requires ``dbus`` python module. Only for players that support specific protocol 
+Requires ``dbus`` python module. Only for players that support specific protocol
  (e.g. like :py:func:`spotify` and :py:func:`clementine`).
 
 {0}
