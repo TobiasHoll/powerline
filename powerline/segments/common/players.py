@@ -37,7 +37,7 @@ def _convert_seconds(seconds):
 
 
 class PlayerSegment(Segment):
-	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', state_symbols=STATE_SYMBOLS, progress_args={'full':'#', 'empty':'_', 'steps': 5}, **kwargs):
+	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', state_symbols=STATE_SYMBOLS, progress_args={'full':'#', 'empty':'_', 'steps': 5}, auto_disable=False, **kwargs):
 		stats = {
 			'state': 'fallback',
 			'shuffle': 'fallback',
@@ -58,10 +58,12 @@ class PlayerSegment(Segment):
 		stats['repeat_symbol'] = state_symbols.get(stats['repeat'])
 		if stats['total_raw'] and stats['elapsed_raw']:
 			stats['progress'] = progress_args['full'] * int( stats['elapsed_raw'] *
-				int(progress_args['steps']) / stats['total_raw'] ) + \
+				( 1 + int(progress_args['steps']) ) / stats['total_raw'] ) + \
 				progress_args['empty'] * int( 1 + int(progress_args['steps']) -
-				stats['elapsed_raw'] * int(progress_args['steps']) /
+				stats['elapsed_raw'] * ( 1 + int(progress_args['steps']) ) /
 				stats['total_raw'] )
+		if auto_disable and stats['state'] == 'stop':
+			return None
 		return [{
 			'contents': format.format(**stats),
 			'highlight_groups': ['player_' + (stats['state'] or 'fallback'), 'player'],
@@ -162,7 +164,7 @@ class GPMDPlayerSegment(PlayerSegment):
 				return 'fallback'
 
 		return {
-			'status': parse_playing(data['playing'],data['song']['album']),
+			'state': parse_playing(data['playing'],data['song']['album']),
 			'shuffle': parse_shuffle(data['shuffle']),
 			'repeat': parse_repeat(data['repeat']),
 			'album': data['song']['album'],
