@@ -134,12 +134,13 @@ Highlight groups used: ``player_fallback`` or ``player``, ``player_play`` or ``p
 _player = with_docstring(PlayerSegment(), _common_args.format('_player'))
 
 class GPMDPlayerSegment(PlayerSegment):
+	last = { }
 	def get_player_status(self, pl):
 		'''Return Google Play Music Desktop player information'''
 		import json
 		from os.path import expanduser
-
 		home = expanduser('~')
+		global last
 		try:
 			with open(home + '/.config/Google Play Music Desktop Player/' +
 				'json_store/playback.json') as f:
@@ -147,7 +148,10 @@ class GPMDPlayerSegment(PlayerSegment):
 		except:
 			with open(home + '/GPMDP_STORE/playback.json') as f:
 				data = f.read()
-		data = json.loads(data)
+		try:
+			data = json.loads(data)
+		except:
+			return last
 
 		def parse_playing(st, b):
 			if not b:
@@ -163,7 +167,7 @@ class GPMDPlayerSegment(PlayerSegment):
 			else:
 				return 'fallback'
 
-		return {
+		last = {
 			'state': parse_playing(data['playing'],data['song']['album']),
 			'shuffle': parse_shuffle(data['shuffle']),
 			'repeat': parse_repeat(data['repeat']),
@@ -175,6 +179,7 @@ class GPMDPlayerSegment(PlayerSegment):
 			'elapsed_raw': int(data['time']['current']),
 			'total_raw': int(data['time']['total']),
 			}
+		return last
 
 gpmdp = with_docstring(GPMDPlayerSegment(),
 ('''Return Google Play Music Desktop information
