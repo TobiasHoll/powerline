@@ -12,102 +12,112 @@ from powerline.lib.shell import run_cmd
 show_original=False
 capacity_full_design=-1
 
+base_dir = '/sys/class/power_supply'
+
+def _file_exists(path, arg):
+    return os.path.exists(path.format(arg))
+
+def _get_batteries(file_names):
+    import functools
+    batteries = []
+    for linux_bat in os.listdir('/sys/class/power_supply'):
+        if linux_bat.startswith('BAT'):
+            pos = [functools.reduce(lambda x, y: x and y, a, True) for a in
+                    [[_file_exists(base_dir + '/{0}/' + b, linux_bat) for b in file_names[i]]
+                    for i in range(0, len(file_names))]]
+            for i in range(0, len(pos)):
+                if pos[i]:
+                    batteries += [(linux_bat, i)]
+                    break
+    return batteries
+
+def _get_paths(file_names, batteries, battery):
+    return [(base_dir + '/BAT' + str(battery) + '/' + fn)
+            for fn in file_names[
+                [bat[1] for bat in batteries
+                    if bat[0] == ('BAT' + str(battery))][0]]]
+
+def _read(file_names):
+    res = []
+    for p in file_names:
+        with open(p, 'r') as f:
+            res += [f.readline().split()[0]]
+    return res
+
 def _get_battery(pl):
-    if os.path.isdir('/sys/class/power_supply'):
-        linux_bat_fmt = '/sys/class/power_supply/{0}/charge_now'
-        linux_bat_fmt1 = '/sys/class/power_supply/{0}/charge_full'
-        linux_bat_fmt2 = '/sys/class/power_supply/{0}/charge_full_design'
-        for linux_bat in os.listdir('/sys/class/power_supply'):
-            cap_path = linux_bat_fmt.format(linux_bat)
-            cap_path1 = linux_bat_fmt1.format(linux_bat)
-            cap_path2 = linux_bat_fmt2.format(linux_bat)
-            if linux_bat.startswith('BAT') and os.path.exists(cap_path) and os.path.exists(cap_path1) and os.path.exists(cap_path2):
-                pl.debug('Using /sys/class/power_supply with battery {0}', linux_bat)
+    if os.path.isdir(base_dir):
+        file_names = [['charge_now', 'charge_full', 'charge_full_design'],
+                ['energy_now', 'energy_full', 'energy_full_design']]
+        batteries = _get_batteries(file_names)
 
-                def _get_capacity(pl):
-                    current = 0
-                    full = 1
-                    global show_original
-                    global capacity_full_design
-                    with open(cap_path, 'r') as f:
-                        current = int(float(f.readline().split()[0]))
-                        if not show_original:
-                            with open(cap_path1, 'r') as f:
-                                full = int(float(f.readline().split()[0]))
-                        elif capacity_full_design == -1:
-                            with open(cap_path2, 'r') as f:
-                                full = int(float(f.readline().split()[0]))
-                        else:
-                            full = capacity_full_design
-                        return (current * 100/full)
+        def _get_capacity(pl, battery):
+            current = 0
+            full = 1
 
-                return _get_capacity
-                pl.debug('Not using /sys/class/power_supply as no batteries were found')
+            paths = _get_paths(file_names, batteries, battery)
+            vals = _read(paths)
+
+            current = int(float(vals[0]))
+            if not show_original:
+                full = int(float(vals[1]))
+            elif capacity_full_design == -1:
+                full = int(float(vals[2]))
+            else:
+                full = capacity_full_design
+            return (current * 100/full)
+
+        return _get_capacity
     else:
         pl.debug('Not using /sys/class/power_supply: no directory')
 
     raise NotImplementedError
 
 def _get_battery_status(pl):
-    if os.path.isdir('/sys/class/power_supply'):
-        linux_bat_fmt = '/sys/class/power_supply/{0}/status'
-        for linux_bat in os.listdir('/sys/class/power_supply'):
-            cap_path = linux_bat_fmt.format(linux_bat)
-            if linux_bat.startswith('BAT') and os.path.exists(cap_path):
-                pl.debug('Using /sys/class/power_supply with battery {0}', linux_bat)
+    if os.path.isdir(base_dir):
+        status_paths = [['status']]
+        batteries = _get_batteries(status_paths)
 
-                def _get_status(pl):
-                    stat = ''
-                    with open(cap_path, 'r') as f:
-                        stat = f.readline().split()[0]
-                        if stat == 'Unknown':
-                            stat = ''
-                        return stat
-                return _get_status
-        pl.debug('Not using /sys/class/power_supply as no batteries were found')
+        def _get_status(pl, battery):
+            path = _get_paths(status_paths, batteries, battery)
+            stat = _read(path)[0]
+            if stat == 'Unknown':
+                stat = ''
+            return stat
+        return _get_status
     else:
         pl.debug('Not using /sys/class/power_supply: no directory')
 
     raise NotImplementedError
 
 def _get_battery_rem_time(pl):
-    if os.path.isdir('/sys/class/power_supply'):
-        linux_bat_fmt = '/sys/class/power_supply/{0}/current_now'
-        for linux_bat in os.listdir('/sys/class/power_supply'):
-            cap_path = linux_bat_fmt.format(linux_bat)
-            if linux_bat.startswith('BAT') and os.path.exists(cap_path):
-                pl.debug('Using /sys/class/power_supply with battery {0}', linux_bat)
-                def _get_rem_time(pl):
-                    curr = 0
-                    charge = 0
-                    full = 0
-                    stat = ''
-                    with open(cap_path, 'r') as f:
-                        curr = int(f.readline().split()[0])
-                        if curr == 0:
-                            return 0
-                    with open('/sys/class/power_supply/' + linux_bat + '/charge_now', 'r') as f:
-                        charge = int(f.readline().split()[0])
-                    with open('/sys/class/power_supply/' + linux_bat + '/charge_full', 'r') as f:
-                        full = int(f.readline().split()[0])
-                    with open('/sys/class/power_supply/' + linux_bat + '/status', 'r') as f:
-                        stat = (f.readline().split()[0])
-                        if stat == 'Charging':
-                            return (full - charge) / curr
-                        else:
-                            return charge / curr
-                return _get_rem_time
-        pl.debug('Not using /sys/class/power_supply as no batteries were found')
+    if os.path.isdir(base_dir):
+        rem_time_paths = [['energy_now', 'energy_full', 'power_now', 'status'],
+                ['charge_now', 'charge_full', 'current_now', 'status']]
+        batteries = _get_batteries(rem_time_minutes)
+
+        def _get_rem_time(pl, battery):
+            paths = _get_paths(rem_time_paths, batteries, battery)
+            vals = _read(paths)
+            if vals[2] == '0' or vals[3] == 'Unknown':
+                return 0
+
+            curr = int(float(vals[2]))
+            charge = int(vals[0])
+            full = int(vals[1])
+            if stat == 'Charging':
+                return (full - charge) / curr
+            else:
+                return charge / curr
+        return _get_rem_time
     else:
         pl.debug('Not using /sys/class/power_supply: no directory')
 
     raise NotImplementedError
 
-def _get_capacity(pl):
+def _get_capacity(pl, battery):
     global _get_capacity
-    global show_original
 
-    def _failing_get_capacity(pl):
+    def _failing_get_capacity(pl, battery):
         raise NotImplementedError
 
     try:
@@ -117,12 +127,12 @@ def _get_capacity(pl):
     except Exception as e:
         pl.exception('Exception while obtaining battery capacity getter: {0}', str(e))
         _get_capacity = _failing_get_capacity
-    return _get_capacity(pl)
+    return _get_capacity(pl, battery)
 
-def _get_status(pl):
+def _get_status(pl, battery):
     global _get_status
 
-    def _failing_get_status(pl):
+    def _failing_get_status(pl, battery):
         raise NotImplementedError
 
     try:
@@ -132,24 +142,24 @@ def _get_status(pl):
     except Exception as e:
         pl.exception('Exception while obtaining battery capacity getter: {0}', str(e))
         _get_status = _failing_get_status
-    return _get_status(pl)
+    return _get_status(pl, battery)
 
-def _get_rem_time(pl):
+def _get_rem_time(pl, battery):
     global _get_rem_time
 
-    def _failing_get_rem_time(pl):
+    def _failing_get_rem_time(pl, battery):
         raise NotImplementedError
 
     try:
-        _get_rem_time = _get_battery_rem_time(pl)
+        _get_rem_time = _get_battery_rem_time(pl, battery)
     except NotImplementedError:
         _get_rem_time = _failing_get_rem_time
     except Exception as e:
         pl.exception('Exception while obtaining battery capacity getter: {0}', str(e))
         _get_rem_time = _failing_get_rem_time
-    return _get_rem_time(pl)
+    return _get_rem_time(pl, battery)
 
-def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O', empty_heart='O', original_health=False, full_design=-1, online=None, offline=None):
+def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O', empty_heart='O', bat=0, original_health=False, full_design=-1, online=None, offline=None):
     '''Return battery charge status.
 
         :param str format:
@@ -168,6 +178,8 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
                 another gradient level and highlighting group, so it is OK for it to be
                 the same as full_heart as long as necessary highlighting groups are
                 defined.
+        :param int bat:
+                Specifies the battery to display information for.
         :param bool original_health:
                 Use the original battery health ase base value. (Experimental)
 
@@ -182,7 +194,7 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
         show_original = original_health
         capacity_full_design = full_design
 
-        capacity = _get_capacity(pl)
+        capacity = _get_capacity(pl, bat)
     except NotImplementedError:
         pl.info('Unable to get battery capacity.')
         return None
@@ -190,7 +202,7 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
     status = ''
     if 'status' in format:
         try:
-            status = _get_status(pl)
+            status = _get_status(pl, bat)
         except NotImplementedError:
             pl.info('Unable to get battery status.')
             if 'status' in format:
@@ -201,7 +213,7 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
     rem_time = 0
     if 'rem_time' in format:
         try:
-            rem_time = _get_rem_time(pl)
+            rem_time = _get_rem_time(pl, bat)
         except NotImplementedError:
             pl.info('Unable to get remaining time.')
             return None
