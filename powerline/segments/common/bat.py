@@ -159,7 +159,7 @@ def _get_rem_time(pl, battery):
         _get_rem_time = _failing_get_rem_time
     return _get_rem_time(pl, battery)
 
-def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O', empty_heart='O', bat=0, original_health=False, full_design=-1, online=None, offline=None):
+def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O', empty_heart='O', bat=0, original_health=False, full_design=-1):
     '''Return battery charge status.
 
         :param str format:
