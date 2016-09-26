@@ -89,11 +89,11 @@ def _get_battery_status(pl):
 
     raise NotImplementedError
 
-def _get_battery_rem_time(pl):
+def _get_battery_rem_time(pl, battery):
     if os.path.isdir(base_dir):
         rem_time_paths = [['energy_now', 'energy_full', 'power_now', 'status'],
                 ['charge_now', 'charge_full', 'current_now', 'status']]
-        batteries = _get_batteries(rem_time_minutes)
+        batteries = _get_batteries(rem_time_paths)
 
         def _get_rem_time(pl, battery):
             paths = _get_paths(rem_time_paths, batteries, battery)
@@ -104,7 +104,7 @@ def _get_battery_rem_time(pl):
             curr = int(float(vals[2]))
             charge = int(vals[0])
             full = int(vals[1])
-            if stat == 'Charging':
+            if vals[3] == 'Charging':
                 return (full - charge) / curr
             else:
                 return charge / curr
