@@ -159,7 +159,7 @@ def _get_rem_time(pl, battery):
         _get_rem_time = _failing_get_rem_time
     return _get_rem_time(pl, battery)
 
-def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O', empty_heart='O', bat=0, original_health=False, full_design=-1, online=None, offline=None):
+def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O', half_heart='O', empty_heart='O', bat=0, original_health=False, full_design=-1, online=None, offline=None):
     '''Return battery charge status.
 
         :param str format:
@@ -194,20 +194,21 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
         show_original = original_health
         capacity_full_design = full_design
 
-        capacity = _get_capacity(pl, bat)
+        capacity = min(_get_capacity(pl, bat) / 0.8, 100.0)
+        
     except NotImplementedError:
         pl.info('Unable to get battery capacity.')
         return None
 
     status = ''
-    if 'status' in format:
+    if gamify or ('status' in format):
         try:
             status = _get_status(pl, bat)
         except NotImplementedError:
             pl.info('Unable to get battery status.')
             if 'status' in format:
                 return None
-        if status == '':
+        if not gamify and status == '':
             return None
 
     rem_time = 0
@@ -231,7 +232,10 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
     ret = []
     if gamify:
         denom = int(steps)
-        numer = int(denom * capacity / 100)
+        numer = int(denom * capacity / 100 + 0.5)
+        hnumer = 0
+        if capacity < 100 and (denom * capacity / 100)%1 < 0.5:
+            hnumer = 1
         ret.append({
             'contents': full_heart * numer,
             'draw_inner_divider': False,
@@ -240,11 +244,32 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
             'gradient_level': 0,
             })
         ret.append({
-            'contents': empty_heart * (denom - numer),
+            'contents': half_heart * hnumer,
+            'draw_inner_divider': False,
+            'highlight_groups': ['battery_full', 'battery_gradient', 'battery'],
+            # Using zero as “nothing to worry about”: it is least alert color.
+            'gradient_level': 50,
+            })
+        ret.append({
+            'contents': empty_heart * (denom - numer - hnumer),
             'draw_inner_divider': False,
             'highlight_groups': ['battery_empty', 'battery_gradient', 'battery'],
             # Using a hundred as it is most alert color.
             'gradient_level': 100,
+            })
+        if status == 'Charging':
+            ret.append({
+                'contents': online,
+                'draw_inner_divider': False,
+                'highlight_groups': ['battery_online', 'battery_gradient', 'battery'],
+                'gradient_level': 0,
+            })
+        elif status == 'Discharging':
+            ret.append({
+                'contents': offline,
+                'draw_inner_divider': False,
+                'highlight_groups': ['battery_offline', 'battery_gradient', 'battery'],
+                'gradient_level': 0,
             })
         return ret
     else:
