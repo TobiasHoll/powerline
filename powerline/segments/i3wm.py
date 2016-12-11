@@ -25,8 +25,22 @@ def format_name(name, strip=False):
         return WORKSPACE_REGEX.sub('', name, count=1)
     return name
 
+WS_ICONS = {}
+
+def get_icon(w, separator, icons):
+    ws_containers = {w_con.name : w_con for w_con in get_i3_connection().get_tree().workspaces()}
+    #if not ws_containers[w['name']]:
+    #    return "?"
+    wins = [win for win in ws_containers[w['name']].leaves() if win.parent.scratchpad_state == 'none']
+    if len(wins) == 0:
+        return ""
+    for key in icons:
+        if all(key == win.window_class for win in wins):
+            return separator + icons[key]
+    return ""
+
 @requires_segment_info
-def workspaces(pl, segment_info, only_show=None, output=None, strip=0):
+def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS):
     '''Return list of used workspaces
         :param list only_show:
                 Specifies which workspaces to show. Valid entries are ``"visible"``,
@@ -54,7 +68,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0):
 
     if len(output) <= 1:
         return [{
-            'contents': w['name'][min(len(w['name']), strip):],
+            'contents': w['name'][min(len(w['name']), strip):] + get_icon(w, separator, icons),
             'highlight_groups': workspace_groups(w)
             } for w in get_i3_connection().get_workspaces()
             if (not only_show or any(w[typ] for typ in only_show))
@@ -116,3 +130,36 @@ def scratchpad(pl, icons=SCRATCHPAD_ICONS):
         'highlight_groups': scratchpad_groups(w)
         } for w in get_i3_connection().get_tree().descendents()
         if w.scratchpad_state != 'none']
+
+def active_window(pl, icon=None, cutoff=100):
+        '''
+        Returns the title of the currently active window
+            :param string icon:
+                Icon to print before title.
+            :param int cutoff:
+                Maximum title length. If the title is longer, the window_class is used instead.
+        Highligh groups used: ``active_window_icon``, ``active_window_title``.
+        '''
+            
+        focused = get_i3_connection().get_tree().find_focused()
+        segments = []
+        
+        if icon:
+            segments.append({'contents': icon, 'highlight_groups': ['active_window_icon']})
+        
+        cont = focused.name
+        if len(cont) > cutoff:
+            cont = focused.window_class
+
+        segments.append({'contents': cont, 'highlight_groups': ['active_window_title']})
+        
+        return segments if focused.name != focused.workspace().name else []
+
+def workspaces_icon(pl, icon='[]'):
+        '''
+        Prints the given icon
+            :param string icon:
+                Specifies the icon to print.
+        Highlight groups used: ``workspaces_icon``.
+        '''
+        return [{'contents': icon, 'highlight_groups': ['workspaces_icon']}]
