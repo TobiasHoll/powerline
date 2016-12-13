@@ -47,7 +47,7 @@ as
 
       pip install powerline-status-i3
 
-To actually _see_ the powerline in your i3 setup, replace the following lines in your `.config/i3/config`
+To actually _use_ the powerline in your i3 setup, replace the following lines in your `.config/i3/config`
 
       bar {
           status_command i3status
