@@ -33,7 +33,7 @@ The following Arch Linux packages should be installed:
 * lemonbar-xft-git
 * ttf-font-awesome
 
-Further, the following python packages further enhance your powerline experience:
+Further, the following python packages enhance your powerline experience:
 
 * i3ipc (workspace segment)
 * iwlib (wifi segment)
