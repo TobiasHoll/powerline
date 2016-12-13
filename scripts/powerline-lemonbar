@@ -46,12 +46,8 @@ if __name__ == '__main__':
 	render(reschedule=True)
 
 	if args.i3:
-		try:
-			import i3ipc
-		except ImportError:
-			import i3
-			i3.Subscription(lambda evt, data, sub: render(), 'workspace')
-		else:
+		import i3ipc
+		while True:
 			conn = i3ipc.Connection()
 			conn.on('workspace::focus', lambda conn, evt: render())
 			conn.on('mode', lambda conn, evt: update(evt))
