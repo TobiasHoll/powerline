@@ -59,7 +59,7 @@ else:
 
 setup(
 	name='powerline-status-i3',
-	version='1.0.2',
+	version='1.0.4',
 	description='The ultimate statusline/prompt utility. A fork containing more features for the i3 window manager.',
 	long_description=README,
 	classifiers=[
@@ -108,8 +108,8 @@ setup(
 		'scripts/powerline-render',
 		'scripts/powerline-config',
 	] + (['scripts/powerline'] if can_use_scripts else []),
-	data_files=(([] if can_use_scripts else [('bin', ['scripts/powerline'])])
-		+ [('/bin', ['powerline/bindings/lemonbar/powerline-lemonbar.py'])]),
+	data_files=(([] if can_use_scripts else [('/usr/bin', ['scripts/powerline'])])
+		+ [('/usr/bin', ['powerline/bindings/lemonbar/powerline-lemonbar.py'])]),
 	keywords='',
 	packages=find_packages(exclude=('tests', 'tests.*')),
 	include_package_data=True,
