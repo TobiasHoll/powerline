@@ -1,29 +1,158 @@
 {
 	"segments": {
 		"right": [
+            {
+                "function": "powerline.segments.common.net.wireless",
+                "args": {
+                    "device": "wlo1"
+                },
+                "before": " "
+            },
+            {
+                "function": "powerline.segments.common.players.gpmdp",
+                "name": "gpmdp",
+                "args": {
+                    "format": "{state_symbol}{artist} — {title} ({progress})",
+                    "state_symbols": {
+                        "fallback": "",
+                        "play":     "▶ ",
+                        "pause":    "▮▮ ",
+                        "stop":     "■ ",
+                        "repeat":   "↺ ",
+                        "loop":     "↺1 ",
+                        "shuffle":  "🔀 "
+                    },
+                    "progress_args": {
+                        "full": "⋯",
+                        "empty": "·",
+                        "steps": 5
+                    },
+                    "auto_disable": true
+                }
+            },
+			{
+				"function": "powerline.segments.common.volume.vol",
+				"args": {
+					"format": "♫ {volume:2.0%}",
+					"format_muted": "{volume:2%}"
+                }
+            },
+            {
+                "function": "powerline.segments.common.bat.battery",
+                "args": {
+                    "format": " {capacity:3.2%}",
+                    "original_health": true,
+                    "full_design": 4914400
+                }
+            },
+            {
+                "function": "powerline.segments.common.bat.battery",
+                "args": {
+                    "format": "{status}",
+                    "original_health": true,
+                    "full_design": 4914400
+                }
+            },
 			{
 				"function": "powerline.segments.common.wthr.weather",
-				"priority": 50
+                "args": {
+                    "location_query": "saarbrucken, germany"
+                }
+			},
+            {
+                "function": "powerline.segments.common.time.date",
+                "args": {
+                    "format": "%m-%d"
+                }
 			},
 			{
-				"function": "powerline.segments.common.time.date"
-			},
-			{
-				"function": "powerline.segments.common.time.date",
-				"name": "time",
+                "function": "powerline.segments.common.time.date",
+				"name": "date",
 				"args": {
 					"format": "%H:%M",
 					"istime": true
 				}
-			},
-			{
-				"function": "powerline.segments.common.mail.email_imap_alert",
-				"priority": 10,
-				"args": {
-					"username": "",
-					"password": ""
-				}
 			}
-		]
+		],
+        "left": [
+            {
+                "function": "powerline.segments.common.net.hostname",
+                "before": "⌂ "
+            },
+            {
+                "function": "powerline.segments.i3wm.mode",
+                "args": {
+                    "names": {
+                        "default": null,
+                        "resize": "Resize: n|d width, t|r height (10px), Arrow keys (5px)",
+                        "gaps": "Gaps: (o) outer, (i) inner",
+                        "gaps-o": "Outer Gaps: p|m|0 (local), Shift + p|m|0 (global)",
+                        "gaps-i": "Inner Gaps: p|m|0 (local), Shift + p|m|0 (global)"
+                    }
+                }
+            },
+            {
+                "function": "powerline.segments.i3wm.workspaces",
+                "exclude_modes": [ "default" ],
+                "draw_inner_divider": true,
+                "draw_soft_divider": true,
+                "args": {
+                    "only_show": [ "focused", "visible" ],
+                    "output": "__all__",
+                    "separator": " ",
+                    "icons": {
+                        "Xfce4-terminal": "",
+                        "Chromium": "",
+                        "Steam": "",
+                        "jetbrains-idea": "",
+                        "jetbrains-pycharm-ce": "",
+                        "jetbrains-clion": "",
+                        "Gimp": "",
+                        "Pavucontrol": "",
+                        "Thunderbird": "",
+                        "Thunar": "",
+                        "Skype": "",
+                        "TelegramDesktop": "",
+                        "feh": "",
+                        "firefox": "",
+                        "Evince": "",
+                        "libreoffice-calc": "",
+                        "libreoffice-writer": ""
+                    }
+                }
+            },
+            {
+                "function": "powerline.segments.i3wm.workspaces",
+                "include_modes": [ "default" ],
+                "draw_inner_divider": true,
+                "draw_soft_divider": true,
+                "args": {
+                    "output": "__all__",
+                    "separator": " ",
+                    "icons": {
+                        "Xfce4-terminal": "",
+                        "Chromium": "",
+                        "Steam": "",
+                        "jetbrains-idea": "",
+                        "jetbrains-pycharm-ce": "",
+                        "jetbrains-clion": "",
+                        "Gimp": "",
+                        "Pavucontrol": "",
+                        "Thunderbird": "",
+                        "Thunar": "",
+                        "Skype": "",
+                        "TelegramDesktop": "",
+                        "feh": "",
+                        "firefox": "",
+                        "Evince": "",
+                        "libreoffice-calc": "",
+                        "libreoffice-writer": ""
+                    }
+                }
+            },
+            {
+                "function": "powerline.segments.i3wm.scratchpad"
+            }
+        ]
 	}
 }
