@@ -47,11 +47,16 @@ if __name__ == '__main__':
 
 	if args.i3:
 		import i3ipc
+		conn = i3ipc.Connection()
 		while True:
-			conn = i3ipc.Connection()
 			conn.on('workspace::focus', lambda conn, evt: render())
 			conn.on('mode', lambda conn, evt: update(evt))
+			render()
 			conn.main()
+			#time.sleep(1) # If this gets executed, i3 got restarted / crashed / whatever
+			#conn = i3ipc.Connection()
+			#powerline = LemonbarPowerline()
+			#powerline.update_renderer()
 
 	while True:
 		time.sleep(1e8)

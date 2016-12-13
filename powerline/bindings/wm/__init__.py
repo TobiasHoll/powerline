@@ -15,12 +15,13 @@ def get_i3_connection():
 	'''
 	global conn
 	if not conn:
-		try:
-			import i3ipc
-		except ImportError:
-			import i3 as conn
-		else:
-			conn = i3ipc.Connection()
+		import i3ipc
+		conn = i3ipc.Connection()
+	try:
+		conn.get_tree()
+	except BrokenPipeError:
+		import i3ipc
+		conn = i3ipc.Connection()
 	return conn
 
 
@@ -30,7 +31,7 @@ XRANDR_OUTPUT_RE = re.compile(r'^(?P<name>[0-9A-Za-z-]+) connected(?P<primary> p
 def get_connected_xrandr_outputs(pl):
 	'''Iterate over xrandr outputs
 
-	Outputs are represented by a dictionary with ``name``, ``width``, 
+	Outputs are represented by a dictionary with ``name``, ``width``,
 	``height``, ``primary``, ``x`` and ``y`` keys.
 	'''
 	return (match.groupdict() for match in XRANDR_OUTPUT_RE.finditer(
