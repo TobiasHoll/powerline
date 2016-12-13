@@ -57,20 +57,13 @@ except Exception as e:
 else:
 	can_use_scripts = False
 
-
 def get_version():
-	base_version = ''
-	try:
-		return base_version + str(subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip())[2:9]
-	except Exception:
-		print_exc()
-		return base_version
-
+	return '1.0'
 
 setup(
-	name='powerline-status',
+	name='powerline-status-i3',
 	version=get_version(),
-	description='The ultimate statusline/prompt utility.',
+	description='The ultimate statusline/prompt utility. A fork containing more features for the i3 window manager.',
 	long_description=README,
 	classifiers=[
 		'Development Status :: 5 - Production/Stable',
@@ -89,10 +82,10 @@ setup(
 		'Programming Language :: Python :: Implementation :: CPython',
 		'Programming Language :: Python :: Implementation :: PyPy',
 	],
-	download_url='https://github.com/powerline/powerline/archive/develop.zip',
-	author='Kim Silkebaekken',
-	author_email='kim.silkebaekken+vim@gmail.com',
-	url='https://github.com/powerline/powerline',
+	download_url='https://github.com/ph111p/powerline/archive/develop.zip',
+	author='Philip Wellnitz',
+	author_email='philipwellnitz@gmx.de',
+	url='https://github.com/ph111p/powerline',
 	license='MIT',
 	# XXX Python 3 doesn’t allow compiled C files to be included in the scripts
 	# list below. This is because Python 3 distutils tries to decode the file to
@@ -118,17 +111,21 @@ setup(
 		'scripts/powerline-render',
 		'scripts/powerline-config',
 	] + (['scripts/powerline'] if can_use_scripts else []),
-	data_files=(None if can_use_scripts else (('bin', ['scripts/powerline']),)),
+	data_files=(([] if can_use_scripts else [('bin', ['scripts/powerline'])])
+		+ [('/bin', ['powerline/bindings/lemonbar/powerline-lemonbar.py'])]),
 	keywords='',
 	packages=find_packages(exclude=('tests', 'tests.*')),
 	include_package_data=True,
 	zip_safe=False,
-	install_requires=[],
+	install_requires=['pyalsaaudio', 'iwlib', 'i3ipc'],
 	extras_require={
 		'docs': [
 			'Sphinx',
 			'sphinx_rtd_theme',
 		],
+		'appoints segment': [
+			'appoints'
+		]
 	},
 	test_suite='tests' if not OLD_PYTHON else None,
 )
