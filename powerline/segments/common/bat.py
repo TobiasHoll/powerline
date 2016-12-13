@@ -194,8 +194,8 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
         show_original = original_health
         capacity_full_design = full_design
 
-        capacity = min(_get_capacity(pl, bat) / 0.8, 100.0)
-        
+        capacity = _get_capacity(pl, bat)
+
     except NotImplementedError:
         pl.info('Unable to get battery capacity.')
         return None

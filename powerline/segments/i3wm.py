@@ -34,10 +34,13 @@ def get_icon(w, separator, icons):
     wins = [win for win in ws_containers[w['name']].leaves() if win.parent.scratchpad_state == 'none']
     if len(wins) == 0:
         return ""
+
+    result = ""
     for key in icons:
-        if all(key == win.window_class for win in wins):
-            return separator + icons[key]
-    return ""
+        if any(key == win.window_class for win in wins):
+            result += separator + icons[key]
+    return result
+
 
 @requires_segment_info
 def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS):
@@ -66,11 +69,18 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
     else:
         output = [o['name'] for o in get_i3_connection().get_outputs() if o['active']]
 
+    def sort_ws(ws):
+        import re
+        def natural_key(ws):
+            str = ws['name']
+            return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', str)]
+        return sorted(ws, key=natural_key)
+
     if len(output) <= 1:
         return [{
             'contents': w['name'][min(len(w['name']), strip):] + get_icon(w, separator, icons),
             'highlight_groups': workspace_groups(w)
-            } for w in get_i3_connection().get_workspaces()
+            } for w in sort_ws(get_i3_connection().get_workspaces())
             if (not only_show or any(w[typ] for typ in only_show))
             and w['output'] == output[0]
             ]
@@ -79,7 +89,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
         for n in output:
             res += [{ 'contents': n, 'highlight_groups': ['output']}]
             res += [{'contents': w['name'][min(len(w['name']), strip):],
-                'highlight_groups': workspace_groups(w)} for w in get_i3_connection().get_workspaces()
+                'highlight_groups': workspace_groups(w)} for w in sort_ws(get_i3_connection().get_workspaces())
                 if (not only_show or any(w[typ] for typ in only_show))
                 and w['output'] == n
                 ]
@@ -140,19 +150,19 @@ def active_window(pl, icon=None, cutoff=100):
                 Maximum title length. If the title is longer, the window_class is used instead.
         Highligh groups used: ``active_window_icon``, ``active_window_title``.
         '''
-            
+
         focused = get_i3_connection().get_tree().find_focused()
         segments = []
-        
+
         if icon:
             segments.append({'contents': icon, 'highlight_groups': ['active_window_icon']})
-        
+
         cont = focused.name
         if len(cont) > cutoff:
             cont = focused.window_class
 
         segments.append({'contents': cont, 'highlight_groups': ['active_window_title']})
-        
+
         return segments if focused.name != focused.workspace().name else []
 
 def workspaces_icon(pl, icon='[]'):
