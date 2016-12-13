@@ -15,7 +15,7 @@ Features
 For general features, consult the documentation of the original powerline. These are
 the features that were added in this fork.
 
-* List all workspaces, _and icons of applications currently running on that workspace (using FontAwesome)_
+* List all workspaces, _and icons of applications currently running on a workspace (using FontAwesome)_
 * More multi-monitor options for the workspace segment.
 * Enhanced battery segment, having the same features as the i3bar one. Further, this segment
   now works with multiple batteries.
