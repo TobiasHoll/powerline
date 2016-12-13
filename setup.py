@@ -14,7 +14,7 @@ from setuptools import setup, find_packages
 
 CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 try:
-	README = open(os.path.join(CURRENT_DIR, 'README.rst'), 'rb').read().decode('utf-8')
+	README = open(os.path.join(CURRENT_DIR, 'README.md'), 'rb').read().decode('utf-8')
 except IOError:
 	README = ''
 
@@ -59,7 +59,7 @@ else:
 
 setup(
 	name='powerline-status-i3',
-	version='1.0.1',
+	version='1.0.2',
 	description='The ultimate statusline/prompt utility. A fork containing more features for the i3 window manager.',
 	long_description=README,
 	classifiers=[
