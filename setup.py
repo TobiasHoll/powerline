@@ -57,12 +57,9 @@ except Exception as e:
 else:
 	can_use_scripts = False
 
-def get_version():
-	return '1.0'
-
 setup(
 	name='powerline-status-i3',
-	version=get_version(),
+	version='1.0',
 	description='The ultimate statusline/prompt utility. A fork containing more features for the i3 window manager.',
 	long_description=README,
 	classifiers=[
