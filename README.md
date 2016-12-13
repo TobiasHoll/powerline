@@ -32,6 +32,9 @@ The following Arch Linux packages should be installed:
 * powerline-fonts-git
 * lemonbar-xft-git
 * ttf-font-awesome
+* wpa_actiond (wifi segment)
+* wireless_tools (wifi segment)
+
 
 Further, the following python packages enhance your powerline experience:
 
