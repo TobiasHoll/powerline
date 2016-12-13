@@ -100,6 +100,7 @@
                     "only_show": [ "focused", "visible" ],
                     "output": "__all__",
                     "separator": " ",
+                    "show_multiple_icons": false,
                     "icons": {
                         "Xfce4-terminal": "",
                         "Chromium": "",
@@ -117,7 +118,8 @@
                         "firefox": "",
                         "Evince": "",
                         "libreoffice-calc": "",
-                        "libreoffice-writer": ""
+                        "libreoffice-writer": "",
+                        "multiple": ""
                     }
                 }
             },
@@ -146,7 +148,8 @@
                         "firefox": "",
                         "Evince": "",
                         "libreoffice-calc": "",
-                        "libreoffice-writer": ""
+                        "libreoffice-writer": "",
+                        "multiple": ""
                     }
                 }
             },

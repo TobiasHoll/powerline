@@ -27,7 +27,7 @@ def format_name(name, strip=False):
 
 WS_ICONS = {}
 
-def get_icon(w, separator, icons):
+def get_icon(w, separator, icons, show_multiple_icons):
     ws_containers = {w_con.name : w_con for w_con in get_i3_connection().get_tree().workspaces()}
     #if not ws_containers[w['name']]:
     #    return "?"
@@ -36,14 +36,21 @@ def get_icon(w, separator, icons):
         return ""
 
     result = ""
+    cnt = 0
     for key in icons:
         if any(key == win.window_class for win in wins):
             result += separator + icons[key]
+            cnt += 1
+    if not show_multiple_icons and cnt > 1:
+        if 'multiple' in icons:
+            return separator + icons['multiple']
+        else:
+            return ""
     return result
 
 
 @requires_segment_info
-def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS):
+def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS, show_multiple_icons=True):
     '''Return list of used workspaces
         :param list only_show:
                 Specifies which workspaces to show. Valid entries are ``"visible"``,
@@ -78,7 +85,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
 
     if len(output) <= 1:
         return [{
-            'contents': w['name'][min(len(w['name']), strip):] + get_icon(w, separator, icons),
+            'contents': w['name'][min(len(w['name']), strip):] + get_icon(w, separator, icons, show_multiple_icons),
             'highlight_groups': workspace_groups(w)
             } for w in sort_ws(get_i3_connection().get_workspaces())
             if (not only_show or any(w[typ] for typ in only_show))
@@ -88,7 +95,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
         res = []
         for n in output:
             res += [{ 'contents': n, 'highlight_groups': ['output']}]
-            res += [{'contents': w['name'][min(len(w['name']), strip):],
+            res += [{'contents': w['name'][min(len(w['name']), strip):] + get_icon(w, separator, icons, show_multiple_icons),
                 'highlight_groups': workspace_groups(w)} for w in sort_ws(get_i3_connection().get_workspaces())
                 if (not only_show or any(w[typ] for typ in only_show))
                 and w['output'] == n
