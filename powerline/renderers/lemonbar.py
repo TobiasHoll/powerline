@@ -21,8 +21,19 @@ class LemonbarRenderer(Renderer):
 		# We don’t need to explicitly reset attributes, so skip those calls
 		return ''
 
-	def hl(self, contents, fg=None, bg=None, attrs=None):
+	def hl(self, contents, fg=None, bg=None, attrs=None, click=None):
+		button_map = { 'left': 1, 'middle': 2, 'right': 3, 'scroll up': 4, 'scroll down': 5 }
+
 		text = ''
+		click_count = 0
+
+		if click is not None:
+			for key in click:
+				if not key in button_map:
+					continue
+				str = click[key].format(contents).strip()
+				text += '%{{A{1}:{0}:}}'.format(str, button_map[key])
+				click_count += 1
 
 		if fg is not None:
 			if fg is not False and fg[1] is not False:
@@ -34,7 +45,7 @@ class LemonbarRenderer(Renderer):
 		if attrs & ATTR_UNDERLINE:
 			text += '%{+u}'
 
-		return text + contents + '%{F-B--u}'
+		return text + contents + '%{F-B--u}' + ('%{A}' * click_count)
 
 	def render(self, *args, **kwargs):
 		return '%{{l}}{0}%{{r}}{1}'.format(

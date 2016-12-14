@@ -48,8 +48,8 @@ class Colorscheme(object):
 			except TypeError:
 				self.colors[color_name] = (color, cterm_to_hex[color])
 
-		# Create a dict of gradient names with two lists: for cterm and hex 
-		# values. Two lists in place of one list of pairs were chosen because 
+		# Create a dict of gradient names with two lists: for cterm and hex
+		# values. Two lists in place of one list of pairs were chosen because
 		# true colors allow more precise gradients.
 		for gradient_name, gradient in colors_config['gradients'].items():
 			if len(gradient) == 2:
@@ -113,6 +113,7 @@ class Colorscheme(object):
 			'fg': pick_color(group_props['fg']),
 			'bg': pick_color(group_props['bg']),
 			'attrs': get_attrs_flag(group_props.get('attrs', [])),
+			'click': group_props['click'] if 'click' in group_props else None
 		}
 
 

@@ -20,11 +20,14 @@ if __name__ == '__main__':
 	powerline = LemonbarPowerline()
 	powerline.update_renderer()
 	bars = []
+	shells = []
 
 	for screen in get_connected_xrandr_outputs(powerline.pl):
 		command = [args.bar_command, '-g', '{0}x{1}+{2}'.format(screen['width'], args.height, screen['x'])] + args.args[1:]
-		process = subprocess.Popen(command, stdin=subprocess.PIPE)
+		process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 		bars.append((screen['name'], process, int(screen['width']) / 5))
+		if args.clicks:
+			shells.append(subprocess.Popen(['/bin/sh'], stdin=process.stdout))
 
 	lock = Lock()
 	modes = ['default']

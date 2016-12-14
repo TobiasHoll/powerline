@@ -28,9 +28,10 @@ def format_name(name, strip=False):
 WS_ICONS = {}
 
 def get_icon(w, separator, icons, show_multiple_icons):
+    if 'dummy' in w:
+        return ""
+
     ws_containers = {w_con.name : w_con for w_con in get_i3_connection().get_tree().workspaces()}
-    #if not ws_containers[w['name']]:
-    #    return "?"
     wins = [win for win in ws_containers[w['name']].leaves() if win.parent.scratchpad_state == 'none']
     if len(wins) == 0:
         return ""
@@ -48,9 +49,21 @@ def get_icon(w, separator, icons, show_multiple_icons):
             return ""
     return result
 
+def get_next_ws(ws, outputs):
+    names = [w['name'] for w in ws]
+    for i in range(1, 100):
+        if not str(i) in names:
+            return [{
+                'name': str(i),
+                'urgent': False,
+                'focused': False,
+                'visible': False,
+                'dummy': True,
+                'output': o} for o in outputs]
+    return []
 
 @requires_segment_info
-def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS, show_multiple_icons=True):
+def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS, show_multiple_icons=True, show_dummy_workspace=False):
     '''Return list of used workspaces
         :param list only_show:
                 Specifies which workspaces to show. Valid entries are ``"visible"``,
@@ -64,6 +77,19 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
         :param int strip:
                 Specifies how many characters from the front of each workspace name
                 should be stripped (e.g. to remove workspace numbers). Defaults to zero.
+        :param string separator:
+                Specifies a string to be inserted between the workspace name and program icons
+                and between program icons.
+        :param dict icons:
+                A dictionary mapping window classes to strings to be used as an icon for that
+                window class.
+        :param boolean show_multiple_icons:
+                If this is set to False, instead of displying multiple icons per workspace,
+                the icon "multiple" will be used.
+        :param boolean show_dummy_workspace:
+                If this is set to True, this segment will alway display an additional, non-existing
+                workspace. This workspace will be handled as if it was a non-urgent and non-focused
+                regular workspace, i.e., click events will work as with normal workspaces.
         Highlight groups used: ``workspace`` or ``w_visible``, ``workspace`` or ``w_focused``, ``workspace`` or ``w_urgent``.
         '''
 
@@ -81,7 +107,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
         def natural_key(ws):
             str = ws['name']
             return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', str)]
-        return sorted(ws, key=natural_key)
+        return sorted(ws, key=natural_key) + (get_next_ws(ws, output) if show_dummy_workspace else [])
 
     if len(output) <= 1:
         return [{
