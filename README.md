@@ -58,5 +58,4 @@ To actually _use_ the powerline in your i3 setup, replace the following lines in
 
 with this line (you may want to adjust the height and the font size):
 
-      exec --no-startup-id powerline-lemonbar --i3 --height 16 -- -b -f "DejaVu Sans Mono for Powerline-10" -f "FontAwesome-10" -a 40
-
+      exec --no-startup-id powerline-lemonbar --i3 --clicks --height 16 -- -a 40 -b -f "DejaVu Sans Mono for Powerline-10" -f "FontAwesome-10"

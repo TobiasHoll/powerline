@@ -43,6 +43,20 @@
 		"cwd:divider":               { "fg": "gray7", "bg": "gray4", "attrs": [] },
 		"virtualenv":                { "fg": "white", "bg": "darkcyan", "attrs": [] },
 		"attached_clients":          { "fg": "gray8", "bg": "gray0", "attrs": [] },
-		"attached_clients":          { "fg": "gray8", "bg": "gray0", "attrs": [] }
+		"attached_clients":          { "fg": "gray8", "bg": "gray0", "attrs": [] },
+		"workspace":                 { "bg": "gray0", "fg": "mediumcyan", "attrs": [], "click": { "left": "i3-msg workspace {0:.2}", "right": "i3-msg move to workspace {0:.2}" } },
+		"w_focused":                 { "fg": "gray2", "bg": "mediumcyan", "attrs": [] },
+		"w_visible":                 { "fg": "gray0", "bg": "darkcyan", "attrs": [] },
+		"w_urgent":                  { "bg": "gray0", "fg": "brightorange", "attrs": [], "click": { "left": "i3-msg workspace {0:.2}", "right": "i3-msg move to workspace {0:.2}" } },
+		"scratchpad":                { "bg": "gray0", "fg": "mediumcyan", "attrs": [], "click": { "left": "i3-msg scratchpad show", "right": "i3-msg move to scratchpad" } },
+		"scratchpad:focused":        { "fg": "gray2", "bg": "mediumcyan", "attrs": [], "click": { "left": "i3-msg scratchpad show", "right": "i3-msg move to scratchpad" } },
+		"scratchpad:visible":        { "fg": "gray0", "bg": "darkcyan", "attrs": [], "click": { "left": "i3-msg scratchpad show", "right": "i3-msg move to scratchpad" } },
+		"scratchpad:urgent":         { "bg": "gray0", "fg": "brightorange", "attrs": [], "click": { "left": "i3-msg scratchpad show", "right": "i3-msg move to scratchpad" } },
+		"output":                    { "bg": "gray0", "fg": "mediumpurple", "attrs": [] },
+		"appoint":                   { "fg": "mediumcyan", "bg": "gray0", "attrs": [] },
+		"appoint_urgent":            { "fg": "darkestcyan", "bg": "khaki1", "attrs": ["bold"] },
+		"mode":                      { "bg": "black", "fg": "darkblue", "attrs": [] },
+        "active_window_icon":        { "bg": "gray0", "fg": "mediumcyan", "attrs": [] },
+        "active_window_title":       { "bg": "gray0", "fg": "mediumcyan", "attrs": [] }
     }
 }
