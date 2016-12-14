@@ -22,6 +22,7 @@ the features that were added in this fork.
 * Enhanced wifi segment to match i3bar's.
 * Added a volume segment.
 * Added GPMDP support in the player segment.
+* Click support
 
 Installation
 ------------
