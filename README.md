@@ -26,6 +26,8 @@ the features that were added in this fork.
 Installation
 ------------
 
+Let's start with the hard way.
+
 The following Arch Linux packages should be installed:
 
 * i3 or i3-gaps
@@ -34,18 +36,19 @@ The following Arch Linux packages should be installed:
 * ttf-font-awesome
 * wpa_actiond (wifi segment)
 * wireless_tools (wifi segment)
-
-
-Further, the following python packages enhance your powerline experience:
-
-* i3ipc (workspace segment)
-* iwlib (wifi segment)
-* pyalsaaudio (volume segment)
+* python-iwlib (wifi segment)
+* i3ipc-python-git (workspace segment)
+* python-pyalsaaudio (volume segment)
 
 If you have successfully installed all the previous packages, installing this fork becomes as easy
 as
 
       pip install powerline-status-i3
+
+or
+
+      yaourt -S powerline-i3-git
+
 
 To actually _use_ the powerline in your i3 setup, replace the following lines in your `.config/i3/config`
 
@@ -53,8 +56,7 @@ To actually _use_ the powerline in your i3 setup, replace the following lines in
           status_command i3status
       }
 
-with these two lines (you may want to adjust the height and the font size):
+with this line (you may want to adjust the height and the font size):
 
-      exec_always --no-startup-id pkill -f 'python .*powerline-lemonbar\.py'
-      exec_always --no-startup-id sleep .1 && powerline-lemonbar.py --i3 --height 16 -- -b -f "DejaVu Sans Mono for Powerline-10" -f "FontAwesome-10"
+      exec --no-startup-id powerline-lemonbar --i3 --height 16 -- -b -f "DejaVu Sans Mono for Powerline-10" -f "FontAwesome-10" -a 40
 
