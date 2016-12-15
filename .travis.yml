@@ -15,6 +15,7 @@ addons:
             - socat
             - bc
             - libiw-dev
+            - libasound2-dev
 language: python
 install: tests/install.sh
 script: tests/test.sh
