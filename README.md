@@ -1,6 +1,8 @@
 Powerline
 =========
 
+[![Build Status](https://travis-ci.org/PH111P/powerline.svg?branch=develop)](https://travis-ci.org/PH111P/powerline)
+
 This is a fork of Kim Silkebækken's (kim.silkebaekken+vim@gmail.com) powerline
 (https://github.com/powerline/powerline).
 
