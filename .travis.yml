@@ -18,7 +18,6 @@ addons:
             - libasound2-dev
 language: python
 install: tests/install.sh
-script: tests/test.sh
 matrix:
     include:
         - python: "2.6"
