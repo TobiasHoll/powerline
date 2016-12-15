@@ -11,7 +11,6 @@ from powerline.lib.shell import run_cmd
 
 show_original=False
 capacity_full_design=-1
-
 base_dir = '/sys/class/power_supply'
 
 def _file_exists(path, arg):
@@ -221,7 +220,7 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
         except OSError:
             pl.info('Your BIOS is screwed.')
             return None
-        if rem_time == 0:
+        if rem_time == 0 or status == 'Full':
             return None
 
     rem_sec = int(rem_time * 3600)
