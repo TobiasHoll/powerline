@@ -14,6 +14,7 @@ addons:
             # - rc
             - socat
             - bc
+            - libiw-dev
 language: python
 install: tests/install.sh
 script: tests/test.sh
