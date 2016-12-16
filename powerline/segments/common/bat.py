@@ -105,8 +105,10 @@ def _get_battery_rem_time(pl, battery):
             full = int(vals[1])
             if vals[3] == 'Charging':
                 return (full - charge) / curr
-            else:
+            elif vals[3] == 'Discharging':
                 return charge / curr
+            else:
+                return 0
         return _get_rem_time
     else:
         pl.debug('Not using /sys/class/power_supply: no directory')
