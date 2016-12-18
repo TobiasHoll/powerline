@@ -104,15 +104,19 @@ class Colorscheme(object):
 		else:
 			raise KeyError('Highlighting groups not found in colorscheme: ' + ', '.join(groups))
 
+		def add_transparency(str):
+			return "0x{0:f>8}".format(str[2:])
+
 		if gradient_level is None:
-			pick_color = self.colors.__getitem__
+			pick_color = lambda str: (-1, int(add_transparency(str), 16)) if str.startswith('0x') else self.colors[str]
 		else:
-			pick_color = lambda gradient: self.get_gradient(gradient, gradient_level)
+			pick_color = lambda gradient: (-1, int(add_transparency(gradient), 16)) if gradient.startswith('0x') else self.get_gradient(gradient, gradient_level)
+
 
 		return {
 			'fg': pick_color(group_props['fg']),
 			'bg': pick_color(group_props['bg']),
-			'attrs': get_attrs_flag(group_props.get('attrs', [])) if 'attrs' in group_props else None,
+			'attrs': get_attrs_flag(group_props.get('attrs', [])) if 'attrs' in group_props else 0,
 			'click': group_props['click'] if 'click' in group_props else None
 		}
 

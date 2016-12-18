@@ -37,10 +37,17 @@ class LemonbarRenderer(Renderer):
 
 		if fg is not None:
 			if fg is not False and fg[1] is not False:
-				text += '%{{F#ff{0:06x}}}'.format(fg[1])
+				if fg[1] <= 0xFFFFFF:
+					text += '%{{F#ff{0:06x}}}'.format(fg[1])
+				else:
+					text += '%{{F#{0:08x}}}'.format(fg[1])
+
 		if bg is not None:
 			if bg is not False and bg[1] is not False:
-				text += '%{{B#ff{0:06x}}}'.format(bg[1])
+				if bg[1] <= 0xFFFFFF:
+					text += '%{{B#ff{0:06x}}}'.format(bg[1])
+				else:
+					text += '%{{B#{0:08x}}}'.format(bg[1])
 
 		if attrs and attrs & ATTR_UNDERLINE:
 			text += '%{+u}'
@@ -48,7 +55,7 @@ class LemonbarRenderer(Renderer):
 		return text + contents + '%{F-B--u}' + ('%{A}' * click_count)
 
 	def render(self, *args, **kwargs):
-		return '%{{l}}{0}%{{r}}{1}'.format(
+		return '%{{r}}{1}%{{l}}{0}'.format(
 			super(LemonbarRenderer, self).render(side='left', segment_info={'output': kwargs.get('matcher_info')}, *args, **kwargs),
 			super(LemonbarRenderer, self).render(side='right', segment_info={'output': kwargs.get('matcher_info')}, *args, **kwargs),
 		)
