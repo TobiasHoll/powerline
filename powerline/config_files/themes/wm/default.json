@@ -41,24 +41,23 @@
                 "function": "powerline.segments.common.bat.battery",
                 "args": {
                     "format": " {capacity:3.2%}",
-                    "original_health": true,
-                    "full_design": 4914400
+                    "original_health": true
                 }
             },
             {
                 "function": "powerline.segments.common.bat.battery",
                 "args": {
                     "format": "{status}",
-                    "original_health": true,
-                    "full_design": 4914400
+                    "original_health": true
                 }
             },
-			{
-				"function": "powerline.segments.common.wthr.weather",
+            {
+                "function": "powerline.segments.common.bat.battery",
                 "args": {
-                    "location_query": "saarbrucken, germany"
+                    "format": "{rem_time}",
+                    "original_health": true
                 }
-			},
+            },
             {
                 "function": "powerline.segments.common.time.date",
                 "args": {
@@ -115,7 +114,7 @@
                         "Skype": "",
                         "TelegramDesktop": "",
                         "feh": "",
-                        "firefox": "",
+                        "Firefox": "",
                         "Evince": "",
                         "libreoffice-calc": "",
                         "libreoffice-writer": "",
@@ -145,7 +144,7 @@
                         "Skype": "",
                         "TelegramDesktop": "",
                         "feh": "",
-                        "firefox": "",
+                        "Firefox": "",
                         "Evince": "",
                         "libreoffice-calc": "",
                         "libreoffice-writer": "",

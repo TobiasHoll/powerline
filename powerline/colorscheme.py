@@ -112,7 +112,7 @@ class Colorscheme(object):
 		return {
 			'fg': pick_color(group_props['fg']),
 			'bg': pick_color(group_props['bg']),
-			'attrs': get_attrs_flag(group_props.get('attrs', [])),
+			'attrs': get_attrs_flag(group_props.get('attrs', [])) if 'attrs' in group_props else None,
 			'click': group_props['click'] if 'click' in group_props else None
 		}
 
