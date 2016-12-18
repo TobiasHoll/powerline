@@ -42,7 +42,7 @@ class LemonbarRenderer(Renderer):
 			if bg is not False and bg[1] is not False:
 				text += '%{{B#ff{0:06x}}}'.format(bg[1])
 
-		if attrs & ATTR_UNDERLINE:
+		if attrs and attrs & ATTR_UNDERLINE:
 			text += '%{+u}'
 
 		return text + contents + '%{F-B--u}' + ('%{A}' * click_count)
