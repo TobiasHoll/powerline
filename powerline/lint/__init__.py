@@ -167,7 +167,8 @@ group_name_spec = Spec().ident().copy
 group_spec = Spec().either(Spec(
 	fg=color_spec(),
 	bg=color_spec(),
-	attrs=Spec().list(Spec().type(unicode).oneof(set(('bold', 'italic', 'underline')))),
+	attrs=Spec().list(Spec().type(unicode).oneof(set(('bold', 'italic', 'underline')))).optional(),
+	click=Spec().optional(),
 ), group_name_spec().func(check_group)).copy
 groups_spec = Spec().unknown_spec(
 	group_name_spec(),
@@ -224,8 +225,8 @@ exinclude_spec = Spec().re(function_name_re).func(check_exinclude_function).copy
 segment_spec_base = Spec(
 	name=Spec().re('^[a-zA-Z_]\w*$').optional(),
 	function=Spec().re(function_name_re).func(check_segment_function).optional(),
-	exclude_modes=Spec().list(vim_mode_spec()).optional(),
-	include_modes=Spec().list(vim_mode_spec()).optional(),
+	exclude_modes=Spec().optional(),
+	include_modes=Spec().optional(),
 	exclude_function=exinclude_spec().optional(),
 	include_function=exinclude_spec().optional(),
 	draw_hard_divider=Spec().type(bool).optional(),

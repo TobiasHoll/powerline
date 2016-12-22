@@ -90,7 +90,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
                 If this is set to True, this segment will alway display an additional, non-existing
                 workspace. This workspace will be handled as if it was a non-urgent and non-focused
                 regular workspace, i.e., click events will work as with normal workspaces.
-        Highlight groups used: ``workspace`` or ``w_visible``, ``workspace`` or ``w_focused``, ``workspace`` or ``w_urgent``.
+        Highlight groups used: ``workspace`` or ``w_visible``, ``workspace`` or ``w_focused``, ``workspace`` or ``w_urgent`` or ``output``.
         '''
 
     if not output == "__all__":
@@ -181,7 +181,7 @@ def active_window(pl, icon=None, cutoff=100):
                 Icon to print before title.
             :param int cutoff:
                 Maximum title length. If the title is longer, the window_class is used instead.
-        Highligh groups used: ``active_window_icon``, ``active_window_title``.
+        Highlight groups used: ``active_window_icon``, ``active_window_title``.
         '''
 
         focused = get_i3_connection().get_tree().find_focused()

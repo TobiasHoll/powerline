@@ -256,7 +256,7 @@ def check_key_compatibility(segment, data, context, echoerr):
 	hadproblem = False
 
 	keys = set(segment)
-	if not ((keys - generic_keys) < type_keys[segment_type]):
+	if not ((keys - generic_keys) <= type_keys[segment_type]):
 		unknown_keys = keys - generic_keys - type_keys[segment_type]
 		echoerr(
 			context='Error while checking segments (key {key})'.format(key=context.key),
@@ -542,7 +542,7 @@ def hl_group_in_colorscheme(hl_group, cconfig, allow_gradients, data, context, e
 			try:
 				group_config = cconfig['groups'][group_config]
 			except KeyError:
-				# No such group. Error was already reported when checking 
+				# No such group. Error was already reported when checking
 				# colorschemes.
 				return True
 		havemarks(group_config)
@@ -550,12 +550,12 @@ def hl_group_in_colorscheme(hl_group, cconfig, allow_gradients, data, context, e
 		for ckey in ('fg', 'bg'):
 			color = group_config.get(ckey)
 			if not color:
-				# No color. Error was already reported when checking 
+				# No color. Error was already reported when checking
 				# colorschemes.
 				return True
 			havemarks(color)
-			# Gradients are only allowed for function segments. Note that 
-			# whether *either* color or gradient exists should have been 
+			# Gradients are only allowed for function segments. Note that
+			# whether *either* color or gradient exists should have been
 			# already checked
 			hascolor = color in data['colors_config'].get('colors', {})
 			hasgradient = color in data['colors_config'].get('gradients', {})
@@ -586,7 +586,7 @@ def hl_exists(hl_group, data, context, echoerr, allow_gradients=False):
 	havemarks(hl_group)
 	ext = data['ext']
 	if ext not in data['colorscheme_configs']:
-		# No colorschemes. Error was already reported, no need to report it 
+		# No colorschemes. Error was already reported, no need to report it
 		# twice
 		return []
 	r = []
@@ -805,7 +805,7 @@ def check_exinclude_function(name, data, context, echoerr):
 def check_log_file_level(this_level, data, context, echoerr):
 	'''Check handler level specified in :ref:`log_file key <config-common-log>`
 
-	This level must be greater or equal to the level in :ref:`log_level key 
+	This level must be greater or equal to the level in :ref:`log_level key
 	<config-common-log_level>`.
 	'''
 	havemarks(this_level)

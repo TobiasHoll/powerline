@@ -16,7 +16,6 @@ from powerline.theme import requires_segment_info
 @requires_segment_info
 def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 	'''Return the current hostname.
-
 	:param bool only_if_ssh:
 		only return the hostname if currently in an SSH session
 	:param bool exclude_domain:
@@ -30,13 +29,11 @@ def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 
 def wireless(pl, device, format='{quality:3.0%} at {essid}'):
 	'''Return the current connection quality
-
 	:param string device:
 		the device to use
 	:param string format:
 		the output format
-	
-	highlight groups used: ``qualty_gradient`` (gradient)
+	Highlight groups used: ``quality_gradient`` (gradient)
 	'''
 
 	try:
@@ -44,7 +41,7 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}'):
 	except ImportError:
 		pl.info("Couldn't load iwlib")
 		return None
-	
+
 	stats = iwlib.get_iwconfig(device)
 	essid = stats['ESSID']
 	quality = stats['stats']['quality']
@@ -103,7 +100,7 @@ else:
 	_interface_starts = {
 		'eth':      10,  # Regular ethernet adapters         : eth1
 		'enp':      10,  # Regular ethernet adapters, Gentoo : enp2s0
-		'en':       10,  # OS X                              : en0 
+		'en':       10,  # OS X                              : en0
 		'ath':       9,  # Atheros WiFi adapters             : ath0
 		'wlan':      9,  # Other WiFi adapters               : wlan1
 		'wlp':       9,  # Other WiFi adapters, Gentoo       : wlp5s0
@@ -158,9 +155,9 @@ internal_ip = with_docstring(internal_ip,
 Requires ``netifaces`` module to work properly.
 
 :param str interface:
-	Interface on which IP will be checked. Use ``auto`` to automatically 
-	detect interface. In this case interfaces with lower numbers will be 
-	preferred over interfaces with similar names. Order of preference based on 
+	Interface on which IP will be checked. Use ``auto`` to automatically
+	detect interface. In this case interfaces with lower numbers will be
+	preferred over interfaces with similar names. Order of preference based on
 	names:
 
 	#. ``eth`` and ``enp`` followed by number or the end of string.
@@ -174,7 +171,7 @@ Requires ``netifaces`` module to work properly.
 	the router to which it is connected).
 
 :param int ipv:
-	4 or 6 for ipv4 and ipv6 respectively, depending on which IP address you 
+	4 or 6 for ipv4 and ipv6 respectively, depending on which IP address you
 	need exactly.
 ''')
 
@@ -314,17 +311,17 @@ falls back to reading
 :file:`/sys/class/net/{interface}/statistics/{rx,tx}_bytes`.
 
 :param str interface:
-	Network interface to measure (use the special value "auto" to have powerline 
+	Network interface to measure (use the special value "auto" to have powerline
 	try to auto-detect the network interface).
 :param str suffix:
 	String appended to each load string.
 :param bool si_prefix:
 	Use SI prefix, e.g. MB instead of MiB.
 :param str recv_format:
-	Format string that determines how download speed should look like. Receives 
+	Format string that determines how download speed should look like. Receives
 	``value`` as argument.
 :param str sent_format:
-	Format string that determines how upload speed should look like. Receives 
+	Format string that determines how upload speed should look like. Receives
 	``value`` as argument.
 :param float recv_max:
 	Maximum number of received bytes per second. Is only used to compute
