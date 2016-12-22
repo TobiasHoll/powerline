@@ -74,7 +74,7 @@ class VimRenderer(Renderer):
 	if hasattr(vim, 'strwidth'):
 		if sys.version_info < (3,):
 			def strwidth(self, string):
-				# Does not work with tabs, but neither is strwidth from default 
+				# Does not work with tabs, but neither is strwidth from default
 				# renderer
 				return vim.strwidth(string.encode(self.encoding, 'replace'))
 		else:
@@ -123,21 +123,21 @@ class VimRenderer(Renderer):
 	def reset_highlight(self):
 		self.hl_groups.clear()
 
-	def hlstyle(self, fg=None, bg=None, attrs=None):
+	def hlstyle(self, fg=None, bg=None, attrs=None, click=None):
 		'''Highlight a segment.
 
 		If an argument is None, the argument is ignored. If an argument is
 		False, the argument is reset to the terminal defaults. If an argument
 		is a valid color or attribute, it’s added to the vim highlight group.
 		'''
-		# In order not to hit E541 two consequent identical highlighting 
+		# In order not to hit E541 two consequent identical highlighting
 		# specifiers may be squashed into one.
 		attrs = attrs or 0  # Normalize `attrs`
 		if (fg, bg, attrs) == self.prev_highlight:
 			return ''
 		self.prev_highlight = (fg, bg, attrs)
 
-		# We don’t need to explicitly reset attributes in vim, so skip those 
+		# We don’t need to explicitly reset attributes in vim, so skip those
 		# calls
 		if not attrs and not bg and not fg:
 			return ''

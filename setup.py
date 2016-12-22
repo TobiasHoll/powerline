@@ -59,7 +59,7 @@ else:
 
 setup(
 	name='powerline-status-i3',
-	version='1.1.5',
+	version='1.1.6',
 	description='The ultimate statusline/prompt utility. A fork containing more features for the i3 window manager.',
 	long_description=README,
 	classifiers=[
@@ -122,6 +122,9 @@ setup(
 		],
 		'appoints segment': [
 			'appoints'
+		],
+		'cpu load segment': [
+			'psutil'
 		]
 	},
 	test_suite='tests' if not OLD_PYTHON else None,

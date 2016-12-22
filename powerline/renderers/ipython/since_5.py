@@ -21,7 +21,7 @@ from powerline.colorscheme import ATTR_BOLD, ATTR_ITALIC, ATTR_UNDERLINE
 PowerlinePromptToken = Token.Generic.Prompt.Powerline
 
 
-# Note: since 2.7 there is dict.__missing__ with same purpose. But in 2.6 one 
+# Note: since 2.7 there is dict.__missing__ with same purpose. But in 2.6 one
 # must use defaultdict to get __missing__ working.
 class PowerlineStyleDict(defaultdict):
 	'''Dictionary used for getting pygments style for Powerline groups
@@ -90,11 +90,11 @@ class IPythonPygmentsRenderer(IPythonRenderer):
 	def hl_join(segments):
 		return reduce(operator.iadd, segments, [])
 
-	def hl(self, contents, fg=None, bg=None, attrs=None):
+	def hl(self, contents, fg=None, bg=None, attrs=None, click=None):
 		'''Output highlighted chunk.
 
-		This implementation outputs a list containing a single pair 
-		(:py:class:`pygments.token.Token`, 
+		This implementation outputs a list containing a single pair
+		(:py:class:`pygments.token.Token`,
 		:py:class:`powerline.lib.unicode.unicode`).
 		'''
 		guifg = None
