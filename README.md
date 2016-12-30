@@ -24,7 +24,32 @@ the features that were added in this fork.
 * Enhanced wifi segment to match i3bar's.
 * Added a volume segment.
 * Added GPMDP support in the player segment.
-* Click support
+* Click support (see documentation below)
+
+Changes requiring documentation
+-------------------------------
+
+This fork extends the files used by the powerline to configure the color scheme in varios ways:
+* `attrs` is now optional, i.e., it can be omitted
+* `click` is a new optional field to configure the behavior of a highlight group on a click. 
+ Where `click` is a drictionary mapping the values `left`, `right`, `middle`, `scroll up` or `scroll down`
+ to a string to be executed by a shell. (Currently only the lemonbar binding supports this and only if it is run 
+ with the `--clicks` flag.)
+ Further, the string to be executed may contain a placeholder for the segment's content. This placeholder uses python's  
+ `string.format` syntax.
+* The colors in `fg` and `bg` can be specified directly through hex values using `0x` as a prefix (`0xRRGGBB` or `0xAARRGGBB`). Currently, these hex values won't be translated back into xterm color indices.
+
+####Examples
+A configuration to let the workspace segment act like the i3bar's (The substring hack is only required due to the way icons  for programs running on a workspace are implemented. Without using these icons, a simple `{0}` would suffice.):
+
+      "workspace": { "fg": "0xe4e4e4", "bg": "0x0087af", "click": { "left": "i3-msg workspace {0:.2}", "right": "i3-msg move to workspace {0:.2}" } },
+      "w_urgent": { "bg": "0x0087af", "fg": "0xffaf00", "click": { "left": "i3-msg workspace {0:.2}", "right": "i3-msg move to workspace {0:.2}" } },
+
+A handy configuration of the volume segment:
+
+      "volume_gradient": { "fg": "green_yellow_red", "bg": "0x005f87", "click": { "scroll up": "pactl set-sink-volume 0 +1%", "scroll down": "pactl set-sink-volume 0 -1%"} },
+
+Note that the `lemonbar` only allows for a fixed number of clickable areas, which has to be specified as an argument (via `-a`).
 
 Installation
 ------------
