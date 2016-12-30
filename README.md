@@ -49,7 +49,7 @@ A handy configuration of the volume segment:
 
       "volume_gradient": { "fg": "green_yellow_red", "bg": "0x005f87", "click": { "scroll up": "pactl set-sink-volume 0 +1%", "scroll down": "pactl set-sink-volume 0 -1%"} },
 
-Note that the `lemonbar` only allows for a fixed number of clickable areas, which has to be specified as an argument (via `-a`).
+Note that the `lemonbar` allows for only a fixed number of clickable areas, which has to be specified as an argument (via `-a`).
 
 Installation
 ------------
