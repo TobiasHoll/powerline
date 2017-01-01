@@ -47,6 +47,11 @@ def git_directory(directory):
 	else:
 		return path
 
+def increase(dict, key):
+	if not key in dict:
+		dict[key] = 1
+	else:
+		dict[key] += 1
 
 class GitRepository(BaseRepository):
 	def status_string(self, path=None):
@@ -101,7 +106,7 @@ class GitRepository(BaseRepository):
 	}
 	@property
 	def status(self):
-		useful_res = self.get_useful_status(self.directory)
+		useful_res = self.get_useful_status()
 
 		res = []
 		for key in ['STAGED', 'CONFLICTING', 'MODIFIED']:
@@ -115,7 +120,13 @@ class GitRepository(BaseRepository):
 
 	@property
 	def ahead_behind(self):
-		return [self.ICON_DICT['AHEAD'] + ' 1', self.ICON_DICT['BEHIND'] + ' 2']
+		a_b = self.do_ahead_behind()
+
+		res = []
+		for k in ['AHEAD', 'BEHIND']:
+			if k in a_b and a_b[k]:
+				res += [self.ICON_DICT[k] + ' ' + str(a_b[k])]
+		return res
 
 	@property
 	def bookmark(self):
@@ -191,16 +202,10 @@ try:
 				r = wt_column + index_column + untracked_column
 				return r if r != '   ' else None
 
-		def get_useful_status(self, directory):
+		def get_useful_status(self):
 			res = {}
 
-			def increase(dict, key):
-				if not key in dict:
-					dict[key] = 1
-				else:
-					dict[key] += 1
-
-			for status in git.Repository(directory).status().values():
+			for status in self._repo().status().values():
 				if status & git.GIT_STATUS_WT_NEW:
 					res['UNTRACKED'] = 1
 				if status & (
@@ -217,6 +222,16 @@ try:
 				):
 					increase(res, 'STAGED')
 			return res
+
+		def do_ahead_behind(self):
+			res = (0, 0)
+			repo = self._repo()
+
+			try:
+				res = repo.ahead_behind(repo.head.target, repo.revparse_single('FETCH_HEAD').hex)
+			except KeyError:
+				res = (0, 0)
+			return {'AHEAD': res[0], 'BEHIND': res[1]}
 
 		@property
 		def short(self):
@@ -292,7 +307,7 @@ except ImportError:
 				return r if r != '   ' else None
 
 
-		def get_useful_status(self, directory):
+		def get_useful_status(self):
 			res = {}
 
 			return res
