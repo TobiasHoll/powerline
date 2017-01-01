@@ -228,7 +228,7 @@ try:
 			repo = self._repo()
 
 			try:
-				res = repo.ahead_behind(repo.head.target, repo.revparse_single('FETCH_HEAD').hex)
+				res = repo.ahead_behind(repo.head.target, repo.revparse_single('@{upstream}').hex)
 			except KeyError:
 				res = (0, 0)
 			return {'AHEAD': res[0], 'BEHIND': res[1]}
@@ -311,6 +311,9 @@ except ImportError:
 			res = {}
 
 			return res
+
+		def do_ahead_behind(self):
+			return (0, 0)
 
 		@property
 		def short(self):
