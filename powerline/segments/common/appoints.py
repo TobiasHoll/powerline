@@ -9,7 +9,7 @@ def appoint(pl, count=1, time_before={"0":0, "1":30}, file_path=os.path.expandus
         Number of appoints that shall be shown
     :param time_before:
         Time in minutes before the appoint to start alerting
-    Highlight groups used: ``appoint``, ``appoint_urgent``.
+    Highlight groups used: ``appoint``, ``appoint:urgent``.
     '''
 
     appoints = io.read_appoints(file_path)
@@ -74,7 +74,7 @@ def appoint(pl, count=1, time_before={"0":0, "1":30}, file_path=os.path.expandus
     for k in keys:
         result += [{
             'contents': a.text+prepend_space(a.spec.print()),
-            'highlight_groups': ['appoint_urgent']
+            'highlight_groups': ['appoint:urgent']
             } for a in upcoming[k]]
     for k in keys:
         result += [{

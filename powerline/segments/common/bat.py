@@ -170,8 +170,8 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
                 is True.
         :param bool gamify:
                 Measure in hearts (♥) instead of percentages. For full hearts
-                ``battery_full`` highlighting group is preferred, for empty hearts there
-                is ``battery_empty``.
+                ``battery:full`` highlighting group is preferred, for empty hearts there
+                is ``battery:empty``.
         :param str full_heart:
                 Heart displayed for “full” part of battery.
         :param str empty_heart:
@@ -187,7 +187,7 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
         ``battery_gradient`` and ``battery`` groups are used in any case, first is
         preferred.
 
-        Highlight groups used: ``battery_full`` or ``battery_gradient`` (gradient) or ``battery``, ``battery_empty`` or ``battery_gradient`` (gradient) or ``battery``.
+        Highlight groups used: ``battery:full`` or ``battery_gradient`` (gradient) or ``battery``, ``battery:empty`` or ``battery_gradient`` (gradient) or ``battery``.
         '''
     try:
         global show_original
@@ -240,21 +240,21 @@ def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O',
         ret.append({
             'contents': full_heart * numer,
             'draw_inner_divider': False,
-            'highlight_groups': ['battery_full', 'battery_gradient', 'battery'],
+            'highlight_groups': ['battery:full', 'battery_gradient', 'battery'],
             # Using zero as “nothing to worry about”: it is least alert color.
             'gradient_level': 0,
             })
         ret.append({
             'contents': half_heart * hnumer,
             'draw_inner_divider': False,
-            'highlight_groups': ['battery_full', 'battery_gradient', 'battery'],
+            'highlight_groups': ['battery:full', 'battery_gradient', 'battery'],
             # Using zero as “nothing to worry about”: it is least alert color.
             'gradient_level': 50,
             })
         ret.append({
             'contents': empty_heart * (denom - numer - hnumer),
             'draw_inner_divider': False,
-            'highlight_groups': ['battery_empty', 'battery_gradient', 'battery'],
+            'highlight_groups': ['battery:empty', 'battery_gradient', 'battery'],
             # Using a hundred as it is most alert color.
             'gradient_level': 100,
             })

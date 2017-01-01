@@ -14,7 +14,10 @@
 				"priority": 50
 			},
 			{
-				"function": "powerline.segments.common.vcs.branch",
+				"function": "powerline.segments.common.vcs.vcsinfo",
+                "args": {
+                    "name": "branch"
+                },
 				"priority": 40
 			},
 			{

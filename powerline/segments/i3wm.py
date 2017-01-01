@@ -12,11 +12,11 @@ WORKSPACE_REGEX = re.compile(r'^[0-9]+: ?')
 def workspace_groups(w):
     group = []
     if w['focused']:
-        group.append('w_focused')
+        group.append('workspace:focused')
     if w['urgent']:
-        group.append('w_urgent')
+        group.append('workspace:urgent')
     if w['visible']:
-        group.append('w_visible')
+        group.append('workspace:visible')
     group.append('workspace')
     return group
 
@@ -90,7 +90,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
                 If this is set to True, this segment will alway display an additional, non-existing
                 workspace. This workspace will be handled as if it was a non-urgent and non-focused
                 regular workspace, i.e., click events will work as with normal workspaces.
-        Highlight groups used: ``workspace`` or ``w_visible``, ``workspace`` or ``w_focused``, ``workspace`` or ``w_urgent`` or ``output``.
+        Highlight groups used: ``workspace`` or ``workspace:visible``, ``workspace`` or ``workspace:focused``, ``workspace`` or ``workspace:urgent`` or ``output``.
         '''
 
     if not output == "__all__":
@@ -198,11 +198,11 @@ def active_window(pl, icon=None, cutoff=100):
 
         return segments if focused.name != focused.workspace().name else []
 
-def workspaces_icon(pl, icon='[]'):
+def workspace_icon(pl, icon='[]'):
         '''
         Prints the given icon
             :param string icon:
                 Specifies the icon to print.
-        Highlight groups used: ``workspaces_icon``.
+        Highlight groups used: ``workspace:icon``, ``workspace``.
         '''
-        return [{'contents': icon, 'highlight_groups': ['workspaces_icon']}]
+        return [{'contents': icon, 'highlight_groups': ['workspace:icon', 'workspace']}]

@@ -21,8 +21,11 @@
 				"priority": 10
 			},
 			{
-				"function": "branch",
+				"function": "vcsinfo",
 				"exclude_modes": ["nc"],
+                "args": {
+                    "name": "branch"
+                },
 				"priority": 30
 			},
 			{
