@@ -31,13 +31,13 @@ Changes requiring documentation
 
 This fork extends the files used by the powerline to configure the color scheme in varios ways:
 * `attrs` is now optional, i.e., it can be omitted
-* `click` is a new optional field to configure the behavior of a highlight group on a click. 
+* `click` is a new optional field to configure the behavior of a highlight group on a click.
  Where `click` is a drictionary mapping the values `left`, `right`, `middle`, `scroll up` or `scroll down`
- to a string to be executed by a shell. (Currently only the lemonbar binding supports this and only if it is run 
+ to a string to be executed by a shell. (Currently only the lemonbar binding supports this and only if it is run
  with the `--clicks` flag.)
- Further, the string to be executed may contain a placeholder for the segment's content. This placeholder uses python's  
+ Further, the string to be executed may contain a placeholder for the segment's content. This placeholder uses python's
  `string.format` syntax.
-* The colors in `fg` and `bg` can be specified directly through hex values using `0x` as a prefix (`0xRRGGBB` or `0xAARRGGBB`). Currently, these hex values won't be translated back into xterm color indices.
+* The colors in `fg` and `bg` can be specified directly through hex values using `0x` as a prefix (`0xRRGGBB` or `0xAARRGGBB`). These hex values will be translated back into xterm color indices whenever possible.
 
 ####Examples
 A configuration to let the workspace segment act like the i3bar's (The substring hack is only required due to the way icons  for programs running on a workspace are implemented. Without using these icons, a simple `{0}` would suffice.):

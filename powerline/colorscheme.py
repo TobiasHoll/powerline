@@ -106,11 +106,17 @@ class Colorscheme(object):
 
 		def add_transparency(str):
 			return "0x{0:f>8}".format(str[2:])
+		def hex_to_cterm(str):
+			str = add_transparency(str)
+			for i in range(0, len(cterm_to_hex)):
+				if int(cterm_to_hex[i]) == int(str[4:], 16):
+					return i
+			return 0
 
 		if gradient_level is None:
-			pick_color = lambda str: (-1, int(add_transparency(str), 16)) if str.startswith('0x') else self.colors[str]
+			pick_color = lambda str: (hex_to_cterm(str), int(add_transparency(str), 16)) if str.startswith('0x') or str.startswith('0X') else self.colors[str]
 		else:
-			pick_color = lambda gradient: (-1, int(add_transparency(gradient), 16)) if gradient.startswith('0x') else self.get_gradient(gradient, gradient_level)
+			pick_color = lambda str: (hex_to_cterm(str), int(add_transparency(str), 16)) if str.startswith('0x') or str.startswith('0X') else self.get_gradient(str, gradient_level)
 
 
 		return {
