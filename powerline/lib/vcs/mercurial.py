@@ -40,7 +40,7 @@ class Repository(BaseRepository):
 		# functions emit invalid results
 		return hg.repository(self.ui, directory or self.directory)
 
-	def status(self, path=None):
+	def status_string(self, path=None):
 		'''Return status of repository or file.
 
 		Without file argument: returns status of the repository:

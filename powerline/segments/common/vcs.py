@@ -35,11 +35,20 @@ class VCSInfoSegment(Segment):
 		return scol
 
 	def get_property(self, pl, repo, name, **kwargs):
-		return [{
-			'contents': getattr(repo, name),
-			'highlight_groups': self.get_highlight_group(pl, repo, name, **kwargs),
-			'divider_highlight_group': self.divider_highlight_group
-		}]
+		cont = getattr(repo, name)
+		# I apologize in advance for the ugliness ahead.
+		if isinstance(cont, str):
+			return [{
+				'contents': cont,
+				'highlight_groups': self.get_highlight_group(pl, repo, name, **kwargs),
+				'divider_highlight_group': self.divider_highlight_group
+			}]
+		else:
+			return [{
+				'contents': c,
+				'highlight_groups': self.get_highlight_group(pl, repo, name, **kwargs),
+				'divider_highlight_group': self.divider_highlight_group
+			} for c in cont]
 
 	def __call__(self, pl, segment_info, create_watcher, **kwargs):
 		directory = self.get_directory(segment_info)

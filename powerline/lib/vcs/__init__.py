@@ -200,7 +200,7 @@ class TreeStatusCache(dict):
 				self.pop(key, None)
 		except OSError as e:
 			self.pl.warn('Failed to check {0} for changes, with error: {1}', key, str(e))
-		return self.cache_and_get(key, repo.status)
+		return self.cache_and_get(key, repo.status_string)
 
 
 _tree_status_cache = None
@@ -250,7 +250,7 @@ def get_fallback_create_watcher():
 
 
 def debug():
-	'''Test run guess(), repo.branch and repo.status()
+	'''Test run guess(), repo.branch and repo.status_string()
 
 	To use::
 		python -c 'from powerline.lib.vcs import debug; debug()' some_file_to_watch.
@@ -266,9 +266,9 @@ def debug():
 	try:
 		while True:
 			if os.path.isdir(dest):
-				print ('Branch name: %s Status: %s' % (repo.branch, repo.status()))
+				print ('Branch name: %s Status: %s' % (repo.branch, repo.status_string()))
 			else:
-				print ('File status: %s' % repo.status(dest))
+				print ('File status: %s' % repo.status_string(dest))
 			raw_input('Press Enter to check again: ')
 	except KeyboardInterrupt:
 		pass
@@ -293,7 +293,7 @@ class BaseRepository(object):
 	def ignore_event(path, name):
 		'''Determines which FS events should be ignored
 
-		This function output is considered when determining whether repository 
+		This function output is considered when determining whether repository
 		status recalculation should be triggered.
 
 		:param str path: Name of the directory.
@@ -335,7 +335,19 @@ class BaseRepository(object):
 		'''
 		return None
 
-	def status(self, path=None):
+	@property
+	def status(self):
+		'''Return some useful information about the repo status
+		'''
+		return None
+
+	@property
+	def ahead_behind(self):
+		'''Return how far the local and the remote version of the repo diverged
+		'''
+		return None
+
+	def status_string(self, path=None):
 		'''Return status of the repository or a single file within it
 
 		Without ``path`` argument: returns status of the repository.
@@ -350,10 +362,10 @@ class BaseRepository(object):
 		U / space     U if working directory contains untracked files.
 		============  ========================================================
 
-		If repository is not dirty (has no changes, additions, removals or 
+		If repository is not dirty (has no changes, additions, removals or
 		untracked files) None is returned.
 
-		With file argument: returns status of this file. Output is 
+		With file argument: returns status of this file. Output is
 		VCS-dependent.
 		'''
 		return None

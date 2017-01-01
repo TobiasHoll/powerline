@@ -49,7 +49,7 @@ def git_directory(directory):
 
 
 class GitRepository(BaseRepository):
-	def status(self, path=None):
+	def status_string(self, path=None):
 		'''Return status of repository or file.
 
 		Without file argument: returns status of the repository:
@@ -90,6 +90,33 @@ class GitRepository(BaseRepository):
 			create_watcher=self.create_watcher,
 		)
 
+	ICON_DICT = {
+		'AHEAD': '⇡',
+		'BEHIND': '⇣',
+		'MODIFIED': '✎',
+		'STAGED': '●',
+		'CONFLICTING': '✗',
+		'UNTRACKED': '…',
+		'CLEAN': '✔'
+	}
+	@property
+	def status(self):
+		useful_res = self.get_useful_status(self.directory)
+
+		res = []
+		for key in ['STAGED', 'CONFLICTING', 'MODIFIED']:
+			if key in useful_res:
+				res += [self.ICON_DICT[key] + ' ' + str(useful_res[key])]
+		if 'UNTRACKED' in useful_res:
+			res += [self.ICON_DICT['UNTRACKED']]
+		if len(res) == 0:
+			res = self.ICON_DICT['CLEAN']
+		return res
+
+	@property
+	def ahead_behind(self):
+		return [self.ICON_DICT['AHEAD'] + ' 1', self.ICON_DICT['BEHIND'] + ' 2']
+
 	@property
 	def bookmark(self):
 		return self.branch
@@ -101,6 +128,7 @@ try:
 		def ignore_event(path, name):
 			return False
 
+		@property
 		def stash(self):
 			try:
 				stashref = git.Repository(git_directory(self.directory)).lookup_reference('refs/stash')
@@ -163,9 +191,36 @@ try:
 				r = wt_column + index_column + untracked_column
 				return r if r != '   ' else None
 
+		def get_useful_status(self, directory):
+			res = {}
+
+			def increase(dict, key):
+				if not key in dict:
+					dict[key] = 1
+				else:
+					dict[key] += 1
+
+			for status in git.Repository(directory).status().values():
+				if status & git.GIT_STATUS_WT_NEW:
+					res['UNTRACKED'] = 1
+				if status & (
+					git.GIT_STATUS_WT_MODIFIED
+					| git.GIT_STATUS_WT_DELETED
+				):
+					increase(res, 'MODIFIED')
+				if status & git.GIT_STATUS_CONFLICTED:
+					increase(res, 'CONFLICTING')
+				if status & (
+					git.GIT_STATUS_INDEX_NEW
+					| git.GIT_STATUS_INDEX_MODIFIED
+					| git.GIT_STATUS_INDEX_DELETED
+				):
+					increase(res, 'STAGED')
+			return res
+
 		@property
 		def short(self):
-			# FIXME Use proper abbreviation length
+			#TODO: Don't fix the length of the prefix
 			return self._repo().head.target.hex[:7]
 
 		@property
@@ -206,6 +261,7 @@ except ImportError:
 			except StopIteration:
 				return None
 
+		@property
 		def stash(self):
 			return sum(1 for _ in self.gitcmd(self.directory, 'stash', 'list'))
 
@@ -234,6 +290,12 @@ except ImportError:
 
 				r = wt_column + index_column + untracked_column
 				return r if r != '   ' else None
+
+
+		def get_useful_status(self, directory):
+			res = {}
+
+			return res
 
 		@property
 		def short(self):
