@@ -23,12 +23,12 @@ class PromptRenderer(Renderer):
 	def get_client_id(self, segment_info):
 		'''Get client ID given segment info
 
-		This is used by daemon to correctly cache widths for different clients 
+		This is used by daemon to correctly cache widths for different clients
 		using a single renderer instance.
 
 		:param dict segment_info:
-			:ref:`Segment info dictionary <dev-segments-info>`. Out of it only 
-			``client_id`` key is used. It is OK for this dictionary to not 
+			:ref:`Segment info dictionary <dev-segments-info>`. Out of it only
+			``client_id`` key is used. It is OK for this dictionary to not
 			contain this key.
 
 		:return: Any hashable value or ``None``.
@@ -105,7 +105,7 @@ class ShellRenderer(PromptRenderer):
 			self.used_term_escape_style = self.term_escape_style
 		return super(ShellRenderer, self).do_render(segment_info=segment_info, **kwargs)
 
-	def hlstyle(self, fg=None, bg=None, attrs=None):
+	def hlstyle(self, fg=None, bg=None, attrs=None, click=None):
 		'''Highlight a segment.
 
 		If an argument is None, the argument is ignored. If an argument is
