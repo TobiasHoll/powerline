@@ -32,13 +32,12 @@ class VCSInfoSegment(Segment):
 		scol = ['vcsinfo:' + name, 'vcsinfo']
 		if status_colors:
 			scol.insert(0, 'vcsinfo:clean' if not self.is_dirty(pl, repo, ignore_statuses) else 'vcsinfo:dirty')
-		print(scol)
 		return scol
 
 	def get_property(self, pl, repo, name, **kwargs):
 		return [{
 			'contents': getattr(repo, name),
-			'highlight_group': self.get_highlight_group(pl, repo, name, **kwargs),
+			'highlight_groups': self.get_highlight_group(pl, repo, name, **kwargs),
 			'divider_highlight_group': self.divider_highlight_group
 		}]
 

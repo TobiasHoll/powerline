@@ -181,7 +181,7 @@ def process_segment(pl, side, segment_info, parsed_segments, segment, mode, colo
 			return
 
 		if isinstance(contents, list):
-			# Needs copying here, but it was performed at the very start of the 
+			# Needs copying here, but it was performed at the very start of the
 			# function
 			segment_base = segment
 			if contents:
