@@ -10,7 +10,7 @@
 		"modified_indicator":       { "fg": "solarized:yellow", "bg": "solarized:base2", "attrs": ["bold"] },
 		"paste_indicator":          { "fg": "solarized:red", "bg": "solarized:base2", "attrs": ["bold"] },
 		"readonly_indicator":       { "fg": "solarized:red", "bg": "solarized:base2", "attrs": [] },
-		"vcsinfo_dirty":            { "fg": "solarized:yellow", "bg": "solarized:base2", "attrs": [] },
+		"vcsinfo:dirty":            { "fg": "solarized:yellow", "bg": "solarized:base2", "attrs": [] },
 		"vcsinfo:divider":          { "fg": "solarized:base1", "bg": "solarized:base2", "attrs": [] },
 		"file_name":                { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": ["bold"] },
 		"window_title":             { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": [] },
