@@ -309,11 +309,24 @@ except ImportError:
 
 		def get_useful_status(self):
 			res = {}
-
+			for line in self.gitcmd('status', '--porcelain'):
+				if line[0] == '?':
+					res['UNTRACKED'] = 1
+					continue
+				if line[0] == '!':
+					continue
+				if line[:2] in ('DD', 'AU', 'UD', 'UA', 'DU', 'AA', 'UU'):
+					increase(res, 'CONFLICTING')
+				else:
+					if line[0] != ' ':
+						increase(res, 'STAGED')
+					if line[1] != ' ':
+						increase(res, 'MODIFIED')
 			return res
 
 		def do_ahead_behind(self):
-			return (0, 0)
+			res = [int(e) for e in self.getgitline('rev-list', '--left-right', '--count', 'HEAD...@{upstream}').split()]
+			return {'AHEAD': res[0], 'BEHIND': res[1]}
 
 		@property
 		def short(self):
