@@ -2,22 +2,22 @@
 	"segments": {
 		"left": [
 			{
-				"type": "string",
-				"contents": "Command-T",
+				"type":             "string",
+				"contents":         "Command-T",
 				"highlight_groups": ["commandt:label"]
 			},
 			{
-				"function": "powerline.segments.vim.plugin.commandt.finder"
+				"function":         "powerline.segments.vim.plugin.commandt.finder"
 			},
 			{
-				"function": "powerline.segments.vim.plugin.commandt.path"
+				"function":         "powerline.segments.vim.plugin.commandt.path"
 			},
 			{
-				"type": "string",
+				"type":             "string",
 				"highlight_groups": ["commandt:background"],
 				"draw_soft_divider": false,
 				"draw_hard_divider": false,
-				"width": "auto"
+				"width":            "auto"
 			}
 		],
 		"right": [

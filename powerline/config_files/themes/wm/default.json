@@ -1,160 +1,119 @@
 {
-	"segments": {
-		"right": [
+    "segments": {
+        "right": [
             {
-                "function": "powerline.segments.common.net.wireless",
+                "function":             "powerline.segments.common.net.wireless",
                 "args": {
-                    "device": "wlo1"
+                    "device":           "wlo1"
                 },
-                "before": " "
+                "before":               " "
             },
             {
-                "function": "powerline.segments.common.players.gpmdp",
-                "name": "gpmdp",
+                "function":             "powerline.segments.common.players.gpmdp",
+                "name":                 "gpmdp",
                 "args": {
-                    "format": "{state_symbol}{artist} — {title} ({progress})",
+                    "format":           "{state_symbol}{artist} — {title} ({progress})",
                     "state_symbols": {
-                        "fallback": "",
-                        "play":     "▶ ",
-                        "pause":    "▮▮ ",
-                        "stop":     "■ ",
-                        "repeat":   "↺ ",
-                        "loop":     "↺1 ",
-                        "shuffle":  "🔀 "
+                        "fallback":     "",
+                        "play":         "▶ ",
+                        "pause":        "▮▮ ",
+                        "stop":         "■ ",
+                        "repeat":       "↺ ",
+                        "loop":         "↺1 ",
+                        "shuffle":      "🔀 "
                     },
                     "progress_args": {
-                        "full": "⋯",
-                        "empty": "·",
-                        "steps": 5
+                        "full":         "⋯",
+                        "empty":        "·",
+                        "steps":        5
                     },
-                    "auto_disable": true
-                }
-            },
-			{
-				"function": "powerline.segments.common.volume.vol",
-				"args": {
-					"format": "♫ {volume:2.0%}",
-					"format_muted": "{volume:2%}"
+                    "auto_disable":     true
                 }
             },
             {
-                "function": "powerline.segments.common.bat.battery",
+                "function":             "powerline.segments.common.volume.vol",
                 "args": {
-                    "format": " {capacity:3.2%}",
-                    "original_health": true
+                    "format":           "♫ {volume:2.0%}",
+                    "format_muted":     "{volume:2%}"
                 }
             },
             {
-                "function": "powerline.segments.common.bat.battery",
+                "function":             "powerline.segments.common.bat.battery",
                 "args": {
-                    "format": "{status}",
-                    "original_health": true
+                    "format":           " {capacity:3.2%}",
+                    "original_health":  true
                 }
             },
             {
-                "function": "powerline.segments.common.bat.battery",
+                "function":             "powerline.segments.common.bat.battery",
                 "args": {
-                    "format": "{rem_time}",
-                    "original_health": true
+                    "format":           "{status}",
+                    "original_health":  true
                 }
             },
             {
-                "function": "powerline.segments.common.time.date",
+                "function":             "powerline.segments.common.bat.battery",
                 "args": {
-                    "format": "%m-%d"
+                    "format":           "{rem_time}",
+                    "original_health":  true
                 }
-			},
-			{
-                "function": "powerline.segments.common.time.date",
-				"name": "date",
-				"args": {
-					"format": "%H:%M",
-					"istime": true
-				}
-			}
-		],
+            },
+            {
+                "function":             "powerline.segments.common.time.date",
+                "args": {
+                    "format":           "%m-%d"
+                }
+            },
+            {
+                "function":             "powerline.segments.common.time.date",
+                "name":                 "date",
+                "args": {
+                    "format":           "%H:%M",
+                    "istime":           true
+                }
+            }
+        ],
         "left": [
             {
-                "function": "powerline.segments.common.net.hostname",
-                "before": "⌂ "
+                "function":             "powerline.segments.common.net.hostname"
             },
             {
-                "function": "powerline.segments.i3wm.mode",
+                "function":             "powerline.segments.i3wm.mode",
                 "args": {
                     "names": {
-                        "default": null,
-                        "resize": "Resize: n|d width, t|r height (10px), Arrow keys (5px)",
-                        "gaps": "Gaps: (o) outer, (i) inner",
-                        "gaps-o": "Outer Gaps: p|m|0 (local), Shift + p|m|0 (global)",
-                        "gaps-i": "Inner Gaps: p|m|0 (local), Shift + p|m|0 (global)"
+                        "default":      null,
+                        "resize":       "Resize: n|d width, t|r height (10px), Arrow keys (5px)",
+                        "gaps":         "Gaps: (o) outer, (i) inner",
+                        "gaps-o":       "Outer Gaps: p|m|0 (local), Shift + p|m|0 (global)",
+                        "gaps-i":       "Inner Gaps: p|m|0 (local), Shift + p|m|0 (global)"
                     }
                 }
             },
             {
-                "function": "powerline.segments.i3wm.workspaces",
-                "exclude_modes": [ "default" ],
-                "draw_inner_divider": true,
-                "draw_soft_divider": true,
+                "function":             "powerline.segments.i3wm.workspaces",
+                "exclude_modes":        [ "default" ],
+                "draw_inner_divider":   true,
+                "draw_soft_divider":    true,
                 "args": {
-                    "only_show": [ "focused", "visible" ],
-                    "output": "__all__",
-                    "separator": " ",
-                    "show_multiple_icons": false,
-                    "icons": {
-                        "Xfce4-terminal": "",
-                        "Chromium": "",
-                        "Steam": "",
-                        "jetbrains-idea": "",
-                        "jetbrains-pycharm-ce": "",
-                        "jetbrains-clion": "",
-                        "Gimp": "",
-                        "Pavucontrol": "",
-                        "Thunderbird": "",
-                        "Thunar": "",
-                        "Skype": "",
-                        "TelegramDesktop": "",
-                        "feh": "",
-                        "Firefox": "",
-                        "Evince": "",
-                        "libreoffice-calc": "",
-                        "libreoffice-writer": "",
-                        "multiple": ""
-                    }
+                    "only_show":        [ "focused", "visible" ],
+                    "output":           "__all__",
+                    "separator":        " ",
+                    "show_multiple_icons": false
                 }
             },
             {
-                "function": "powerline.segments.i3wm.workspaces",
-                "include_modes": [ "default" ],
-                "draw_inner_divider": true,
-                "draw_soft_divider": true,
+                "function":             "powerline.segments.i3wm.workspaces",
+                "include_modes":        [ "default" ],
+                "draw_inner_divider":   true,
+                "draw_soft_divider":    true,
                 "args": {
-                    "output": "__all__",
-                    "separator": " ",
-                    "icons": {
-                        "Xfce4-terminal": "",
-                        "Chromium": "",
-                        "Steam": "",
-                        "jetbrains-idea": "",
-                        "jetbrains-pycharm-ce": "",
-                        "jetbrains-clion": "",
-                        "Gimp": "",
-                        "Pavucontrol": "",
-                        "Thunderbird": "",
-                        "Thunar": "",
-                        "Skype": "",
-                        "TelegramDesktop": "",
-                        "feh": "",
-                        "Firefox": "",
-                        "Evince": "",
-                        "libreoffice-calc": "",
-                        "libreoffice-writer": "",
-                        "multiple": ""
-                    }
+                    "output":           "__all__",
+                    "separator":        " "
                 }
             },
             {
                 "function": "powerline.segments.i3wm.scratchpad"
             }
         ]
-	}
+    }
 }

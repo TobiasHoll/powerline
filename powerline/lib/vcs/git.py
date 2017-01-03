@@ -144,8 +144,8 @@ try:
 			try:
 				stashref = git.Repository(git_directory(self.directory)).lookup_reference('refs/stash')
 			except KeyError:
-				return 0
-			return sum(1 for _ in stashref.log())
+				return []
+			return [str(sum(1 for _ in stashref.log()))]
 		def _repo(self, directory=None):
 			return git.Repository(directory or self.directory)
 
@@ -278,7 +278,8 @@ except ImportError:
 
 		@property
 		def stash(self):
-			return sum(1 for _ in self.gitcmd(self.directory, 'stash', 'list'))
+			stcnt = sum(1 for _ in self.gitcmd(self.directory, 'stash', 'list'))
+			return [str(stcnt)] if stcnt else []
 
 		def do_status(self, directory, path):
 			if path:

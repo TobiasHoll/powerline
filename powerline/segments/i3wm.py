@@ -120,7 +120,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
     else:
         res = []
         for n in output:
-            res += [{ 'contents': n, 'highlight_groups': ['output']}]
+            res += [{'contents': n, 'highlight_groups': ['output']}]
             res += [{'contents': w['name'][min(len(w['name']), strip):] + get_icon(w, separator, icons, show_multiple_icons),
                 'highlight_groups': workspace_groups(w)} for w in sort_ws(get_i3_connection().get_workspaces())
                 if (not only_show or any(w[typ] for typ in only_show))
@@ -174,35 +174,18 @@ def scratchpad(pl, icons=SCRATCHPAD_ICONS):
         } for w in get_i3_connection().get_tree().descendents()
         if w.scratchpad_state != 'none']
 
-def active_window(pl, icon=None, cutoff=100):
+def active_window(pl, cutoff=100):
         '''
         Returns the title of the currently active window
-            :param string icon:
-                Icon to print before title.
             :param int cutoff:
                 Maximum title length. If the title is longer, the window_class is used instead.
-        Highlight groups used: ``active_window_icon``, ``active_window_title``.
+        Highlight groups used: ``active_window_title``.
         '''
 
         focused = get_i3_connection().get_tree().find_focused()
-        segments = []
-
-        if icon:
-            segments.append({'contents': icon, 'highlight_groups': ['active_window_icon']})
 
         cont = focused.name
         if len(cont) > cutoff:
             cont = focused.window_class
 
-        segments.append({'contents': cont, 'highlight_groups': ['active_window_title']})
-
-        return segments if focused.name != focused.workspace().name else []
-
-def workspace_icon(pl, icon='[]'):
-        '''
-        Prints the given icon
-            :param string icon:
-                Specifies the icon to print.
-        Highlight groups used: ``workspace:icon``, ``workspace``.
-        '''
-        return [{'contents': icon, 'highlight_groups': ['workspace:icon', 'workspace']}]
+        return [{'contents': cont, 'highlight_groups': ['active_window_title']}] if focused.name != focused.workspace().name else []

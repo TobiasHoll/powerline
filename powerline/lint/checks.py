@@ -16,6 +16,7 @@ from powerline.lint.context import JStr, list_themes
 from powerline.lint.imp import WithPath, import_function, import_segment
 from powerline.lint.spec import Spec
 from powerline.lint.inspect import getconfigargspec
+from powerline.colorscheme import hex_to_cterm
 
 
 list_sep = JStr(', ')
@@ -153,6 +154,11 @@ def check_color(color, data, context, echoerr):
 	havemarks(color)
 	if (color not in data['colors_config'].get('colors', {})
 		and color not in data['colors_config'].get('gradients', {})):
+		try:
+			if hex_to_cterm(color) != -1:
+				return True, False, False
+		except Exception:
+			pass
 		echoerr(
 			context='Error while checking highlight group in colorscheme (key {key})'.format(
 				key=context.key),

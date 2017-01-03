@@ -1,21 +1,21 @@
 {
-	"default_module": "powerline.segments.pdb",
+	"default_module":               "powerline.segments.pdb",
 	"segments": {
 		"left": [
 			{
-				"function": "stack_depth"
+				"function":         "stack_depth"
 			},
 			{
-				"type": "segment_list",
-				"function": "powerline.listers.pdb.frame_lister",
+				"type":             "segment_list",
+				"function":         "powerline.listers.pdb.frame_lister",
 				"segments": [
 					{
 						"function": "current_file",
-						"after": ":"
+						"after":    ":"
 					},
 					{
 						"function": "current_line",
-						"after": " "
+						"after":    " "
 					},
 					{
 						"function": "current_code_name"

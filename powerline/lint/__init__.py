@@ -143,12 +143,23 @@ true_color_spec = Spec().re(
 	'^[0-9a-fA-F]{6}$',
 	(lambda value: '"{0}" is not a six-digit hexadecimal unsigned integer written as a string'.format(value))
 ).copy
+hex_color_spec = Spec().re(
+	'0x^[0-9a-fA-F]{6}$',
+	(lambda value: '"{0}" is not a six-digit hexadecimal unsigned integer written as a string'.format(value))
+).copy
+hex_color_spec_long = Spec().re(
+	'0x^[0-9a-fA-F]{8}$',
+	(lambda value: '"{0}" is not a eight-digit hexadecimal unsigned integer written as a string'.format(value))
+).copy
+
 colors_spec = (Spec(
 	colors=Spec().unknown_spec(
 		Spec().ident(),
 		Spec().either(
 			Spec().tuple(term_color_spec(), true_color_spec()),
-			term_color_spec()
+			term_color_spec(),
+			hex_color_spec(),
+			hex_color_spec_long()
 		)
 	).context_message('Error while checking colors (key {key})'),
 	gradients=Spec().unknown_spec(

@@ -31,6 +31,17 @@ def pick_gradient_value(grad_list, gradient_level):
 	'''
 	return grad_list[int(round(gradient_level * (len(grad_list) - 1) / 100))]
 
+def add_transparency(str):
+	return "0x{0:f>8}".format(str[2:])
+
+def hex_to_cterm(str):
+	'''Converts a hex color to an xterm color index'''
+	str = add_transparency(str)
+	for i in range(0, len(cterm_to_hex)):
+		if int(cterm_to_hex[i]) == int(str[4:], 16):
+			return i
+	return -1
+
 
 class Colorscheme(object):
 	def __init__(self, colorscheme_config, colors_config):
@@ -104,14 +115,6 @@ class Colorscheme(object):
 		else:
 			raise KeyError('Highlighting groups not found in colorscheme: ' + ', '.join(groups))
 
-		def add_transparency(str):
-			return "0x{0:f>8}".format(str[2:])
-		def hex_to_cterm(str):
-			str = add_transparency(str)
-			for i in range(0, len(cterm_to_hex)):
-				if int(cterm_to_hex[i]) == int(str[4:], 16):
-					return i
-			return 0
 
 		if gradient_level is None:
 			pick_color = lambda str: (hex_to_cterm(str), int(add_transparency(str), 16)) if str.startswith('0x') or str.startswith('0X') else self.colors[str]

@@ -1,5 +1,5 @@
 {
-	"default_module": "powerline.segments.shell",
+	"default_module":       "powerline.segments.shell",
 	"segments": {
 		"left": [
 			{
