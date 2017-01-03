@@ -56,10 +56,10 @@ if __name__ == '__main__':
 			conn.on('mode', lambda conn, evt: update(evt))
 			render()
 			conn.main()
-			#time.sleep(1) # If this gets executed, i3 got restarted / crashed / whatever
-			#conn = i3ipc.Connection()
-			#powerline = LemonbarPowerline()
-			#powerline.update_renderer()
+			time.sleep(1) # If this gets executed, i3 got restarted / crashed / whatever
+			conn = i3ipc.Connection()
+			powerline = LemonbarPowerline()
+			powerline.update_renderer()
 
 	while True:
 		time.sleep(1e8)
