@@ -576,7 +576,7 @@ class Renderer(object):
 		'''
 		return string.translate(self.character_translations)
 
-	def hlstyle(fg=None, bg=None, attrs=None, click=None):
+	def hlstyle(self, fg=None, bg=None, attrs=None, click=None):
 		'''Output highlight style string.
 
 		Assuming highlighted string looks like ``{style}{contents}`` this method

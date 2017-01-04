@@ -185,7 +185,7 @@ class WeatherSegment(KwThreadedSegment):
 			gradient_level = 100
 		else:
 			gradient_level = (temp - temp_coldest) * 100.0 / (temp_hottest - temp_coldest)
-		groups = ['weather_condition_' + icon_name for icon_name in icon_names] + ['weather_conditions', 'weather']
+		groups = ['weather:condition_' + icon_name for icon_name in icon_names] + ['weather:conditions', 'weather']
 		return [
 			{
 				'contents': icon + ' ',
@@ -230,6 +230,6 @@ weather conditions.
 
 Divider highlight group used: ``background:divider``.
 
-Highlight groups used: ``weather_conditions`` or ``weather``, ``weather_temp_gradient`` (gradient) or ``weather``.
-Also uses ``weather_conditions_{condition}`` for all weather conditions supported by Yahoo.
+Highlight groups used: ``weather:conditions`` or ``weather``, ``weather_temp_gradient`` (gradient) or ``weather``.
+Also uses ``weather:conditions_{condition}`` for all weather conditions supported by Yahoo.
 ''')

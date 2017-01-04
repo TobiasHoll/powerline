@@ -17,12 +17,17 @@ def vol( pl, format='♪ {volume:3.0%}', format_muted='♪ {volume}', control='M
 	res = alsaaudio.Mixer(control,id).getvolume();
 
 	for a in res:
-	    avg += a;
+		avg += a;
+
+	if alsaaudio.Mixer(control,id).getmute()[0] == 1 and not format_muted:
+		return None
+	elif not format:
+		return None
 
 	return [{
 		'contents':(format_muted.format(volume='--')
-		    if alsaaudio.Mixer(control,id).getmute()[0] == 1
-		    else format.format(volume=avg/(100*len(res)))),
+			if alsaaudio.Mixer(control,id).getmute()[0] == 1
+			else format.format(volume=avg/(100*len(res)))),
 		'highlight_groups': ['volume_gradient'],
 		'divider_highlight_group': None,
 		'gradient_level': int(a / len( res )),

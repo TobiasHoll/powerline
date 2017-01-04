@@ -118,12 +118,12 @@ class Logger(object):
 
 
 class SimpleRenderer(Renderer):
-	def hlstyle(self, fg=None, bg=None, attrs=None):
+	def hlstyle(self, fg=None, bg=None, attrs=None, click=None):
 		return '<{fg} {bg} {attrs}>'.format(fg=fg and fg[0], bg=bg and bg[0], attrs=attrs)
 
 
 class EvenSimplerRenderer(Renderer):
-	def hlstyle(self, fg=None, bg=None, attrs=None):
+	def hlstyle(self, fg=None, bg=None, attrs=None, click=None):
 		return '{{{fg}{bg}{attrs}}}'.format(
 			fg=fg and fg[0] or '-',
 			bg=bg and bg[0] or '-',

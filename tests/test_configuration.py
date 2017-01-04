@@ -310,7 +310,7 @@ class TestColorschemesHierarchy(TestRender):
 			],
 			'right': [],
 		}
-		# Powerline is not able to work without default colorscheme 
+		# Powerline is not able to work without default colorscheme
 		# somewhere, thus it will output error string
 		self.assertRenderEqual(p, 'colorschemes/test/default')
 		self.assertEqual(p.logger._pop_msgs(), [
@@ -773,7 +773,7 @@ class TestShellEscapes(TestCase):
 
 class TestVim(TestCase):
 	def test_environ_update(self):
-		# Regression test: test that segment obtains environment from vim, not 
+		# Regression test: test that segment obtains environment from vim, not
 		# from os.environ.
 		import tests.vim as vim_module
 		with vim_module._with('globals', powerline_config_paths=['/']):
@@ -832,7 +832,7 @@ class TestLemonbar(TestRender):
 			with get_powerline_raw(config, powerline_module.Powerline, replace_gcp=True, ext='wm', renderer_module='lemonbar') as powerline:
 				self.assertRenderEqual(
 					powerline,
-					'%{l}%{F#ffc00000}%{B#ff008000}%{+u} A%{F-B--u}%{F#ff008000}%{B#ffc00000}>>%{F-B--u}%{F#ff008000}%{B#ffc00000}B%{F-B--u}%{F#ffc00000}>>%{F-B--u}%{r}%{F#ffc00000}<<%{F-B--u}%{F#ff804000}%{B#ffc00000}%{+u}C%{F-B--u}%{F#ff0000c0}%{B#ffc00000}<<%{F-B--u}%{F#ff008000}%{B#ff0000c0}D %{F-B--u}'
+					'%{r}%{F#ffc00000}<<%{F-B--u}%{F#ff804000}%{B#ffc00000}%{+u}C%{F-B--u}%{F#ff0000c0}%{B#ffc00000}<<%{F-B--u}%{F#ff008000}%{B#ff0000c0}D %{F-B--u}%{l}%{F#ffc00000}%{B#ff008000}%{+u} A%{F-B--u}%{F#ff008000}%{B#ffc00000}>>%{F-B--u}%{F#ff008000}%{B#ffc00000}B%{F-B--u}%{F#ffc00000}>>%{F-B--u}'
 				)
 
 	@with_new_config
@@ -846,7 +846,7 @@ class TestLemonbar(TestRender):
 			with get_powerline_raw(config, powerline_module.Powerline, replace_gcp=True, ext='wm', renderer_module='lemonbar') as powerline:
 				self.assertRenderEqual(
 					powerline,
-					'%{l}%{F#ffc00000}%{B#ff008000}%{+u} %%{}{asd}%{F-B--u}%{F#ff008000}%{B#ffc00000}>>%{F-B--u}%{F#ff008000}%{B#ffc00000}10%%{} %%{}%{F-B--u}%{F#ffc00000}>>%{F-B--u}%{r}%{F#ffc00000}<<%{F-B--u}%{F#ff804000}%{B#ffc00000}%{+u}C%{F-B--u}%{F#ff0000c0}%{B#ffc00000}<<%{F-B--u}%{F#ff008000}%{B#ff0000c0}D %{F-B--u}'
+					'%{r}%{F#ffc00000}<<%{F-B--u}%{F#ff804000}%{B#ffc00000}%{+u}C%{F-B--u}%{F#ff0000c0}%{B#ffc00000}<<%{F-B--u}%{F#ff008000}%{B#ff0000c0}D %{F-B--u}%{l}%{F#ffc00000}%{B#ff008000}%{+u} %%{}{asd}%{F-B--u}%{F#ff008000}%{B#ffc00000}>>%{F-B--u}%{F#ff008000}%{B#ffc00000}10%%{} %%{}%{F-B--u}%{F#ffc00000}>>%{F-B--u}'
 				)
 
 

@@ -138,7 +138,7 @@ class TestConfig(TestCase):
 
 	def test_bash(self):
 		from powerline.shell import ShellPowerline
-		args = Args(last_exit_code=1, jobnum=0, ext=['shell'], renderer_module='.bash', config_override={'ext': {'shell': {'theme': 'default_leftonly'}}})
+		args = Args(last_pipe_status=[1], jobnum=0, ext=['shell'], renderer_module='.bash', config_override={'ext': {'shell': {'theme': 'default_leftonly'}}})
 		with ShellPowerline(args, logger=get_logger(), run_once=False) as powerline:
 			powerline.render(segment_info={'args': args})
 		with ShellPowerline(args, logger=get_logger(), run_once=False) as powerline:
@@ -170,6 +170,7 @@ class TestConfig(TestCase):
 		from powerline import Powerline
 		with replace_attr(wthr, 'urllib_read', urllib_read):
 			Powerline(logger=get_logger(), ext='wm', renderer_module='pango_markup', run_once=True).render()
+
 		reload(common)
 
 

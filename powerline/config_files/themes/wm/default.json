@@ -34,7 +34,7 @@
                 "function":             "powerline.segments.common.volume.vol",
                 "args": {
                     "format":           "♫ {volume:2.0%}",
-                    "format_muted":     "{volume:2%}"
+                    "format_muted":     null
                 }
             },
             {
