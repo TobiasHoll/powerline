@@ -11,11 +11,13 @@ from powerline.segments import Segment, with_docstring
 STATE_SYMBOLS = {
 	'fallback': '',
 	'play': '>',
-	'pause': '~',
+	'pause': '||',
 	'stop': 'X',
 	'shuffle': '~>?',
 	'repeat': ':|',
 	'loop': ':|1',
+	'next': '>|',
+	'previous': '|<'
 }
 
 
@@ -37,7 +39,7 @@ def _convert_seconds(seconds):
 
 
 class PlayerSegment(Segment):
-	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', state_symbols=STATE_SYMBOLS, progress_args={'full':'#', 'empty':'_', 'steps': 5}, auto_disable=False, **kwargs):
+	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', state_symbols=STATE_SYMBOLS, progress_args={'full':'#', 'empty':'_', 'steps': 5}, auto_disable=False, show_controls=False, **kwargs):
 		stats = {
 			'state': 'fallback',
 			'shuffle': 'fallback',
@@ -64,10 +66,27 @@ class PlayerSegment(Segment):
 				stats['total_raw'] )
 		if auto_disable and stats['state'] == 'stop':
 			return None
-		return [{
+
+		segments = []
+
+		if show_controls:
+		    segments += [{
+			'contents': state_symbols.get('previous'),
+			'highlight_groups': ['player:previous', 'player']
+		    }]
+
+		segments += [{
 			'contents': format.format(**stats),
-			'highlight_groups': ['player_' + (stats['state'] or 'fallback'), 'player'],
+			'highlight_groups': ['player:' + (stats['state'] or 'fallback'), 'player'],
 		}]
+
+		if show_controls:
+		    segments += [{
+			'contents': state_symbols.get('next'),
+			'highlight_groups': ['player:next', 'player']
+		    }]
+
+		return segments
 
 	def get_player_status(self, pl):
 		pass
@@ -93,7 +112,7 @@ This player segment should be added like this:
 
 (with additional ``"args": {{…}}`` if needed).
 
-Highlight groups used: ``player_fallback`` or ``player``, ``player_play`` or ``player``, ``player_pause`` or ``player``, ``player_stop`` or ``player``.
+Highlight groups used: ``player:fallback`` or ``player``, ``player:play`` or ``player``, ``player:pause`` or ``player``, ``player:stop`` or ``player``.
 
 :param str format:
 	Format used for displaying data from player. Should be a str.format-like

@@ -6,10 +6,13 @@
             "scroll down": "pactl set-sink-volume 0 -1%"
         } },
         "player":                    { "fg": "0xe4e4e4",            "bg": "0x005f87",           "click": {
-            "scroll down": "xdotool key XF86AudioNext",
-            "scroll up": "xdotool key XF86AudioPrev",
-            "left": "xdotool key XF86AudioPlay",
-            "right": "xdotool key XF86AudioNext"
+            "left": "xdotool key XF86AudioPlay"
+        } },
+        "player:next":               { "fg": "0xe4e4e4",            "bg": "0x005f87",           "click": {
+            "left": "xdotool key XF86AudioNext"
+        } },
+        "player:previous":           { "fg": "0xe4e4e4",            "bg": "0x005f87",           "click": {
+            "left": "xdotool key XF86AudioPrev"
         } },
         "workspace":                 { "fg": "0xe4e4e4",            "bg": "0x0087af",           "click": {
             "left": "i3-msg workspace {0:.2}",

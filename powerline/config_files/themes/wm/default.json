@@ -14,20 +14,23 @@
                 "args": {
                     "format":           "{state_symbol}{artist} — {title} ({progress})",
                     "state_symbols": {
-                        "fallback":     "",
-                        "play":         "▶ ",
-                        "pause":        "▮▮ ",
-                        "stop":         "■ ",
-                        "repeat":       "↺ ",
-                        "loop":         "↺1 ",
-                        "shuffle":      "🔀 "
+                        "fallback":         "♫",
+                        "play":             "▶ ",
+                        "pause":            "▮▮ ",
+                        "stop":             " ",
+                        "repeat":           "↺ ",
+                        "loop":             "↺1 ",
+                        "shuffle":          " ",
+                        "next":             "",
+                        "previous":         ""
                     },
                     "progress_args": {
-                        "full":         "⋯",
-                        "empty":        "·",
-                        "steps":        5
+                        "full":             "⋯",
+                        "empty":            "·",
+                        "steps":            5
                     },
-                    "auto_disable":     true
+                    "auto_disable":     true,
+                    "show_controls":    true
                 }
             },
             {
