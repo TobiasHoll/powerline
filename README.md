@@ -88,3 +88,12 @@ To actually _use_ the powerline in your i3 setup, replace the following lines in
 with this line (you may want to adjust the height and the font size):
 
       exec --no-startup-id powerline-lemonbar --i3 --clicks --height 16 -- -a 40 -b -f "DejaVu Sans Mono for Powerline-10" -f "FontAwesome-10"
+
+Some screens
+------------ 
+Some big, blue, beautiful powerlines.
+![Everything](https://github.com/PH111P/powerline/blob/develop/docs/source/_static/img/pl-i3demo1.png)
+![Modes](https://github.com/PH111P/powerline/blob/develop/docs/source/_static/img/pl-i3demo2.png)
+This is as far as it could get. However, this is a rare use case.
+![Full](https://github.com/PH111P/powerline/blob/develop/docs/source/_static/img/pl-i3demo3.png)
+
