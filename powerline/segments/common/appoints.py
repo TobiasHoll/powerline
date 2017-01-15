@@ -1,7 +1,122 @@
 from __future__ import (unicode_literals, division, absolute_import, print_function)
-from datetime import (datetime, timedelta)
-from appoints import (appoint, special, io)
+from datetime import (datetime, timedelta, timezone)
+from powerline.lib.threaded import ThreadedSegment
+from powerline.segments import with_docstring
 import os
+
+class GoogleCalendarSegment(ThreadedSegment):
+    interval = 300
+    service = None
+
+    def set_state(self, developer_key, credentials=os.path.expanduser('~') + '/.config/powerline/gcalendar_credentials', range=1, **kwargs):
+        if not self.service:
+            import gflags
+            import httplib2
+
+            from apiclient.discovery import build
+            from oauth2client.file import Storage
+            from oauth2client.client import OAuth2WebServerFlow
+            from oauth2client.tools import run_flow
+
+            FLAGS = gflags.FLAGS
+
+            # If the Credentials don't exist or are invalid, run through the native client
+            # flow. The Storage object will ensure that if successful the good
+            # Credentials will get written back to a file.
+            storage = Storage(credentials)
+            credentials = storage.get()
+            if credentials is None or credentials.invalid == True:
+                print('Here')
+                return None
+                FLOW = OAuth2WebServerFlow(
+                        client_id=client_id,
+                        client_secret=client_secret,
+                        scope='https://www.googleapis.com/auth/calendar',
+                        user_agent='powerline-appoints-segment/1.0')
+                credentials = run_flow(FLOW, storage)
+
+            # Create an httplib2.Http object to handle our HTTP requests and authorize it
+            # with our good Credentials.
+            http = httplib2.Http()
+            http = credentials.authorize(http)
+
+            self.service = build(serviceName='calendar', version='v3', http=http, developerKey=developer_key)
+
+        self.range = range
+        super(GoogleCalendarSegment, self).set_state(**kwargs)
+
+
+    def update(self, *args, **kwargs):
+        # Get the list of all calendars
+        calendars = self.service.calendarList().list().execute()['items']
+
+
+        # Get the next count events from every calendar
+        return sum([self.service.events().list(
+            calendarId=id,
+            orderBy='startTime',
+            singleEvents=True,
+            timeMin=datetime.now(timezone.utc).isoformat(),
+            timeMax=(datetime.now(timezone.utc) + timedelta(self.range)).isoformat()
+        ).execute()['items'] for id in [c['id'] for c in calendars]], [])
+
+
+    def render(self, events, format='{summary} ({time})', time_format='%H:%M', count=3, show_count=False, **kwargs):
+        if not events:
+            return [{
+                'contents': 'No valid credentials',
+                'highlight_groups': ['appoint:error', 'appoint:urgent', 'appoint']
+            }]
+        segments = []
+        if show_count and len(events) > 0:
+            segments += [{
+                'contents': str(len(events)),
+                'highlight_groups': ['appoint:count', 'appoint']
+            }]
+
+        # Sort all events
+        def remove_at(string, pos):
+            return string[:pos] + string[pos+1:]
+
+        events = [(
+            datetime.strptime(ev['start']['date']+'+0000', "%Y-%m-%d%z") if 'date' in ev['start'] else datetime.strptime(remove_at(ev['start']['dateTime'],-3), "%Y-%m-%dT%H:%M:%S%z"),
+            ev['summary'],
+            ev['location'] if 'location' in ev else '(???)',
+            timedelta(minutes=ev['reminders']['overrides'][0]['minutes'], seconds=self.interval) if 'reminders' in ev and 'overrides' in ev['reminders'] else timedelta(0)
+        ) for ev in events]
+
+        events = sorted([(dt - bf, sm, lc, bf) for dt, sm, lc, bf in events])
+
+        if count != 0:
+            events = events[:count]
+
+        # check if these events are relevant
+        now = datetime.now(timezone.utc)
+        return [{
+            'contents': format.format(time=(dt + bf).strftime(time_format), summary=sm, location=lc),
+            'highlight_groups': ['appoint:urgent', 'appoint'] if now < dt + bf else ['appoint'],
+            'draw_inner_divider': True
+        } for dt, sm, lc, bf in events if dt <= now] + segments
+
+gcalendar = with_docstring(GoogleCalendarSegment(),
+'''Return the next ``count`` appoints found in your Google Calendar.
+:param string format:
+    The format to use when displaying events. Valid fields are time, summary and location.
+:param string time_format:
+    The format to use when displaying times and dates.
+:param int count:
+    Number of appoints that shall be shown
+:param bool show_count:
+    Add an additional segment containing the number of events in the specified range.
+:param string credentials:
+    A path to a file containing credentials to access the Google Calendar API.
+:param string developer_key:
+    Your Google dev key.
+:param int range:
+    Number of days into the future to check. No more than 250 events will be displayed in any case.
+Highlight groups used: ``appoint``, ``appoint:urgent``, ``appoint:count``.
+''')
+
 
 def appoint(pl, count=1, time_before={"0":0, "1":30}, file_path=os.path.expanduser('~') + '/.appointlist'):
     '''Return the next ``count`` appoints
@@ -12,6 +127,7 @@ def appoint(pl, count=1, time_before={"0":0, "1":30}, file_path=os.path.expandus
     Highlight groups used: ``appoint``, ``appoint:urgent``.
     '''
 
+    from appoints import (appoint, special, io)
     appoints = io.read_appoints(file_path)
     if appoints == None:
         return None

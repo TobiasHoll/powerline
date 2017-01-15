@@ -42,7 +42,7 @@
         } },
         "output":                    { "bg": "0x005f87",            "fg": "mediumpurple" },
         "appoint":                   "level:3",
-        "appoint:urgent":            "level:3_bold",
+        "appoint:urgent":            "level:2",
         "mode":                      "level:2",
         "active_window_title":       "level:2"
     }

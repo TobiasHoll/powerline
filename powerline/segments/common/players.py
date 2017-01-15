@@ -72,18 +72,21 @@ class PlayerSegment(Segment):
 		if show_controls:
 		    segments += [{
 			'contents': state_symbols.get('previous'),
-			'highlight_groups': ['player:previous', 'player']
+			'highlight_groups': ['player:previous', 'player'],
+			'draw_inner_divider': True
 		    }]
 
 		segments += [{
 			'contents': format.format(**stats),
 			'highlight_groups': ['player:' + (stats['state'] or 'fallback'), 'player'],
+			'draw_inner_divider': True
 		}]
 
 		if show_controls:
 		    segments += [{
 			'contents': state_symbols.get('next'),
-			'highlight_groups': ['player:next', 'player']
+			'highlight_groups': ['player:next', 'player'],
+			'draw_inner_divider': True
 		    }]
 
 		return segments
