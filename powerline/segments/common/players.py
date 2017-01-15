@@ -100,7 +100,7 @@ class PlayerSegment(Segment):
 		yield 'get_player_status', self.get_player_status
 
 	def omitted_args(self, name, method):
-		return (0,)
+		return ()
 
 
 _common_args = '''
