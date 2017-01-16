@@ -26,7 +26,6 @@ class GoogleCalendarSegment(ThreadedSegment):
             storage = Storage(credentials)
             credentials = storage.get()
             if credentials is None or credentials.invalid == True:
-                print('Here')
                 return None
                 FLOW = OAuth2WebServerFlow(
                         client_id=client_id,
