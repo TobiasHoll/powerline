@@ -32,7 +32,6 @@ class LemonbarRenderer(Renderer):
 				if not key in button_map:
 					continue
 				str = click[key].format(contents.strip()).strip()
-				print(str)
 				text += '%{{A{1}:{0}:}}'.format(str, button_map[key])
 				click_count += 1
 
