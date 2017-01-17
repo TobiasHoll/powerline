@@ -15,24 +15,23 @@ class GoogleCalendarSegment(ThreadedSegment):
 
             from apiclient.discovery import build
             from oauth2client.file import Storage
-            from oauth2client.client import OAuth2WebServerFlow
-            from oauth2client.tools import run_flow
 
             FLAGS = gflags.FLAGS
 
             # If the Credentials don't exist or are invalid, run through the native client
             # flow. The Storage object will ensure that if successful the good
             # Credentials will get written back to a file.
+            if not os.path.exists(credentials):
+                super(GoogleCalendarSegment, self).set_state(**kwargs)
+                self.invalid = True
+                return None
+
             storage = Storage(credentials)
             credentials = storage.get()
             if credentials is None or credentials.invalid == True:
+                super(GoogleCalendarSegment, self).set_state(**kwargs)
+                self.invalid = True
                 return None
-                FLOW = OAuth2WebServerFlow(
-                        client_id=client_id,
-                        client_secret=client_secret,
-                        scope='https://www.googleapis.com/auth/calendar',
-                        user_agent='powerline-appoints-segment/1.0')
-                credentials = run_flow(FLOW, storage)
 
             # Create an httplib2.Http object to handle our HTTP requests and authorize it
             # with our good Credentials.
@@ -42,26 +41,36 @@ class GoogleCalendarSegment(ThreadedSegment):
             self.service = build(serviceName='calendar', version='v3', http=http, developerKey=developer_key)
 
         self.range = range
+        self.invalid = False
         super(GoogleCalendarSegment, self).set_state(**kwargs)
 
+    def get_remind(self, dict):
+        mx = 0
+        for d in dict:
+            mx = max(mx, d['minutes'])
+        return mx
 
     def update(self, *args, **kwargs):
+        if self.invalid:
+            return None
+
         # Get the list of all calendars
         calendars = self.service.calendarList().list().execute()['items']
 
-
         # Get the next count events from every calendar
-        return sum([self.service.events().list(
+        result = [self.service.events().list(
             calendarId=id,
             orderBy='startTime',
             singleEvents=True,
             timeMin=datetime.now(timezone.utc).isoformat(),
             timeMax=(datetime.now(timezone.utc) + timedelta(self.range)).isoformat()
-        ).execute()['items'] for id in [c['id'] for c in calendars]], [])
+        ).execute() for id in [c['id'] for c in calendars]]
 
+        result = [(c['items'], self.get_remind(c['defaultReminders'])) for c in result]
+        return sum([[(e,r) for e in c] for c, r in result], []) or []
 
     def render(self, events, format='{summary} ({time})', time_format='%H:%M', count=3, show_count=False, **kwargs):
-        if not events:
+        if events is None:
             return [{
                 'contents': 'No valid credentials',
                 'highlight_groups': ['appoint:error', 'appoint:urgent', 'appoint']
@@ -81,8 +90,8 @@ class GoogleCalendarSegment(ThreadedSegment):
             datetime.strptime(ev['start']['date']+'+0000', "%Y-%m-%d%z") if 'date' in ev['start'] else datetime.strptime(remove_at(ev['start']['dateTime'],-3), "%Y-%m-%dT%H:%M:%S%z"),
             ev['summary'],
             ev['location'] if 'location' in ev else '(???)',
-            timedelta(minutes=ev['reminders']['overrides'][0]['minutes'], seconds=self.interval) if 'reminders' in ev and 'overrides' in ev['reminders'] else timedelta(0)
-        ) for ev in events]
+            timedelta(minutes=self.get_remind(ev['reminders']['overrides']), seconds=self.interval) if 'reminders' in ev and 'overrides' in ev['reminders'] else timedelta(minutes=bf)
+        ) for ev, bf in events]
 
         events = sorted([(dt - bf, sm, lc, bf) for dt, sm, lc, bf in events])
 
