@@ -59,7 +59,7 @@ else:
 
 setup(
 	name='powerline-status-i3',
-	version='1.2.7',
+	version='1.2.8',
 	description='The ultimate statusline/prompt utility. A fork containing more features for the i3 window manager.',
 	long_description=README,
 	classifiers=[
@@ -125,8 +125,7 @@ setup(
 			'appoints'
 		],
 		'appoints segment, Google Calendar': [
-			'google-api-python-client',
-			'python-gflags'
+			'google-api-python-client'
 		],
 		'cpu load segment': [
 			'psutil'

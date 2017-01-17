@@ -15,13 +15,10 @@ class GoogleCalendarSegment(ThreadedSegment):
         self.range = range
 
         if not self.service:
-            import gflags
             import httplib2
 
             from apiclient.discovery import build
             from oauth2client.file import Storage
-
-            FLAGS = gflags.FLAGS
 
             # If the Credentials don't exist or are invalid, run through the native client
             # flow. The Storage object will ensure that if successful the good
