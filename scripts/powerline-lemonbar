@@ -33,14 +33,19 @@ if __name__ == '__main__':
 	modes = ['default']
 
 	def render(reschedule=False):
-		if reschedule:
-			Timer(args.interval, render, kwargs={'reschedule': True}).start()
+		t = Timer(args.interval, render, kwargs={'reschedule': True})
 
 		global lock
 		with lock:
-			for output, process, width in bars:
-				process.stdin.write(powerline.render(mode=modes[0], width=width, matcher_info=output).encode('utf-8') + b'\n')
-				process.stdin.flush()
+			try:
+				for output, process, width in bars:
+					process.stdin.write(powerline.render(mode=modes[0], width=width, matcher_info=output).encode('utf-8') + b'\n')
+					process.stdin.flush()
+				if reschedule:
+					t.start()
+			except BrokenPipeError:
+				# The lemonbar died, so should we
+				pass
 
 	def update(evt):
 		modes[0] = evt.change

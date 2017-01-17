@@ -5,10 +5,15 @@ from powerline.segments import with_docstring
 import os
 
 class GoogleCalendarSegment(ThreadedSegment):
-    interval = 300
+    interval = 10
     service = None
+    dev_key = None
 
     def set_state(self, developer_key, credentials=os.path.expanduser('~') + '/.config/powerline/gcalendar_credentials', range=1, **kwargs):
+        self.dev_key = developer_key
+        self.cred_path = credentials
+        self.range = range
+
         if not self.service:
             import gflags
             import httplib2
@@ -40,7 +45,6 @@ class GoogleCalendarSegment(ThreadedSegment):
 
             self.service = build(serviceName='calendar', version='v3', http=http, developerKey=developer_key)
 
-        self.range = range
         self.invalid = False
         super(GoogleCalendarSegment, self).set_state(**kwargs)
 
@@ -52,7 +56,10 @@ class GoogleCalendarSegment(ThreadedSegment):
 
     def update(self, *args, **kwargs):
         if self.invalid:
-            return None
+            if self.dev_key:
+                self.set_state(self.dev_key, self.cred_path, self.range, **kwargs)
+            if self.invalid:
+                return None
 
         # Get the list of all calendars
         calendars = self.service.calendarList().list().execute()['items']
