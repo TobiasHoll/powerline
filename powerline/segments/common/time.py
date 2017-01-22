@@ -1,25 +1,33 @@
 # vim:fileencoding=utf-8:noet
 from __future__ import (unicode_literals, division, absolute_import, print_function)
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 
-def date(pl, format='%Y-%m-%d', istime=False):
+def date(pl, format='%Y-%m-%d', istime=False, timezone=None):
 	'''Return the current date.
 
 	:param str format:
 		strftime-style date format string
 	:param bool istime:
 		If true then segment uses ``time`` highlight group.
+	:param str timezone:
+		Specify a timezone to use as ``+HHMM`` or ``-HHMM``.
+		(Defaults to system defaults.)
 
 	Divider highlight group used: ``time:divider``.
 
 	Highlight groups used: ``time`` or ``date``.
 	'''
 	try:
-		contents = datetime.now().strftime(format)
+		tz = datetime.strptime(timezone, '%z').tzinfo if timezone else None
+	except ValueError:
+		tz = None
+
+	try:
+		contents = datetime.now(tz).strftime(format)
 	except UnicodeEncodeError:
-		contents = datetime.now().strftime(format.encode('utf-8')).decode('utf-8')
+		contents = datetime.now(tz).strftime(format.encode('utf-8')).decode('utf-8')
 
 	return [{
 		'contents': contents,
@@ -34,12 +42,15 @@ UNICODE_TEXT_TRANSLATION = {
 }
 
 
-def fuzzy_time(pl, unicode_text=False):
+def fuzzy_time(pl, unicode_text=False, timezone=None):
 	'''Display the current time as fuzzy time, e.g. "quarter past six".
 
 	:param bool unicode_text:
-		If true then hyphenminuses (regular ASCII ``-``) and single quotes are 
+		If true then hyphenminuses (regular ASCII ``-``) and single quotes are
 		replaced with unicode dashes and apostrophes.
+	:param str timezone:
+		Specify a timezone to use as ``+HHMM`` or ``-HHMM``.
+		(Defaults to system defaults.)
 	'''
 	hour_str = ['twelve', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven']
 	minute_str = {
@@ -64,7 +75,12 @@ def fuzzy_time(pl, unicode_text=False):
 		(12, 0): 'noon',
 	}
 
-	now = datetime.now()
+	try:
+		tz = datetime.strptime(timezone, '%z').tzinfo if timezone else None
+	except ValueError:
+		tz = None
+
+	now = datetime.now(tz)
 
 	try:
 		return special_case_str[(now.hour, now.minute)]
