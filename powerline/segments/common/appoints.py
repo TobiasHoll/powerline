@@ -5,7 +5,7 @@ from powerline.segments import with_docstring
 import os
 
 class GoogleCalendarSegment(ThreadedSegment):
-    interval = 10
+    interval = 300
     service = None
     dev_key = None
 
