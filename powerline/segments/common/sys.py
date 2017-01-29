@@ -89,8 +89,8 @@ try:
                 except Exception as e:
                     self.exception('Exception while calculating cpu_percent: {0}', str(e))
 
-        def render(self, cpu_percent, format='{0:.0f}%', **kwargs):
-            if not cpu_percent:
+        def render(self, cpu_percent, format='{0:.0f}%', threshold=None, **kwargs):
+            if not cpu_percent or (threshold and cpu_percent < threshold):
                 return None
             return [{
             'contents': format.format(cpu_percent),
@@ -114,7 +114,7 @@ except ImportError:
             pass
 
         @staticmethod
-        def render(cpu_percent, pl, format='{0:.0f}%', **kwargs):
+        def render(cpu_percent, pl, format='{0:.0f}%', threshold=None **kwargs):
             pl.warn('Module “psutil” is not installed, thus CPU load is not available')
             return None
 
@@ -126,6 +126,8 @@ Requires the ``psutil`` module.
 
 :param str format:
     Output format. Accepts measured CPU load as the first argument.
+:param int threshold:
+    Minimum load to display the segment (in percent)
 
 Highlight groups used: ``cpu_load_percent_gradient`` (gradient) or ``cpu_load_percent``.
 ''')
