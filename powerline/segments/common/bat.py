@@ -79,8 +79,6 @@ def _get_battery_status(pl):
         def _get_status(pl, battery):
             path = _get_paths(status_paths, batteries, battery)
             stat = _read(path)[0]
-            if stat == 'Unknown':
-                stat = ''
             return stat
         return _get_status
     else:
@@ -160,125 +158,172 @@ def _get_rem_time(pl, battery):
         _get_rem_time = _failing_get_rem_time
     return _get_rem_time(pl, battery)
 
-def battery(pl, format='{capacity:3.0%}', steps=5, gamify=False, full_heart='O', half_heart='O', empty_heart='O', bat=0, original_health=False, full_design=-1, online=None, offline=None):
+def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':''}, format='{capacity:3.0%}',
+        rem_time_format='%H:%M', gamify_steps=5, bat=0, original_health=False, full_design=-1):
     '''Return battery charge status.
 
-        :param str format:
-                Percent format in case gamify is False.
-        :param int steps:
+        :param str name:
+                Determines the information displayed. Valid values:
+
+                ========  ========================================================================
+                Name      Description
+                ========  ========================================================================
+                capacity  The remaining capacity of the battery as a float btw 0 and 1.
+                gamify    Rem. cap. encoded in a string of gamify_steps chars from icons.
+                status    Current adapter status (Charging, Discharging or Full).
+                icon      Icon depicting current battery status/capacity.
+                rem_time  Remaining time till the battery is full or empty.
+                ========  ========================================================================
+        :param dict icons:
+                Icons used to display the adapter status. Possible entries are ``online``,
+                ``offline`` and ``full`` for statuses, ``0``, ``25``, ``50``, ``75`` and ``100``
+                for use with gamify. If ``online``, ``offline`` or ``full`` are absent, icon will
+                try to use appropriate icons from gamify.
+        :param string format:
+                Format used to display the capacity.
+        :param string rem_time_format:
+                Format used to display the remaining time (as a strftime format string)
+        :param int gamify_steps:
                 Number of discrete steps to show between 0% and 100% capacity if gamify
-                is True.
-        :param bool gamify:
-                Measure in hearts (♥) instead of percentages. For full hearts
-                ``battery:full`` highlighting group is preferred, for empty hearts there
-                is ``battery:empty``.
-        :param str full_heart:
-                Heart displayed for “full” part of battery.
-        :param str empty_heart:
-                Heart displayed for “used” part of battery. It is also displayed using
-                another gradient level and highlighting group, so it is OK for it to be
-                the same as full_heart as long as necessary highlighting groups are
-                defined.
+                occurs in format. The single one step that is neither completely full
+                nor completely empty will use the icon corresponding to the percentage
+                that part is empty.
         :param int bat:
                 Specifies the battery to display information for.
         :param bool original_health:
-                Use the original battery health ase base value. (Experimental)
+                Use the original battery health as base value. (Experimental)
+        :param int full_design:
+                Specifies the design capacity of the battery. You will need this only if this value
+                happens to read wrong. (Experimental)
 
         ``battery_gradient`` and ``battery`` groups are used in any case, first is
         preferred.
 
-        Highlight groups used: ``battery:full`` or ``battery_gradient`` (gradient) or ``battery``, ``battery:empty`` or ``battery_gradient`` (gradient) or ``battery``.
+        Highlight groups used: ``battery`` or ``battery_gradient`` (gradient) or ``battery:100`` or
+        ``battery:50`` or ``battery:0`` or ``battery:full`` or ``battery:online``
+        or ``battery:offline``.
+
+        Conditions supported: ``capacity`` (int), ``rem_time`` (string), ``status`` (string).
         '''
+    capacity = 0
     try:
         global show_original
         global capacity_full_design
         show_original = original_health
         capacity_full_design = full_design
-
         capacity = min(100, _get_capacity(pl, bat))
-
     except NotImplementedError:
         pl.info('Unable to get battery capacity.')
-        return None
+        capacity = None
 
-    status = ''
-    if gamify or ('status' in format):
-        try:
-            status = _get_status(pl, bat)
-        except NotImplementedError:
-            pl.info('Unable to get battery status.')
-            if 'status' in format:
-                return None
-        if not gamify and status == '':
-            return None
+    status = None
+    try:
+        status = _get_status(pl, bat)
+    except NotImplementedError:
+        pl.info('Unable to get battery status.')
+        status = None
 
     rem_time = 0
-    if 'rem_time' in format:
-        try:
-            rem_time = _get_rem_time(pl, bat)
-        except NotImplementedError:
-            pl.info('Unable to get remaining time.')
-            return None
-        except OSError:
-            pl.info('Your BIOS is screwed.')
-            return None
-        if rem_time == 0 or status == 'Full':
-            return None
+    try:
+        rem_time = _get_rem_time(pl, bat)
+    except NotImplementedError:
+        pl.info('Unable to get remaining time.')
+        rem_time = None
+    except OSError:
+        pl.info('Your BIOS is screwed.')
+        rem_time = None
 
-    rem_sec = int(rem_time * 3600)
-    rem_hours = int(rem_sec / 3600)
-    rem_sec -= rem_hours * 3600
-    rem_minutes = int(rem_sec / 60)
+    if rem_time:
+        from datetime import time
+        rem_sec = int(rem_time * 3600)
+        rem_hours = int(rem_sec / 3600)
+        rem_sec -= rem_hours * 3600
+        rem_minutes = int(rem_sec / 60)
+        rem_sec -= rem_minutes * 60
+        rem_time = time(hour=rem_hours, minute=rem_minutes, second=rem_sec).strftime(rem_time_format)
+    else:
+        rem_time = None
 
-    ret = []
-    if gamify:
-        denom = int(steps)
-        numer = int(denom * capacity / 100 + 0.5)
-        hnumer = 0
-        if capacity < 100 and (denom * capacity / 100)%1 < 0.5:
-            hnumer = 1
+    condition_values = {'status': status, 'rem_time': rem_time, 'capacity': capacity}
+
+    def get_icon(percentage):
+        for p in [100,75,50,25,0]:
+            if percentage >= p and str(p) in icons:
+                return icons[str(p)]
+        return ''
+    def get_status_icon(status):
+        if status in icons:
+            return icons[status]
+        else:
+            return get_icon(capacity)
+    def translate_status(status):
+        return {'Charging':'online', 'Discharging':'offline', 'Full':'full'}.get(status, 'unknown')
+
+    if name == 'gamify':
+        segment_size = 100 // gamify_steps
+        full = int(capacity + .5) // segment_size
+        half = (int(capacity) % segment_size) * 100 // segment_size
+        empty = gamify_steps - full - 1
+
+        ret = []
         ret.append({
-            'contents': full_heart * numer,
+            'contents': get_icon(100) * full,
             'draw_inner_divider': False,
-            'highlight_groups': ['battery:full', 'battery_gradient', 'battery'],
+            'highlight_groups': ['battery:100', 'battery_gradient', 'battery'],
             # Using zero as “nothing to worry about”: it is least alert color.
             'gradient_level': 0,
+            'condition_values': condition_values
             })
         ret.append({
-            'contents': half_heart * hnumer,
+            'contents': get_icon(half),
             'draw_inner_divider': False,
-            'highlight_groups': ['battery:full', 'battery_gradient', 'battery'],
-            # Using zero as “nothing to worry about”: it is least alert color.
-            'gradient_level': 50,
+            'highlight_groups': ['battery_gradient', 'battery'],
+            'gradient_level': segment_size - half,
+            'condition_values': condition_values
             })
         ret.append({
-            'contents': empty_heart * (denom - numer - hnumer),
-            'draw_inner_divider': False,
-            'highlight_groups': ['battery:empty', 'battery_gradient', 'battery'],
+            'contents': get_icon(0) * empty,
+            'highlight_groups': ['battery:0', 'battery_gradient', 'battery'],
             # Using a hundred as it is most alert color.
             'gradient_level': 100,
-            })
-        if status == 'Charging':
-            ret.append({
-                'contents': online,
-                'draw_inner_divider': False,
-                'highlight_groups': ['battery_online', 'battery_gradient', 'battery'],
-                'gradient_level': 0,
-            })
-        elif status == 'Discharging':
-            ret.append({
-                'contents': offline,
-                'draw_inner_divider': False,
-                'highlight_groups': ['battery_offline', 'battery_gradient', 'battery'],
-                'gradient_level': 0,
+            'condition_values': condition_values
             })
         return ret
-    else:
-        ret.append({
-            'contents': format.format(capacity=(capacity / 100.0), status=status, rem_time_hours=rem_hours, rem_time_minutes=rem_minutes),
+    elif name == 'icon':
+        return [{
+            'contents': get_status_icon(translate_status(status)),
+            'highlight_groups': ['battery:' + translate_status(status), 'battery_gradient', 'battery'],
+            'gradient_level': 100 - capacity,
+            'condition_values': condition_values
+            }]
+    elif name == 'status':
+        if not status:
+            return None
+        return [{
+            'contents': status,
+            'highlight_groups': ['battery:' + translate_status(status), 'battery_gradient', 'battery'],
+            'gradient_level': 100 - capacity,
+            'condition_values': condition_values
+            }]
+    elif name == 'capacity':
+        return [{
+            'contents': format.format(capacity=capacity / 100.0, status=status, rem_time=rem_time),
             'highlight_groups': ['battery_gradient', 'battery'],
             # Gradients are “least alert – most alert” by default, capacity has
             # the opposite semantics.
             'gradient_level': 100 - capacity,
-            })
-        return ret
+            'condition_values': condition_values
+            }]
+    elif name == 'rem_time':
+        if not rem_time:
+            return None
+        return [{
+            'contents': rem_time,
+            'highlight_groups': ['battery_gradient', 'battery'],
+            # Gradients are “least alert – most alert” by default, capacity has
+            # the opposite semantics.
+            'gradient_level': 100 - capacity,
+            'condition_values': condition_values
+            }]
+    else:
+        return None

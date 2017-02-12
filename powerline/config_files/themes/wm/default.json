@@ -43,21 +43,32 @@
             {
                 "function":             "powerline.segments.common.bat.battery",
                 "args": {
-                    "format":           " {capacity:3.2%}",
+                    "format":           "",
                     "original_health":  true
                 }
             },
             {
+                "draw_soft_divider":    false,
                 "function":             "powerline.segments.common.bat.battery",
                 "args": {
-                    "format":           "{status}",
-                    "original_health":  true
+                    "name":             "icon",
+                    "original_health":  true,
+                    "icons": {
+                        "0":            " ",
+                        "25":           " ",
+                        "50":           " ",
+                        "75":           " ",
+                        "100":          " ",
+                        "full":         " ",
+                        "online":       " "
+                    }
                 }
             },
             {
+                "draw_soft_divider":    false,
                 "function":             "powerline.segments.common.bat.battery",
                 "args": {
-                    "format":           "{rem_time}",
+                    "name":             "rem_time",
                     "original_health":  true
                 }
             },

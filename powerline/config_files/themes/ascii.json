@@ -63,10 +63,11 @@
         },
         "powerline.segments.common.bat.battery": {
             "args": {
-                "full_heart":       "O",
-                "empty_heart":      "O",
-                "online":           "C",
-                "offline":          " "
+                "icons": {
+                    "online":       "C ",
+                    "0":            "o",
+                    "100":          "*"
+                }
             }
         },
         "powerline.segments.common.sys.uptime": {

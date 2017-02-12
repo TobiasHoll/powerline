@@ -45,8 +45,10 @@
 		"cpu_load_percent_gradient": { "fg": "green_yellow_orange_red", "bg": "0x005f87" },
 		"battery":                   "level:3",
 		"battery_gradient":          { "fg": "white_red",           "bg": "0x005f87" },
-		"battery:full":              { "fg": "red",                 "bg": "0x005f87" },
-		"battery:empty":             "level:3",
+		"battery:100":               { "fg": "red",                 "bg": "0x005f87" },
+		"battery:0":                 "level:3",
+		"battery:online":            { "fg": "yellow",              "bg": "0x005f87" },
+		"battery:full":              { "fg": "mediumgreen",         "bg": "0x005f87" },
 		"player":                    { "fg": "0xe4e4e4",            "bg": "0x005f87",           "click": {
 			"scroll down": "xdotool key XF86AudioNext",
 			"scroll up": "xdotool key XF86AudioPrev",
