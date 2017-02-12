@@ -18,6 +18,8 @@ def date(pl, format='%Y-%m-%d', istime=False, timezone=None):
 	Divider highlight group used: ``time:divider``.
 
 	Highlight groups used: ``time`` or ``date``.
+
+	Conditions available: ``contents`` (string)
 	'''
 	try:
 		tz = datetime.strptime(timezone, '%z').tzinfo if timezone else None
@@ -33,6 +35,7 @@ def date(pl, format='%Y-%m-%d', istime=False, timezone=None):
 		'contents': contents,
 		'highlight_groups': (['time'] if istime else []) + ['date'],
 		'divider_highlight_group': 'time:divider' if istime else None,
+		'condition_values': {'contents': contents}
 	}]
 
 

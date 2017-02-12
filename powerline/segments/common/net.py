@@ -34,6 +34,8 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}'):
 	:param string format:
 		the output format
 	Highlight groups used: ``quality_gradient`` (gradient)
+
+	Conditions available: ``quality`` (int), ``essid`` (string)
 	'''
 
 	try:
@@ -50,9 +52,10 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}'):
 	if essid == '' or quality == 0:
 		return None
 	return [{
-	    'contents': format.format(quality=quality/70, essid=essid.decode(), frequency=frequency),
+	    'contents': format.format(quality=quality/85, essid=essid.decode(), frequency=frequency),
 	    'highlight_groups': ['quality_gradient'],
-	    'gradient_level': 100 * (70 - quality) / 70
+	    'gradient_level': 100 * (85 - quality) / 85,
+	    'condition_values': {'essid': essid, 'quality': quality * 100 / 85}
 	    }]
 
 def _external_ip(query_url='http://ipv6.icanhazip.com/'):
@@ -72,7 +75,8 @@ class ExternalIpSegment(ThreadedSegment):
 	def render(self, ip, **kwargs):
 		if not ip:
 			return None
-		return [{'contents': ip, 'divider_highlight_group': 'background:divider'}]
+		return [{'contents': ip, 'divider_highlight_group': 'background:divider',
+		    'condition_values': {'external_ip': ip}}]
 
 
 external_ip = with_docstring(ExternalIpSegment(),
@@ -88,6 +92,8 @@ external_ip = with_docstring(ExternalIpSegment(),
 	* http://icanhazip.com/ (returns IPv6 address if available, else IPv4)
 
 Divider highlight group used: ``background:divider``.
+
+Conditions available: ``external_ip`` (string)
 ''')
 
 
@@ -291,7 +297,7 @@ class NetworkLoadSegment(KwThreadedSegment):
 			r.append({
 				'contents': format.format(value=humanize_bytes(value, suffix, si_prefix)),
 				'divider_highlight_group': 'network_load:divider',
-				'highlight_groups': hl_groups,
+				'highlight_groups': hl_groups
 			})
 			if is_gradient:
 				max = kwargs[max_key]

@@ -10,6 +10,8 @@ def vol( pl, format='♪ {volume:3.0%}', format_muted='♪ {volume}', control='M
 	:param string control: The control.
 	:param int id: The control id.
 	Highlight groups used: ``volume_gradient`` (gradient).
+
+	Conditions available: ``volume`` (int), ``muted`` (boolean)
 	'''
 
 	avg = 0;
@@ -24,12 +26,14 @@ def vol( pl, format='♪ {volume:3.0%}', format_muted='♪ {volume}', control='M
 	elif not format:
 		return None
 
+	muted = alsaaudio.Mixer(control,id).getmute()[0] == 1
+
 	return [{
 		'contents':(format_muted.format(volume='--')
-			if alsaaudio.Mixer(control,id).getmute()[0] == 1
-			else format.format(volume=avg/(100*len(res)))),
+			if muted else format.format(volume=avg/(100*len(res)))),
 		'highlight_groups': ['volume_gradient'],
 		'divider_highlight_group': None,
 		'gradient_level': int(a / len( res )),
+		'condition_values': {'volume': avg/(100*len(res)), 'muted': muted}
 	}]
 
