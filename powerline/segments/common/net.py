@@ -16,6 +16,7 @@ from powerline.theme import requires_segment_info
 @requires_segment_info
 def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 	'''Return the current hostname.
+
 	:param bool only_if_ssh:
 		only return the hostname if currently in an SSH session
 	:param bool exclude_domain:
@@ -29,10 +30,12 @@ def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 
 def wireless(pl, device, format='{quality:3.0%} at {essid}'):
 	'''Return the current connection quality
+
 	:param string device:
 		the device to use
 	:param string format:
 		the output format
+
 	Highlight groups used: ``quality_gradient`` (gradient)
 
 	Conditions available: ``quality`` (int), ``essid`` (string)

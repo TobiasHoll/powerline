@@ -65,6 +65,7 @@ def get_next_ws(ws, outputs):
 @requires_segment_info
 def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS, show_multiple_icons=True, show_dummy_workspace=False):
     '''Return list of used workspaces
+
         :param list only_show:
                 Specifies which workspaces to show. Valid entries are ``"visible"``,
                 ``"urgent"`` and ``"focused"``. If omitted or ``null`` all workspaces
@@ -90,6 +91,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
                 If this is set to True, this segment will alway display an additional, non-existing
                 workspace. This workspace will be handled as if it was a non-urgent and non-focused
                 regular workspace, i.e., click events will work as with normal workspaces.
+
         Highlight groups used: ``workspace`` or ``workspace:visible``, ``workspace`` or ``workspace:focused``, ``workspace`` or ``workspace:urgent`` or ``output``.
         '''
 
@@ -131,9 +133,11 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
 @requires_segment_info
 def mode(pl, segment_info, names={'default': None}):
     '''Returns current i3 mode
+
         :param str default:
             Specifies the name to be displayed instead of "default".
                 By default the segment is left out in the default mode.
+
         Highligh groups used: ``mode``
         '''
 
@@ -163,9 +167,11 @@ SCRATCHPAD_ICONS = {
 
 def scratchpad(pl, icons=SCRATCHPAD_ICONS):
     '''Returns the windows currently on the scratchpad
+
         :param dict icons:
             Specifies the strings to show for the different scratchpad window states. Must
                 contain the keys ``fresh`` and ``changed``.
+
         Highlight groups used: ``scratchpad`` or ``scratchpad:visible``, ``scratchpad`` or ``scratchpad:focused``, ``scratchpad`` or ``scratchpad:urgent``.
         '''
 
@@ -177,8 +183,10 @@ def scratchpad(pl, icons=SCRATCHPAD_ICONS):
 def active_window(pl, cutoff=100):
         '''
         Returns the title of the currently active window
+
             :param int cutoff:
                 Maximum title length. If the title is longer, the window_class is used instead.
+
         Highlight groups used: ``active_window_title``.
         '''
 

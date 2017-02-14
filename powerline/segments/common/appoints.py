@@ -73,7 +73,7 @@ class GoogleCalendarSegment(ThreadedSegment):
         result = [(c['items'], self.get_remind(c['defaultReminders'])) for c in result]
         return sum([[(e,r) for e in c] for c, r in result], []) or []
 
-    def render(self, events, format='{summary} ({time})', time_format='%H:%M', count=3, show_count=False, **kwargs):
+    def render(self, events, format='{summary}{time}', time_format=' (%H:%M)', count=3, show_count=False, hide_times=[" (00:00)"], **kwargs):
         if events is None:
             return [{
                 'contents': 'No valid credentials',
@@ -105,13 +105,14 @@ class GoogleCalendarSegment(ThreadedSegment):
         # check if these events are relevant
         now = datetime.now(timezone.utc)
         return [{
-            'contents': format.format(time=(dt + bf).strftime(time_format), summary=sm, location=lc),
+            'contents': format.format(time="" if (dt + bf).strftime(time_format) in hide_times else (dt + bf).strftime(time_format), summary=sm, location=lc),
             'highlight_groups': ['appoint:urgent', 'appoint'] if now < dt + bf else ['appoint'],
             'draw_inner_divider': True
         } for dt, sm, lc, bf in events if dt <= now] + segments
 
 gcalendar = with_docstring(GoogleCalendarSegment(),
 '''Return the next ``count`` appoints found in your Google Calendar.
+
 :param string format:
     The format to use when displaying events. Valid fields are time, summary and location.
 :param string time_format:
@@ -120,22 +121,27 @@ gcalendar = with_docstring(GoogleCalendarSegment(),
     Number of appoints that shall be shown
 :param bool show_count:
     Add an additional segment containing the number of events in the specified range.
+:param list hide_times:
+    Times (using time_format) not to be displayed as start times.
 :param string credentials:
     A path to a file containing credentials to access the Google Calendar API.
 :param string developer_key:
     Your Google dev key.
 :param int range:
     Number of days into the future to check. No more than 250 events will be displayed in any case.
+
 Highlight groups used: ``appoint``, ``appoint:urgent``, ``appoint:count``.
 ''')
 
 
 def appoint(pl, count=1, time_before={"0":0, "1":30}, file_path=os.path.expanduser('~') + '/.appointlist'):
     '''Return the next ``count`` appoints
+
     :param int count:
         Number of appoints that shall be shown
     :param time_before:
         Time in minutes before the appoint to start alerting
+
     Highlight groups used: ``appoint``, ``appoint:urgent``.
     '''
 

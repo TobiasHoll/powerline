@@ -193,12 +193,13 @@ def uptime(pl, days_format='{days:d}d', hours_format=' {hours:d}h', minutes_form
 def temp(pl, format='{:.1f}°C', path="/sys/class/thermal/thermal_zone0/temp", accuracy=0.001, lowtemp=20, hightemp=80):
     '''
     Returns the temperature
+
     :param string format:
-    Output format
+	Output format
     :param string path:
-    Path of the file containing the temperature
+	Path of the file containing the temperature
     :param int accuracy:
-    Accuracy to read
+	Accuracy to read
 
     Conditions available: ``temp`` (string), ``temp_raw`` (int)
     '''

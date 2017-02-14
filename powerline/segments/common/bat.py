@@ -160,7 +160,7 @@ def _get_rem_time(pl, battery):
 
 def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':''}, format='{capacity:3.0%}',
         rem_time_format='%H:%M', gamify_steps=5, bat=0, original_health=False, full_design=-1):
-    '''Return battery charge status.
+    '''Return batteries' charge status.
 
         :param str name:
                 Determines the information displayed. Valid values:
@@ -203,7 +203,7 @@ def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':
         ``battery:50`` or ``battery:0`` or ``battery:full`` or ``battery:online``
         or ``battery:offline``.
 
-        Conditions supported: ``capacity`` (int), ``rem_time`` (string), ``status`` (string).
+        Conditions available: ``capacity`` (int), ``rem_time`` (string), ``status`` (string).
         '''
     capacity = 0
     try:
@@ -277,7 +277,7 @@ def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':
         ret.append({
             'contents': get_icon(half),
             'draw_inner_divider': False,
-            'highlight_groups': ['battery_gradient', 'battery'],
+            'highlight_groups': ['battery_gamify_gradient', 'battery_gradient', 'battery'],
             'gradient_level': segment_size - half,
             'condition_values': condition_values
             })

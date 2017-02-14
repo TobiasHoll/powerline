@@ -6,9 +6,14 @@ import alsaaudio
 
 def vol( pl, format='♪ {volume:3.0%}', format_muted='♪ {volume}', control='Master', id=0 ):
 	'''Return the current volume.
-	:param string format: The format.
-	:param string control: The control.
-	:param int id: The control id.
+
+	:param string format:
+	    The format.
+	:param string control:
+	    The control.
+	:param int id:
+	    The control id.
+
 	Highlight groups used: ``volume_gradient`` (gradient).
 
 	Conditions available: ``volume`` (int), ``muted`` (boolean)
