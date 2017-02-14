@@ -1,30 +1,30 @@
 {
-	"use_non_breaking_spaces":      false,
-	"dividers": {
-		"left": {
-			"hard":                 " ",
-			"soft":                 "| "
-		},
-		"right": {
-			"hard":                 " ",
-			"soft":                 " |"
-		}
-	},
-	"spaces":                       1,
-	"segment_data": {
-		"branch": {
-			"before":               "BR "
-		},
-		"stash": {
-			"before":               "ST "
-		},
-		"cwd": {
-			"args": {
-				"ellipsis":         "..."
-			}
-		},
-		"player": {
-			"args": {
+    "use_non_breaking_spaces":      false,
+    "dividers": {
+        "left": {
+            "hard":                 " ",
+            "soft":                 "| "
+        },
+        "right": {
+            "hard":                 " ",
+            "soft":                 " |"
+        }
+    },
+    "spaces":                       1,
+    "segment_data": {
+        "branch": {
+            "before":               "BR "
+        },
+        "stash": {
+            "before":               "ST "
+        },
+        "cwd": {
+            "args": {
+                "ellipsis":         "..."
+            }
+        },
+        "player": {
+            "args": {
                 "state_symbols": {
                     "fallback":     "",
                     "play":         "> ",
@@ -103,50 +103,52 @@
                 "unicode_text":     false
             }
         },
-
         "powerline.segments.vim.mode": {
             "args": {
                 "override": {
-                    "n":            "NORMAL",
-                    "no":           "N-OPER",
-                    "v":            "VISUAL",
-                    "V":            "V-LINE",
-                    "^V":           "V-BLCK",
-                    "s":            "SELECT",
-                    "S":            "S-LINE",
-                    "^S":           "S-BLCK",
-                    "i":            "INSERT",
-                    "R":            "RPLACE",
-                    "Rv":           "V-RPLC",
-                    "c":            "COMMND",
-                    "cv":           "VIM-EX",
-                    "ce":           "NRM-EX",
-                    "r":            "PROMPT",
-                    "rm":           "-MORE-",
-                    "r?":           "CNFIRM",
-                    "!":            "!SHELL"
+                    "n":  "NORMAL",
+                    "no": "N-OPER",
+                    "v":  "VISUAL",
+                    "V":  "V-LINE",
+                    "^V": "V-BLCK",
+                    "s":  "SELECT",
+                    "S":  "S-LINE",
+                    "^S": "S-BLCK",
+                    "i":  "INSERT",
+                    "ic": "I-COMP",
+                    "ix": "I-C_X ",
+                    "R":  "RPLACE",
+                    "Rv": "V-RPLC",
+                    "Rc": "R-COMP",
+                    "Rx": "R-C_X ",
+                    "c":  "COMMND",
+                    "cv": "VIM-EX",
+                    "ce": "NRM-EX",
+                    "r":  "PROMPT",
+                    "rm": "-MORE-",
+                    "r?": "CNFIRM",
+                    "!":  "!SHELL"
                 }
             }
         },
         "powerline.segments.vim.visual_range": {
             "args": {
-                "CTRL_V_text":      "{rows} x {vcols}",
-                "v_text_oneline":   "C:{vcols}",
+                "CTRL_V_text": "{rows} x {vcols}",
+                "v_text_oneline": "C:{vcols}",
                 "v_text_multiline": "L:{rows}",
-                "V_text":           "L:{rows}"
+                "V_text": "L:{rows}"
             }
         },
         "powerline.segments.vim.readonly_indicator": {
             "args": {
-                "text":             "RO"
+                "text": "RO"
             }
         },
         "powerline.segments.vim.modified_indicator": {
             "args": {
-                "text":             "+"
+                "text": "+"
             }
         },
-
         "powerline.segments.i3wm.scratchpad": {
             "args": {
                 "icons": {
