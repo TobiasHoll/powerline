@@ -93,6 +93,8 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
                 regular workspace, i.e., click events will work as with normal workspaces.
 
         Highlight groups used: ``workspace`` or ``workspace:visible``, ``workspace`` or ``workspace:focused``, ``workspace`` or ``workspace:urgent`` or ``output``.
+
+        Click values supplied: ``workspace_name`` (string) for workspaces and ``output_name`` (string) for outputs.
         '''
 
     if not output == "__all__":
@@ -114,7 +116,8 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
     if len(output) <= 1:
         return [{
             'contents': w['name'][min(len(w['name']), strip):] + get_icon(w, separator, icons, show_multiple_icons),
-            'highlight_groups': workspace_groups(w)
+            'highlight_groups': workspace_groups(w),
+            'click_values': {'workspace_name': w['name']}
             } for w in sort_ws(get_i3_connection().get_workspaces())
             if (not only_show or any(w[typ] for typ in only_show))
             and w['output'] == output[0]
@@ -122,9 +125,10 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
     else:
         res = []
         for n in output:
-            res += [{'contents': n, 'highlight_groups': ['output']}]
+            res += [{'contents': n, 'highlight_groups': ['output'], 'click_values': {'output_name': n}}]
             res += [{'contents': w['name'][min(len(w['name']), strip):] + get_icon(w, separator, icons, show_multiple_icons),
-                'highlight_groups': workspace_groups(w)} for w in sort_ws(get_i3_connection().get_workspaces())
+                'highlight_groups': workspace_groups(w),
+                'click_values': {'workspace_name': w['name']}} for w in sort_ws(get_i3_connection().get_workspaces())
                 if (not only_show or any(w[typ] for typ in only_show))
                 and w['output'] == n
                 ]
