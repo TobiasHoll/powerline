@@ -4,7 +4,7 @@ from __future__ import (unicode_literals, division, absolute_import, print_funct
 from datetime import datetime, timezone
 
 
-def date(pl, format='%Y-%m-%d', istime=False, timezone=None):
+def date(pl, format='%Y-%m-%d', istime=False, timezone=None, rel_names=['4', 'Off', '1', '2', '3']):
 	'''Return the current date.
 
 	:param str format:
@@ -26,10 +26,13 @@ def date(pl, format='%Y-%m-%d', istime=False, timezone=None):
 	except ValueError:
 		tz = None
 
+	nw = datetime.now(tz)
+	format = format.replace('%J', rel_names[nw.timetuple().tm_yday % len(rel_names)])
+
 	try:
-		contents = datetime.now(tz).strftime(format)
+		contents = nw.strftime(format)
 	except UnicodeEncodeError:
-		contents = datetime.now(tz).strftime(format.encode('utf-8')).decode('utf-8')
+		contents = nw.strftime(format.encode('utf-8')).decode('utf-8')
 
 	return [{
 		'contents': contents,
