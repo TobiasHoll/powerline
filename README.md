@@ -72,7 +72,7 @@ The following Arch Linux packages should be installed:
 If you have successfully installed all the previous packages, installing this fork becomes as easy
 as
 
-      pip install powerline-status-i3
+      pip install git+https://github.com/PH111P/powerline.git@develop
 
 or
 
