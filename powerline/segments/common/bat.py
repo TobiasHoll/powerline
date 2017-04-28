@@ -247,7 +247,7 @@ def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':
     condition_values = {'status': status, 'rem_time': rem_time, 'capacity': capacity}
 
     def get_icon(percentage):
-        for p in [100,75,50,25,0]:
+        for p in range(100, -1, -1):
             if percentage >= p and str(p) in icons:
                 return icons[str(p)]
         return ''
