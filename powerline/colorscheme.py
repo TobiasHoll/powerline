@@ -10,7 +10,7 @@ DEFAULT_MODE_KEY = None
 ATTR_BOLD = 1
 ATTR_ITALIC = 2
 ATTR_UNDERLINE = 4
-
+ATTR_OVERLINE = 8
 
 def get_attrs_flag(attrs):
 	'''Convert an attribute array to a renderer flag.'''
@@ -21,6 +21,8 @@ def get_attrs_flag(attrs):
 		attrs_flag |= ATTR_ITALIC
 	if 'underline' in attrs:
 		attrs_flag |= ATTR_UNDERLINE
+	if 'overline' in attrs:
+		attrs_flag |= ATTR_OVERLINE
 	return attrs_flag
 
 
