@@ -77,10 +77,12 @@ class Colorscheme(object):
 
 		# Create a dict of color tuples with both a cterm and hex value
 		for color_name, color in colors_config['colors'].items():
-			try:
-				self.colors[color_name] = (color[0], int(color[1], 16))
-			except TypeError:
+			if type(color) == int:
 				self.colors[color_name] = (color, cterm_to_hex[color])
+			elif type(color) == str:
+				self.colors[color_name] = (hex_to_cterm(color), int(color, 16))
+			else:
+				self.colors[color_name] = (color[0], int(color[1], 16))
 
 		# Create a dict of gradient names with two lists: for cterm and hex
 		# values. Two lists in place of one list of pairs were chosen because
