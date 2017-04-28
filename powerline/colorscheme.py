@@ -5,6 +5,7 @@ from copy import copy
 
 from powerline.lib.unicode import unicode
 
+from colorsys import hsv_to_rgb, rgb_to_hsv
 
 DEFAULT_MODE_KEY = None
 ATTR_BOLD = 1
@@ -25,25 +26,45 @@ def get_attrs_flag(attrs):
 		attrs_flag |= ATTR_OVERLINE
 	return attrs_flag
 
+def lerp(a, b, x):
+    return (1-x) * a + x * b
+
+def round_col(*t):
+    return tuple(map(lambda x: int(x+0.5), t))
 
 def pick_gradient_value(grad_list, gradient_level):
 	'''Given a list of colors and gradient percent, return a color that should be used.
 
 	Note: gradient level is not checked for being inside [0, 100] interval.
 	'''
-	return grad_list[int(round(gradient_level * (len(grad_list) - 1) / 100))]
+	idx = len(grad_list) * (gradient_level / 100)
+	fr = idx % 1
+	
+	idx = int(idx)
+	
+	if idx - 1 < 0:
+	    return grad_list[0]
+	elif idx >= len(grad_list):
+	    return grad_list[-1]
+	
+	h0, s0, v0 = rgb_to_hsv(*hex_to_rgb(grad_list[idx-1]))
+	h1, s1, v1 = rgb_to_hsv(*hex_to_rgb(grad_list[idx]))
+	
+	# adapt hue for gradients to black/white
+	if s1 < 10 ** -3:
+		h1 = h0
+	elif s0 < 10 ** -3:
+		h0 = h1
+	
+	c = round_col(*hsv_to_rgb(lerp(h0, h1, fr), lerp(s0, s1, fr), lerp(v0, v1, fr)))
+	return rgb_to_hex(*c)
 
 def add_transparency(str):
 	return "0x{0:f>8}".format(str[2:])
 
-def hex_to_cterm(str):
-	'''Converts a hex color to an xterm color index'''
-	str = add_transparency(str)
-	for i in range(0, len(cterm_to_hex)):
-		if int(cterm_to_hex[i]) == int(str[4:], 16):
-			return i
-	return -1
-
+def hex_to_cterm(s):
+	'''Converts a string describing a hex color (e.g. "0xff6600") to an xterm color index'''
+	return cterm_color(*hex_str_to_rgb(add_transparency(s)))
 
 class Colorscheme(object):
 	def __init__(self, colorscheme_config, colors_config):
@@ -66,15 +87,15 @@ class Colorscheme(object):
 		# true colors allow more precise gradients.
 		for gradient_name, gradient in colors_config['gradients'].items():
 			if len(gradient) == 2:
-				self.gradients[gradient_name] = (
-					(gradient[0], [int(color, 16) for color in gradient[1]]))
+				self.gradients[gradient_name] = [int(color, 16) for color in gradient[1]]
 			else:
-				self.gradients[gradient_name] = (
-					(gradient[0], [cterm_to_hex[color] for color in gradient[0]]))
+				self.gradients[gradient_name] = [cterm_to_hex[color] for color in gradient[0]]
 
 	def get_gradient(self, gradient, gradient_level):
 		if gradient in self.gradients:
-			return tuple((pick_gradient_value(grad_list, gradient_level) for grad_list in self.gradients[gradient]))
+			# cterm, hex
+			col = pick_gradient_value(self.gradients[gradient], gradient_level)
+			return (cterm_color(*hex_to_rgb(col)), col)
 		else:
 			return self.colors[gradient]
 
@@ -161,3 +182,79 @@ cterm_to_hex = (
 	0x585858, 0x626262, 0x6c6c6c, 0x767676, 0x808080, 0x8a8a8a, 0x949494, 0x9e9e9e, 0xa8a8a8, 0xb2b2b2,  # 24
 	0xbcbcbc, 0xc6c6c6, 0xd0d0d0, 0xdadada, 0xe4e4e4, 0xeeeeee                                           # 25
 )
+
+def rgb_to_hex_str(r, g, b):
+    return f"0x{r:02x}{g:02x}{b:02x}"
+
+def rgb_to_hex(r, g, b):
+    return r << 16 | g << 8 | b
+
+def hex_str_to_rgb(s):
+    return int(s[-6:-4], 16), int(s[-4:-2], 16), int(s[-2:], 16)
+
+def hex_to_rgb(x):
+    return tuple((x >> i) & 0xff for i in range(16, -1, -8))
+
+def cterm_grey_number(x):
+    if x < 14:
+        return 0
+    else:
+        n = (x - 8) // 10
+        m = (x - 8) % 10
+        if m < 5:
+            return n
+        else:
+            return n + 1
+
+def cterm_grey_level(n):
+    if n == 0:
+        return 0
+    return 10 * n + 8
+
+def cterm_grey_color(n):
+    return {0: 0, 25: 231}.get(n, 231 + n)
+
+def cterm_rgb_number(x):
+    if x < 75:
+        return 0
+    n = (x - 55) // 40
+    m = (x - 55) % 40
+    if m < 20:
+        return n
+    else:
+        return n + 1
+
+def cterm_rgb_level(n):
+    if n == 0:
+        return 0
+    return 40 * n + 55
+
+def cterm_rgb_color(x, y, z):
+    return 16 + (x * 36) + (y * 6) + z
+
+def cterm_color(r, g, b):
+    if 3 < r == g == b < 243:
+        return int(int(r - 7.5) / 10) + 232
+    gx = cterm_grey_number(r)
+    gy = cterm_grey_number(g)
+    gz = cterm_grey_number(b)
+    x = cterm_rgb_number(r)
+    y = cterm_rgb_number(g)
+    z = cterm_rgb_number(b)
+
+    if gx == gy == gz:
+        dgr = cterm_grey_level(gx) - r
+        dgg = cterm_grey_level(gy) - g
+        dgb = cterm_grey_level(gz) - b
+        dgrey = dgr ** 2 + dgg ** 2 + dgb ** 2
+        dr = cterm_rgb_level(gx) - r
+        dg = cterm_rgb_level(gy) - g
+        db = cterm_rgb_level(gz) - b
+        drgb = dr ** 2 + dg ** 2 + db ** 2
+        if dgrey < drgb:
+            return cterm_grey_color(gx)
+        else:
+            return cterm_rgb_color(x, y, z)
+    else:
+        return cterm_rgb_color(x, y, z)
+
