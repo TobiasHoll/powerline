@@ -86,9 +86,11 @@ class Colorscheme(object):
 		# values. Two lists in place of one list of pairs were chosen because
 		# true colors allow more precise gradients.
 		for gradient_name, gradient in colors_config['gradients'].items():
-			if len(gradient) == 2:
+			if type(gradient[0]) == list:
 				self.gradients[gradient_name] = [int(color, 16) for color in gradient[1]]
-			else:
+			elif type(gradient[0]) == str:
+				self.gradients[gradient_name] = [int(color, 16) for color in gradient]
+			elif type(gradient[0]) == int:
 				self.gradients[gradient_name] = [cterm_to_hex[color] for color in gradient[0]]
 
 	def get_gradient(self, gradient, gradient_level):
