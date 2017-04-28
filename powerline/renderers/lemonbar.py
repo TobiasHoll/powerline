@@ -3,8 +3,6 @@ from __future__ import (unicode_literals, division, absolute_import, print_funct
 
 from powerline.renderer import Renderer
 from powerline.theme import Theme
-from powerline.colorscheme import ATTR_UNDERLINE
-
 
 class LemonbarRenderer(Renderer):
 	'''lemonbar (formerly bar/bar ain't recursive) renderer
@@ -31,8 +29,8 @@ class LemonbarRenderer(Renderer):
 			for key in click:
 				if not key in button_map:
 					continue
-				str = click[key].format(contents.strip()).strip()
-				text += '%{{A{1}:{0}:}}'.format(str, button_map[key])
+				st = click[key].format(contents.strip()).strip()
+				text += '%{{A{1}:{0}:}}'.format(st, button_map[key])
 				click_count += 1
 
 		if fg is not None:
@@ -49,10 +47,7 @@ class LemonbarRenderer(Renderer):
 				else:
 					text += '%{{B#{0:08x}}}'.format(bg[1])
 
-		if attrs and attrs & ATTR_UNDERLINE:
-			text += '%{+u}'
-
-		return text + contents + '%{F-B--u}' + ('%{A}' * click_count)
+		return text + contents + '%{F-B-}' + ('%{A}' * click_count)
 
 	def render(self, *args, **kwargs):
 		return '%{{r}}{1}%{{l}}{0}'.format(

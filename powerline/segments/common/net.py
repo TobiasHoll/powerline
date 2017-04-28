@@ -17,10 +17,10 @@ from powerline.theme import requires_segment_info
 def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 	'''Return the current hostname.
 
-	:param bool only_if_ssh:
-		only return the hostname if currently in an SSH session
-	:param bool exclude_domain:
-		return the hostname without domain if there is one
+:param bool only_if_ssh:
+	only return the hostname if currently in an SSH session
+:param bool exclude_domain
+	return the hostname without domain if there is one
 	'''
 	if only_if_ssh and not segment_info['environ'].get('SSH_CLIENT'):
 		return None
@@ -29,17 +29,17 @@ def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 	return socket.gethostname()
 
 def wireless(pl, device, format='{quality:3.0%} at {essid}'):
-	'''Return the current connection quality
+	'''Return the current connection quality.
 
-	:param string device:
-		the device to use
-	:param string format:
-		the output format
+:param string device:
+	the device to use
+:param string format:
+	the output format
 
-	Highlight groups used: ``quality_gradient`` (gradient)
+Highlight groups used: ``quality_gradient`` (gradient)
 
-	Conditions available: ``quality`` (int), ``essid`` (string)
-	'''
+Conditions available: ``quality`` (int), ``essid`` (string)
+'''
 
 	try:
 		import iwlib
