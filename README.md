@@ -26,6 +26,7 @@ the features that were added in this fork.
 * Added GPMDP support in the player segment.
 * Merged and improved [ZyX-I's revinfo branch](https://github.com/ZyX-I/powerline/tree/revinfo), replacing the VCS segment.
 * Click support (see documentation below)
+* Simplified gradients: specify start and end colors (and optionally intermediate colors) as hex values, values inbetween colors (and corresponding cterm colors) will be generated automatically.
 
 Changes requiring documentation
 -------------------------------
