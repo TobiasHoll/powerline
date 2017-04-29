@@ -32,7 +32,7 @@ def lerp(a, b, x):
 def round_col(*t):
     return tuple(map(lambda x: int(x+0.5), t))
 
-def pick_gradient_value(grad_list, gradient_level):
+def pick_gradient_value(grad_list, gradient_level, is_hsv = False):
 	'''Given a list of colors and gradient percent, return a color that should be used.
 
 	Note: gradient level is not checked for being inside [0, 100] interval.
@@ -43,12 +43,16 @@ def pick_gradient_value(grad_list, gradient_level):
 	idx = int(idx)
 	
 	if idx - 1 < 0:
-	    return grad_list[0]
+	    return grad_list[0] if not is_hsv else rgb_to_hex(*round_col(*hsv_to_rgb(*grad_list[0])))
 	elif idx >= len(grad_list):
-	    return grad_list[-1]
-	
-	h0, s0, v0 = rgb_to_hsv(*hex_to_rgb(grad_list[idx-1]))
-	h1, s1, v1 = rgb_to_hsv(*hex_to_rgb(grad_list[idx]))
+	    return grad_list[-1] if not is_hsv else rgb_to_hex(*round_col(*hsv_to_rgb(*grad_list[-1])))
+
+	if is_hsv:
+		h0, s0, v0 = grad_list[idx-1]
+		h1, s1, v1 = grad_list[idx]
+	else:
+		h0, s0, v0 = rgb_to_hsv(*hex_to_rgb(grad_list[idx-1]))
+		h1, s1, v1 = rgb_to_hsv(*hex_to_rgb(grad_list[idx]))
 	
 	# adapt hue for gradients to black/white
 	if s1 < 10 ** -3:
@@ -71,6 +75,7 @@ class Colorscheme(object):
 		'''Initialize a colorscheme.'''
 		self.colors = {}
 		self.gradients = {}
+		self.gradient_types = {}
 
 		self.groups = colorscheme_config['groups']
 		self.translations = colorscheme_config.get('mode_translations', {})
@@ -89,16 +94,23 @@ class Colorscheme(object):
 		# true colors allow more precise gradients.
 		for gradient_name, gradient in colors_config['gradients'].items():
 			if type(gradient[0]) == list:
-				self.gradients[gradient_name] = [int(color, 16) for color in gradient[1]]
+				if len(gradient) > 1 and type(gradient[1][0]) == float:
+					self.gradients[gradient_name]= gradient
+					self.gradient_types[gradient_name] = "hsv"
+				else: # legacy [[cterm], [hex]]
+					self.gradients[gradient_name] = [int(color, 16) for color in gradient[1]]
+					self.gradient_types[gradient_name] = "hex"
 			elif type(gradient[0]) == str:
 				self.gradients[gradient_name] = [int(color, 16) for color in gradient]
+				self.gradient_types[gradient_name] = "hex"
 			elif type(gradient[0]) == int:
 				self.gradients[gradient_name] = [cterm_to_hex[color] for color in gradient[0]]
+				self.gradient_types[gradient_name] = "hex"
 
 	def get_gradient(self, gradient, gradient_level):
 		if gradient in self.gradients:
 			# cterm, hex
-			col = pick_gradient_value(self.gradients[gradient], gradient_level)
+			col = pick_gradient_value(self.gradients[gradient], gradient_level, is_hsv = (self.gradient_types[gradient] == "hsv"))
 			return (cterm_color(*hex_to_rgb(col)), col)
 		else:
 			return self.colors[gradient]
