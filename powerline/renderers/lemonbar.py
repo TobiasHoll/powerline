@@ -5,11 +5,12 @@ from powerline.renderer import Renderer
 from powerline.theme import Theme
 
 class LemonbarRenderer(Renderer):
-	'''lemonbar (formerly bar/bar ain't recursive) renderer
+'''
+lemonbar (formerly bar/bar ain't recursive) renderer
 
 
-	See documentation of `lemonbar <https://github.com/LemonBoy/bar>`_ and :ref:`the usage instructions <lemonbar-usage>`
-	'''
+See documentation of `lemonbar <https://github.com/LemonBoy/bar>`_ and :ref:`the usage instructions <lemonbar-usage>`
+'''
 
 	character_translations = Renderer.character_translations.copy()
 	character_translations[ord('%')] = '%%{}'
