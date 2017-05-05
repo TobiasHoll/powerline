@@ -42,10 +42,10 @@ This fork extends the files used by the powerline to configure the color scheme 
 * The colors in `fg` and `bg` can be specified directly through hex values using `0x` as a prefix (`0xRRGGBB` or `0xAARRGGBB`). These hex values will be translated back into xterm color indices whenever possible.
 
 ####Examples
-A configuration to let the workspace segment act like the i3bar's (The substring hack is only required due to the way icons  for programs running on a workspace are implemented. Without using these icons, a simple `{0}` would suffice.):
+A configuration to let the workspace segment act like the i3bar's (`workspace_name` is a special value that gets set to the correct workspace name by the workspace segment.):
 
-      "workspace": { "fg": "0xe4e4e4", "bg": "0x0087af", "click": { "left": "i3-msg workspace {0:.2}", "right": "i3-msg move to workspace {0:.2}" } },
-      "workspace:urgent": { "bg": "0x0087af", "fg": "0xffaf00", "click": { "left": "i3-msg workspace {0:.2}", "right": "i3-msg move to workspace {0:.2}" } },
+      "workspace": { "fg": "0xe4e4e4", "bg": "0x0087af", "click": { "left": "i3-msg workspace {workspace_name}", "right": "i3-msg move to workspace {workspace_name}" } },
+      "workspace:urgent": { "bg": "0x0087af", "fg": "0xffaf00", "click": { "left": "i3-msg workspace {workspace_name}", "right": "i3-msg move to workspace {workspace_name}" } },
 
 A handy configuration of the volume segment:
 
