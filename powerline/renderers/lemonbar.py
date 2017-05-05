@@ -19,7 +19,7 @@ class LemonbarRenderer(Renderer):
 		# We don’t need to explicitly reset attributes, so skip those calls
 		return ''
 
-	def hl(self, contents, fg=None, bg=None, attrs=None, click=None):
+	def hl(self, escaped_contents, fg=None, bg=None, attrs=None, click=None, click_values={}, *args, **kwargs):
 		button_map = { 'left': 1, 'middle': 2, 'right': 3, 'scroll up': 4, 'scroll down': 5 }
 
 		text = ''
@@ -29,7 +29,7 @@ class LemonbarRenderer(Renderer):
 			for key in click:
 				if not key in button_map:
 					continue
-				st = click[key].format(contents.strip()).strip()
+				st = click[key].format(escaped_contents.strip(), **click_values).strip()
 				text += '%{{A{1}:{0}:}}'.format(st, button_map[key])
 				click_count += 1
 
@@ -47,7 +47,7 @@ class LemonbarRenderer(Renderer):
 				else:
 					text += '%{{B#{0:08x}}}'.format(bg[1])
 
-		return text + contents + '%{F-B-}' + ('%{A}' * click_count)
+		return text + escaped_contents + '%{F-B-}' + ('%{A}' * click_count)
 
 	def render(self, *args, **kwargs):
 		return '%{{r}}{1}%{{l}}{0}'.format(

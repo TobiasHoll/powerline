@@ -15,14 +15,14 @@
             "left": "xdotool key XF86AudioPrev"
         } },
         "workspace":                 { "fg": "0xe4e4e4",            "bg": "0x0087af",           "click": {
-            "left": "i3-msg workspace {0:.2}",
-            "right": "i3-msg move to workspace {0:.2}"
+            "left": "i3-msg workspace {workspace_name}",
+            "right": "i3-msg move to workspace {workspace_name}"
         } },
         "workspace:focused":         "level:3",
         "workspace:visible":         "level:1",
         "workspace:urgent":          { "bg": "0x0087af",            "fg": "0xffaf00",           "click": {
-            "left": "i3-msg workspace {0:.2}",
-            "right": "i3-msg move to workspace {0:.2}"
+            "left": "i3-msg workspace {workspace_name}",
+            "right": "i3-msg move to workspace {workspace_name}"
         } },
         "scratchpad":                { "fg": "0xe4e4e4",            "bg": "0x0087af",           "click": {
             "left": "i3-msg scratchpad show",

@@ -15,7 +15,7 @@ class PangoMarkupRenderer(Renderer):
 		# We don’t need to explicitly reset attributes, so skip those calls
 		return ''
 
-	def hl(self, contents, fg=None, bg=None, attrs=None, click=None):
+	def hl(self, escaped_contents, fg=None, bg=None, attrs=None, *args, **kwargs):
 		'''Highlight a segment.'''
 		awesome_attr = []
 		if fg is not None:
@@ -31,7 +31,7 @@ class PangoMarkupRenderer(Renderer):
 				awesome_attr += ['font_style="italic"']
 			if attrs & ATTR_UNDERLINE:
 				awesome_attr += ['underline="single"']
-		return '<span ' + ' '.join(awesome_attr) + '>' + contents + '</span>'
+		return '<span ' + ' '.join(awesome_attr) + '>' + escaped_contents + '</span>'
 
 	escape = staticmethod(_escape)
 

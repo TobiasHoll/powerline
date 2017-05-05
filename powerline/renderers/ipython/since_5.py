@@ -90,7 +90,7 @@ class IPythonPygmentsRenderer(IPythonRenderer):
 	def hl_join(segments):
 		return reduce(operator.iadd, segments, [])
 
-	def hl(self, contents, fg=None, bg=None, attrs=None, click=None):
+	def hl(self, escaped_contents, fg=None, bg=None, attrs=None, *args, **kwargs):
 		'''Output highlighted chunk.
 
 		This implementation outputs a list containing a single pair
@@ -118,9 +118,9 @@ class IPythonPygmentsRenderer(IPythonRenderer):
 			+ (('_f%6x' % guifg) if guifg is not None else '')
 			+ (('_b%6x' % guibg) if guibg is not None else '')
 		)
-		return [(getattr(Token.Generic.Prompt.Powerline, name), contents)]
+		return [(getattr(Token.Generic.Prompt.Powerline, name), escaped_contents)]
 
-	def hlstyle(self, **kwargs):
+	def hlstyle(self, *args, **kwargs):
 		return []
 
 	def get_client_id(self, segment_info):

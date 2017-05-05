@@ -546,14 +546,14 @@ class Renderer(object):
 
 					if side == 'left':
 						if render_highlighted:
-							contents_highlighted = self.hl(self.escape(contents_raw), **segment['highlight'])
+							contents_highlighted = self.hl(self.escape(contents_raw), **segment['highlight'], **segment)
 							divider_highlighted = self.hl(divider_raw, divider_fg, divider_bg, False)
 						segment['_rendered_raw'] = contents_raw + divider_raw
 						segment['_rendered_hl'] = contents_highlighted + divider_highlighted
 					else:
 						if render_highlighted:
 							divider_highlighted = self.hl(divider_raw, divider_fg, divider_bg, False)
-							contents_highlighted = self.hl(self.escape(contents_raw), **segment['highlight'])
+							contents_highlighted = self.hl(self.escape(contents_raw), **segment['highlight'], **segment)
 						segment['_rendered_raw'] = divider_raw + contents_raw
 						segment['_rendered_hl'] = divider_highlighted + contents_highlighted
 				else:
@@ -562,7 +562,7 @@ class Renderer(object):
 					else:
 						contents_raw = contents_raw + outer_padding
 
-					contents_highlighted = self.hl(self.escape(contents_raw), **segment['highlight'])
+					contents_highlighted = self.hl(self.escape(contents_raw), **segment['highlight'], **segment)
 					segment['_rendered_raw'] = contents_raw
 					segment['_rendered_hl'] = contents_highlighted
 				prev_segment = segment
@@ -576,7 +576,7 @@ class Renderer(object):
 		'''
 		return string.translate(self.character_translations)
 
-	def hlstyle(self, fg=None, bg=None, attrs=None, click=None):
+	def hlstyle(self, fg=None, bg=None, attrs=None, *args, **kwargs):
 		'''Output highlight style string.
 
 		Assuming highlighted string looks like ``{style}{contents}`` this method
@@ -585,10 +585,10 @@ class Renderer(object):
 		'''
 		raise NotImplementedError
 
-	def hl(self, contents, fg=None, bg=None, attrs=None, click=None):
+	def hl(self, escaped_contents, fg=None, bg=None, attrs=None, *args, **kwargs):
 		'''Output highlighted chunk.
 
 		This implementation just outputs :py:meth:`hlstyle` joined with
-		``contents``.
+		``escaped_contents``.
 		'''
-		return self.hlstyle(fg, bg, attrs, click) + (contents or '')
+		return self.hlstyle(fg, bg, attrs, *args, **kwargs) + (escaped_contents or '')
