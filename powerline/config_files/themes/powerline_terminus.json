@@ -146,32 +146,6 @@
                 "text": "+"
             }
         },
-        "powerline.segments.i3wm.workspaces": {
-            "args": {
-                "icons": {
-                    "Xfce4-terminal":   "",
-                    "Chromium":         "",
-                    "Steam":            "",
-                    "jetbrains-idea":   "",
-                    "jetbrains-pycharm-ce": "",
-                    "jetbrains-clion":  "",
-                    "Gimp":             "",
-                    "Pavucontrol":      "",
-                    "Lmms":             "",
-                    "Thunderbird":      "",
-                    "Thunar":           "",
-                    "Skype":            "",
-                    "TelegramDesktop":  "",
-                    "feh":              "",
-                    "Firefox":          "",
-                    "Evince":           "",
-                    "Okular":           "",
-                    "libreoffice-calc": "",
-                    "libreoffice-writer": "",
-                    "multiple":         ""
-                }
-            }
-        },
         "powerline.segments.i3wm.scratchpad": {
             "args": {
                 "icons": {

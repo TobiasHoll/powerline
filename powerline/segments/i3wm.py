@@ -25,11 +25,33 @@ def format_name(name, strip=False):
         return WORKSPACE_REGEX.sub('', name, count=1)
     return name
 
-WS_ICONS = {}
+WS_ICONS = {
+        "Xfce4-terminal":   "",
+        "Chromium":         "",
+        "Steam":            "",
+        "jetbrains":        "",
+        "Gimp":             "",
+        "Pavucontrol":      "",
+        "Lmms":             "",
+        "Thunderbird":      "",
+        "Thunar":           "",
+        "Skype":            "",
+        "TelegramDesktop":  "",
+        "feh":              "",
+        "Firefox":          "",
+        "Evince":           "",
+        "Okular":           "",
+        "libreoffice-calc": "",
+        "libreoffice-writer": "",
+        "multiple":         ""
+        }
 
 def get_icon(w, separator, icons, show_multiple_icons):
     if 'dummy' in w:
         return ""
+    icons_tmp = WS_ICONS
+    icons_tmp.update(icons)
+    icons = icons_tmp
 
     ws_containers = {w_con.name : w_con for w_con in get_i3_connection().get_tree().workspaces()}
     wins = [win for win in ws_containers[w['name']].leaves() if win.parent.scratchpad_state == 'none']
@@ -39,7 +61,9 @@ def get_icon(w, separator, icons, show_multiple_icons):
     result = ""
     cnt = 0
     for key in icons:
-        if any(key == win.window_class for win in wins):
+        if not icons[key] or len(icons[key]) < 1:
+            continue
+        if any(key in win.window_class for win in wins):
             result += separator + icons[key]
             cnt += 1
     if not show_multiple_icons and cnt > 1:
@@ -63,7 +87,7 @@ def get_next_ws(ws, outputs):
     return []
 
 @requires_segment_info
-def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS, show_multiple_icons=True, show_dummy_workspace=False):
+def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS, show_icons=True, show_multiple_icons=True, show_dummy_workspace=False):
     '''Return list of used workspaces
 
         :param list only_show:
@@ -82,8 +106,16 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
                 Specifies a string to be inserted between the workspace name and program icons
                 and between program icons.
         :param dict icons:
-                A dictionary mapping window classes to strings to be used as an icon for that
-                window class.
+                A dictionary mapping a substring of window classes to strings to be used as an icon for that
+                window class. The following window classes have icons by default:
+                    Xfce4-terminal, Chromium, Steam, jetbrains, Gimp, Pavucontrol, Lmms, Thunderbird, Thunar,
+                    Skype, TelegramDesktop, feh, Firefox, Evince, Okular, libreoffice-calc, libreoffice-writer.
+                You can override the default icons by defining an icon for that window class yourself, and disable
+                single icons by setting their icon to "" or None.
+                Further, there is a ``multiple`` icon for workspaces containing more than one window (which is used if
+                ``show_multiple_icons`` is ``False``)
+        :param boolean show_icons:
+                Determines whether to show icons. Defaults to True.
         :param boolean show_multiple_icons:
                 If this is set to False, instead of displying multiple icons per workspace,
                 the icon "multiple" will be used.
@@ -115,7 +147,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
 
     if len(output) <= 1:
         return [{
-            'contents': w['name'][min(len(w['name']), strip):] + get_icon(w, separator, icons, show_multiple_icons),
+            'contents': w['name'][min(len(w['name']), strip):] + (get_icon(w, separator, icons, show_multiple_icons) if show_icons else ""),
             'highlight_groups': workspace_groups(w),
             'click_values': {'workspace_name': w['name']}
             } for w in sort_ws(get_i3_connection().get_workspaces())
@@ -126,7 +158,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
         res = []
         for n in output:
             res += [{'contents': n, 'highlight_groups': ['output'], 'click_values': {'output_name': n}}]
-            res += [{'contents': w['name'][min(len(w['name']), strip):] + get_icon(w, separator, icons, show_multiple_icons),
+            res += [{'contents': w['name'][min(len(w['name']), strip):] + (get_icon(w, separator, icons, show_multiple_icons) if show_icons else ""),
                 'highlight_groups': workspace_groups(w),
                 'click_values': {'workspace_name': w['name']}} for w in sort_ws(get_i3_connection().get_workspaces())
                 if (not only_show or any(w[typ] for typ in only_show))
