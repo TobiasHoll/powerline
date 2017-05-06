@@ -109,17 +109,17 @@ cwd = with_docstring(CwdSegment(),
 Returns a segment list to create a breadcrumb-like effect.
 
 :param int dir_shorten_len:
-	shorten parent directory names to this length (e.g. 
+	shorten parent directory names to this length (e.g.
 	:file:`/long/path/to/powerline` → :file:`/l/p/t/powerline`)
 :param int dir_limit_depth:
-	limit directory depth to this number (e.g. 
+	limit directory depth to this number (e.g.
 	:file:`/long/path/to/powerline` → :file:`⋯/to/powerline`)
 :param bool use_path_separator:
 	Use path separator in place of soft divider.
 :param bool shorten_home:
 	Shorten home directory to ``~``.
 :param str ellipsis:
-	Specifies what to use in place of omitted directories. Use None to not 
+	Specifies what to use in place of omitted directories. Use None to not
 	show this subsegment at all.
 
 Divider highlight group used: ``cwd:divider``.
@@ -188,4 +188,24 @@ def user(pl, hide_user=None, hide_domain=False):
 	return [{
 		'contents': username,
 		'highlight_groups': ['user'] if euid != 0 else ['superuser', 'user'],
+	}]
+
+def clip(pl, hide_empty=True, cutoff=10):
+	'''Return the current clipboard content using xsel.
+
+	:param bool hide_empty:
+		Hide the segment if the clipboard is empty.
+	:param int cutoff:
+		Max. number of characters to display.
+
+	Highlight groups used: ``clip``.
+	'''
+
+	import subprocess
+	clp = subprocess.run(['xsel', '-bo'], stdout=subprocess.PIPE).stdout.decode('utf-8')
+	if len(clp) < 1 and hide_empty:
+	    return None
+	return [{
+		'contents': (clp[0:cutoff] + '…' if len(clp) > cutoff else clp) if cutoff != 0 else clp,
+		'highlight_groups': ['clip']
 	}]

@@ -413,6 +413,13 @@ class Renderer(object):
 				else:
 					segment['_contents_len'] = self.strwidth(segment['contents'])
 
+	def _compare_bg(self, first_bg, second_bg):
+		if not first_bg and not second_bg:
+			return True
+		if not first_bg or not second_bg:
+			return False
+		return first_bg[0] == second_bg[0]
+
 	def _render_length(self, theme, segments, divider_widths):
 		'''Update segments lengths and return them
 		'''
@@ -452,7 +459,7 @@ class Renderer(object):
 				else:
 					compare_segment = prev_segment
 
-				divider_type = 'soft' if compare_segment['highlight']['bg'] == segment['highlight']['bg'] else 'hard'
+				divider_type = 'soft' if self._compare_bg(compare_segment['highlight']['bg'], segment['highlight']['bg']) else 'hard'
 
 				outer_padding = int(bool(
 					segment is first_segment
@@ -520,7 +527,7 @@ class Renderer(object):
 					if side == 'left' else
 					segment is last_segment
 				)) * theme.outer_padding * ' '
-				divider_type = 'soft' if compare_segment['highlight']['bg'] == segment['highlight']['bg'] else 'hard'
+				divider_type = 'soft' if self._compare_bg(compare_segment['highlight']['bg'], segment['highlight']['bg']) else 'hard'
 
 				divider_highlighted = ''
 				contents_raw = segment['contents']

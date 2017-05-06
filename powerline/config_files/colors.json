@@ -1,5 +1,12 @@
 {
 	"colors": {
+        "level:1_fg": "0x585858",
+        "level:1_bg": "0xe4e4e4",
+        "level:2_fg": "0xe4e4e4",
+        "level:2_bg": "0x0087af",
+        "level:3_fg": "0xe4e4e4",
+        "level:3_bg": "0x005f87",
+
 		"black":             16,
 		"white":            231,
 
