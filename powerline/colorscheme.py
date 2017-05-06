@@ -39,9 +39,9 @@ def pick_gradient_value(grad_list, gradient_level, is_hsv = False):
 	'''
 	idx = len(grad_list) * (gradient_level / 100)
 	fr = idx % 1
-	
+
 	idx = int(idx)
-	
+
 	if idx - 1 < 0:
 	    return grad_list[0] if not is_hsv else rgb_to_hex(*round_col(*hsv_to_rgb(*grad_list[0])))
 	elif idx >= len(grad_list):
@@ -53,13 +53,13 @@ def pick_gradient_value(grad_list, gradient_level, is_hsv = False):
 	else:
 		h0, s0, v0 = rgb_to_hsv(*hex_to_rgb(grad_list[idx-1]))
 		h1, s1, v1 = rgb_to_hsv(*hex_to_rgb(grad_list[idx]))
-	
+
 	# adapt hue for gradients to black/white
 	if s1 < 10 ** -3:
 		h1 = h0
 	elif s0 < 10 ** -3:
 		h0 = h1
-	
+
 	c = round_col(*hsv_to_rgb(lerp(h0, h1, fr), lerp(s0, s1, fr), lerp(v0, v1, fr)))
 	return rgb_to_hex(*c)
 
@@ -200,7 +200,7 @@ cterm_to_hex = (
 )
 
 def rgb_to_hex_str(r, g, b):
-    return f"0x{r:02x}{g:02x}{b:02x}"
+    return "0x{r:02x}{g:02x}{b:02x}".format(r=r, g=g, b=b)
 
 def rgb_to_hex(r, g, b):
     return r << 16 | g << 8 | b
