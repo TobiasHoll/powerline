@@ -21,9 +21,7 @@ install: tests/install.sh
 script: tests/test.sh; echo "result ignored"
 matrix:
     include:
-        - python: "3.2"
-        - python: "3.3"
-        - python: "3.4"
         - python: "3.5"
+        - python: "3.6"
 
 # vim: et
