@@ -2,6 +2,8 @@ Powerline
 =========
 
 [![Build Status](https://travis-ci.org/PH111P/powerline.svg?branch=develop)](https://travis-ci.org/PH111P/powerline)
+[![Documentation Status](https://readthedocs.org/projects/powerline-i3/badge/?version=latest)](http://powerline-i3.readthedocs.io/en/latest/?badge=latest)
+
 
 This is a fork of Kim Silkebækken's (kim.silkebaekken+vim@gmail.com) powerline
 (https://github.com/powerline/powerline).
@@ -41,7 +43,9 @@ This fork extends the files used by the powerline to configure the color scheme 
  `string.format` syntax.
 * The colors in `fg` and `bg` can be specified directly through hex values using `0x` as a prefix (`0xRRGGBB` or `0xAARRGGBB`). These hex values will be translated back into xterm color indices whenever possible.
 
-####Examples
+Examples
+--------
+
 A configuration to let the workspace segment act like the i3bar's (`workspace_name` is a special value that gets set to the correct workspace name by the workspace segment.):
 
       "workspace": { "fg": "0xe4e4e4", "bg": "0x0087af", "click": { "left": "i3-msg workspace {workspace_name}", "right": "i3-msg move to workspace {workspace_name}" } },
@@ -55,8 +59,6 @@ Note that the `lemonbar` allows for only a fixed number of clickable areas, whic
 
 Installation
 ------------
-
-Let's start with the hard way.
 
 The following Arch Linux packages should be installed:
 
@@ -89,6 +91,8 @@ To actually _use_ the powerline in your i3 setup, replace the following lines in
 with this line (you may want to adjust the height and the font size):
 
       exec --no-startup-id powerline-lemonbar --i3 --clicks --height 16 -- -a 40 -b -f "DejaVu Sans Mono for Powerline-10" -f "FontAwesome-10"
+
+Note that ``Font Awesome`` is used to display some icons, thus changing it to some other font will likely break these icons.
 
 Some screens
 ------------ 
