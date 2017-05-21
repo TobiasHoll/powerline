@@ -16,7 +16,7 @@ as a replacement for i3's i3bar.**
 Features
 --------
 
-For general features, consult the documentation of the original powerline. These are
+For general features, consult the documentation. These are
 the features that were added in this fork.
 
 * List all workspaces, _and icons of applications currently running on a workspace (using FontAwesome)_
