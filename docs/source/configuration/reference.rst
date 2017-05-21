@@ -296,7 +296,7 @@ override those from each previous file. It is required that either
            unavailable in some applications or terminal emulators. If no
            attributes are needed this list should be left empty.
 
-        ``click`` (optional)
+       ``click`` (optional)
            Dictionary mapping the values ``left``, ``right``, ``middle``,
            ``scroll up``, and ``scroll down`` to a string to be executed by a shell.
            The string to be executed may contain format string placeholders which will
