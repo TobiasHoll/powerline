@@ -14,7 +14,7 @@ from powerline.lib.unicode import unicode
 
 def formatvalue(val):
 	if type(val) is str:
-		return '="' + unicode(val, 'utf-8').replace('"', '\\"').replace('\\', '\\\\') + '"'
+		return '="' + val.replace('"', '\\"').replace('\\', '\\\\') + '"'
 	else:
 		return '=' + repr(val)
 

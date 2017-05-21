@@ -19,7 +19,7 @@ def date(pl, format='%Y-%m-%d', istime=False, timezone=None, rel_names=['4', 'Of
 
 	Highlight groups used: ``time`` or ``date``.
 
-	Conditions available: ``contents`` (string)
+	Click values supplied: ``contents`` (string)
 	'''
 	try:
 		tz = datetime.strptime(timezone, '%z').tzinfo if timezone else None
@@ -38,7 +38,7 @@ def date(pl, format='%Y-%m-%d', istime=False, timezone=None, rel_names=['4', 'Of
 		'contents': contents,
 		'highlight_groups': (['time'] if istime else []) + ['date'],
 		'divider_highlight_group': 'time:divider' if istime else None,
-		'condition_values': {'contents': contents}
+		'click_values': {'contents': contents}
 	}]
 
 

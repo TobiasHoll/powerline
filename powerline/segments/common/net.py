@@ -15,13 +15,16 @@ from powerline.theme import requires_segment_info
 
 @requires_segment_info
 def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
-	'''Return the current hostname
+	'''Returns the current hostname.
 
 	:param bool only_if_ssh:
 		only return the hostname if currently in an SSH session
 	:param bool exclude_domain
 		return the hostname without domain if there is one
+
+	No special highlight groups used.
 	'''
+
 	if only_if_ssh and not segment_info['environ'].get('SSH_CLIENT'):
 		return None
 	if exclude_domain:
@@ -29,7 +32,7 @@ def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 	return socket.gethostname()
 
 def wireless(pl, device, format='{quality:3.0%} at {essid}'):
-	'''Return the current connection quality.
+	'''Returns the current connection quality.
 
 	:param string device:
 		the device to use
@@ -38,7 +41,7 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}'):
 
 	Highlight groups used: ``quality_gradient`` (gradient)
 
-	Conditions available: ``quality`` (int), ``essid`` (string)
+	Click values supplied: ``quality`` (int), ``essid`` (string)
 	'''
 
 	try:
@@ -58,7 +61,7 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}'):
 	    'contents': format.format(quality=quality/85, essid=essid.decode(), frequency=frequency),
 	    'highlight_groups': ['quality_gradient'],
 	    'gradient_level': 100 * (85 - quality) / 85,
-	    'condition_values': {'essid': essid, 'quality': quality * 100 / 85}
+	    'click_values': {'essid': essid, 'quality': quality * 100 / 85}
 	    }]
 
 def _external_ip(query_url='http://ipv6.icanhazip.com/'):
@@ -79,7 +82,7 @@ class ExternalIpSegment(ThreadedSegment):
 		if not ip:
 			return None
 		return [{'contents': ip, 'divider_highlight_group': 'background:divider',
-		    'condition_values': {'external_ip': ip}}]
+		    'click_values': {'external_ip': ip}}]
 
 
 external_ip = with_docstring(ExternalIpSegment(),
@@ -96,7 +99,7 @@ external_ip = with_docstring(ExternalIpSegment(),
 
 Divider highlight group used: ``background:divider``.
 
-Conditions available: ``external_ip`` (string)
+Click values supplied: ``external_ip`` (string)
 ''')
 
 

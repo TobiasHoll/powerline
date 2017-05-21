@@ -203,7 +203,7 @@ def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':
         ``battery:50`` or ``battery:0`` or ``battery:full`` or ``battery:online``
         or ``battery:offline``.
 
-        Conditions available: ``capacity`` (int), ``rem_time`` (string), ``status`` (string).
+        Click values supplied: ``capacity`` (int), ``rem_time`` (string), ``status`` (string).
         '''
     capacity = 0
     try:
@@ -244,7 +244,7 @@ def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':
     else:
         rem_time = None
 
-    condition_values = {'status': status, 'rem_time': rem_time, 'capacity': capacity}
+    click_values = {'status': status, 'rem_time': rem_time, 'capacity': capacity}
 
     def get_icon(percentage):
         for p in range(100, -1, -1):
@@ -272,21 +272,21 @@ def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':
             'highlight_groups': ['battery:100', 'battery_gradient', 'battery'],
             # Using zero as “nothing to worry about”: it is least alert color.
             'gradient_level': 0,
-            'condition_values': condition_values
+            'click_values': click_values
             })
         ret.append({
             'contents': get_icon(half),
             'draw_inner_divider': False,
             'highlight_groups': ['battery_gamify_gradient', 'battery_gradient', 'battery'],
             'gradient_level': segment_size - half,
-            'condition_values': condition_values
+            'click_values': click_values
             })
         ret.append({
             'contents': get_icon(0) * empty,
             'highlight_groups': ['battery:0', 'battery_gradient', 'battery'],
             # Using a hundred as it is most alert color.
             'gradient_level': 100,
-            'condition_values': condition_values
+            'click_values': click_values
             })
         return ret
     elif name == 'icon':
@@ -294,7 +294,7 @@ def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':
             'contents': get_status_icon(translate_status(status)),
             'highlight_groups': ['battery:' + translate_status(status), 'battery_gradient', 'battery'],
             'gradient_level': 100 - capacity,
-            'condition_values': condition_values
+            'click_values': click_values
             }]
     elif name == 'status':
         if not status:
@@ -303,7 +303,7 @@ def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':
             'contents': status,
             'highlight_groups': ['battery:' + translate_status(status), 'battery_gradient', 'battery'],
             'gradient_level': 100 - capacity,
-            'condition_values': condition_values
+            'click_values': click_values
             }]
     elif name == 'capacity':
         return [{
@@ -312,7 +312,7 @@ def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':
             # Gradients are “least alert – most alert” by default, capacity has
             # the opposite semantics.
             'gradient_level': 100 - capacity,
-            'condition_values': condition_values
+            'click_values': click_values
             }]
     elif name == 'rem_time':
         if not rem_time:
@@ -323,7 +323,7 @@ def battery(pl, name='capacity', icons={'online':'CHR', 'offline':'BAT', 'full':
             # Gradients are “least alert – most alert” by default, capacity has
             # the opposite semantics.
             'gradient_level': 100 - capacity,
-            'condition_values': condition_values
+            'click_values': click_values
             }]
     else:
         return None

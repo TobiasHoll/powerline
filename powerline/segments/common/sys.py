@@ -43,7 +43,7 @@ def system_load(pl, format='{avg:.1f}', threshold_good=1, threshold_bad=2,
 
     Highlight groups used: ``system_load_gradient`` (gradient) or ``system_load``.
 
-    Conditions available: ``avg`` (string), ``avg_raw`` (int)
+    Click values supplied: ``avg`` (string), ``avg_raw`` (int)
     '''
     global cpu_count
     try:
@@ -65,7 +65,7 @@ def system_load(pl, format='{avg:.1f}', threshold_good=1, threshold_bad=2,
             'highlight_groups': ['system_load_gradient', 'system_load'],
             'divider_highlight_group': 'background:divider',
             'gradient_level': gradient_level,
-	    'condition_values': {'avg':format.format(avg=avg), 'avg_raw':avg}
+	    'click_values': {'avg':format.format(avg=avg), 'avg_raw':avg}
             })
 
         if short:
@@ -99,7 +99,7 @@ try:
             'contents': format.format(cpu_percent),
             'gradient_level': cpu_percent,
             'highlight_groups': ['cpu_load_percent_gradient', 'cpu_load_percent'],
-	    'condition_values': {'cpu_load': format.format(cpu_percent), 'cpu_load_raw': cpu_percent}
+	    'click_values': {'cpu_load': format.format(cpu_percent), 'cpu_load_raw': cpu_percent}
             }]
 except ImportError:
     class CPULoadPercentSegment(ThreadedSegment):
@@ -135,7 +135,7 @@ Requires the ``psutil`` module.
 
 Highlight groups used: ``cpu_load_percent_gradient`` (gradient) or ``cpu_load_percent``.
 
-Conditions available: ``cpu_load`` (string), ``cpu_load_raw`` (int)
+Click values supplied: ``cpu_load`` (string), ``cpu_load_raw`` (int)
 ''')
 
 
@@ -201,7 +201,7 @@ def temp(pl, format='{:.1f}°C', path="/sys/class/thermal/thermal_zone0/temp", a
     :param int accuracy:
 	Accuracy to read
 
-    Conditions available: ``temp`` (string), ``temp_raw`` (int)
+    Click values supplied: ``temp`` (string), ``temp_raw`` (int)
     '''
     with open(path, "r") as f:
         temp = int(f.read()) * accuracy
@@ -209,5 +209,5 @@ def temp(pl, format='{:.1f}°C', path="/sys/class/thermal/thermal_zone0/temp", a
                 'contents': format.format(temp),
                 'highlight_groups': ['temp'],
                 'gradient_level': 100 * min(1, max(0, (temp-lowtemp) / (hightemp-lowtemp))),
-		'condition_values': {'temp': format.format(temp), 'temp_raw': temp}
+		'click_values': {'temp': format.format(temp), 'temp_raw': temp}
             }]

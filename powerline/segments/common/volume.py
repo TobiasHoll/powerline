@@ -16,7 +16,7 @@ def vol( pl, format='♪ {volume:3.0%}', format_muted='♪ {volume}', control='M
 
 	Highlight groups used: ``volume_gradient`` (gradient).
 
-	Conditions available: ``volume`` (int), ``muted`` (boolean)
+	Click values supplied: ``volume`` (int), ``muted`` (boolean)
 	'''
 
 	avg = 0;
@@ -39,6 +39,6 @@ def vol( pl, format='♪ {volume:3.0%}', format_muted='♪ {volume}', control='M
 		'highlight_groups': ['volume_gradient'],
 		'divider_highlight_group': None,
 		'gradient_level': int(a / len( res )),
-		'condition_values': {'volume': avg/(100*len(res)), 'muted': muted}
+		'click_values': {'volume': avg/(100*len(res)), 'muted': muted}
 	}]
 

@@ -44,14 +44,14 @@ class EmailIMAPSegment(KwThreadedSegment):
 			return [{
 				'contents': str(unread_count),
 				'highlight_groups': ['email_alert'],
-				'condition_values': {'unread_count': str(unread_count)}
+				'click_values': {'unread_count': str(unread_count)}
 			}]
 		else:
 			return [{
 				'contents': str(unread_count),
 				'highlight_groups': ['email_alert_gradient', 'email_alert'],
 				'gradient_level': min(unread_count * 100.0 / max_msgs, 100),
-				'condition_values': {'unread_count': str(unread_count)}
+				'click_values': {'unread_count': str(unread_count)}
 			}]
 
 
@@ -78,5 +78,5 @@ email_imap_alert = with_docstring(EmailIMAPSegment(),
 
 Highlight groups used: ``email_alert_gradient`` (gradient), ``email_alert``.
 
-Conditions available: ``unread_count`` (string)
+Click values supplied: ``unread_count`` (string)
 ''').format(ssl_port=IMAP4_SSL_PORT))
