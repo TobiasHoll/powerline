@@ -50,8 +50,22 @@ Mail
 .. automodule:: powerline.segments.common.mail
    :members:
 
+Appoints submodule
+==================
+
+.. automodule:: powerline.segments.common.appoints
+   :members:
+
 Media players
 =============
 
 .. automodule:: powerline.segments.common.players
    :members:
+
+Volume
+======
+
+.. automodule:: powerline.segments.common.volume
+   :members:
+
+
