@@ -1,10 +1,9 @@
 # vim:fileencoding=utf-8:noet
 from __future__ import (unicode_literals, division, absolute_import, print_function)
 
-import alsaaudio
 
 
-def vol( pl, format='♪ {volume:3.0%}', format_muted='♪ {volume}', control='Master', id=0 ):
+def vol(pl, format='VL {volume:3.0%}', format_muted=None, control='Master', id=0):
 	'''Return the current volume.
 
 	:param string format:
@@ -18,6 +17,11 @@ def vol( pl, format='♪ {volume:3.0%}', format_muted='♪ {volume}', control='M
 
 	Click values supplied: ``volume`` (int), ``muted`` (boolean)
 	'''
+
+	try:
+		import alsaaudio
+	except ImportError:
+		return None
 
 	avg = 0;
 
