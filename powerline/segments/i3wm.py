@@ -108,8 +108,9 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
         :param dict icons:
                 A dictionary mapping a substring of window classes to strings to be used as an icon for that
                 window class. The following window classes have icons by default:
-                    Xfce4-terminal, Chromium, Steam, jetbrains, Gimp, Pavucontrol, Lmms, Thunderbird, Thunar,
-                    Skype, TelegramDesktop, feh, Firefox, Evince, Okular, libreoffice-calc, libreoffice-writer.
+                ``Xfce4-terminal``, ``Chromium``, ``Steam``, ``jetbrains``, ``Gimp``, ``Pavucontrol``, ``Lmms``,
+                ``Thunderbird``, ``Thunar``, ``Skype``, ``TelegramDesktop``, ``feh``, ``Firefox``, ``Evince``,
+                ``Okular``, ``libreoffice-calc``, ``libreoffice-writer``.
                 You can override the default icons by defining an icon for that window class yourself, and disable
                 single icons by setting their icon to "" or None.
                 Further, there is a ``multiple`` icon for workspaces containing more than one window (which is used if
@@ -174,7 +175,7 @@ def mode(pl, segment_info, names={'default': None}):
             Specifies the name to be displayed instead of "default".
                 By default the segment is left out in the default mode.
 
-        Highligh groups used: ``mode``
+        Highlight groups used: ``mode``
         '''
 
     current_mode = segment_info['mode']
