@@ -57,15 +57,19 @@ lemonbar (formerly bar-aint-recursive)
 
 To run the bar simply start the binding script:
 
-    python /path/to/powerline/bindings/lemonbar/powerline-lemonbar.py
+    powerline-lemonbar
 
 You can specify options to be passed to ``lemonbar`` after ``--``, like so:
 
-    python /path/to/powerline/bindings/lemonbar/powerline-lemonbar.py --height 16 -- -f "Source Code Pro for Powerline-9"
+    powerline-lemonbar --height 16 -- -f "Source Code Pro for Powerline-9"
 
 to run with i3, simply ``exec`` this in the i3 config file and set the ``--i3`` switch:
 
-    exec python /path/to/powerline/bindings/lemonbar/powerline-lemonbar.py --i3
+    exec powerline-lemonbar --i3
+
+Further, to enable the click functionality, also set the ``--clicks`` switch and increase the number of clickable areas to some apporpriate number (default is 10):
+
+    exec powerline-lemonbar --i3 --clicks -- -a 40
 
 Running the binding in i3-mode will require `i3ipc <https://github.com/acrisci/i3ipc-python>`_
 (or the outdated `i3-py <https://github.com/ziberna/i3-py>`_).
@@ -74,35 +78,15 @@ See the `lemonbar documentation <https://github.com/LemonBoy/bar>`_ for more
 information and options.
 =======
 
-All ``powerline-lemonbar.py`` arguments:
+All ``powerline-lemonbar`` arguments:
 
 .. automan:: powerline.commands.lemonbar
-   :prog: powerline-lemonbar.py
+   :prog: powerline-lemonbar
    :minimal: true
 
-All ``powerline-lemonbar.py`` arguments:
+All ``powerline-lemonbar`` arguments:
 
 .. automan:: powerline.commands.lemonbar
-   :prog: powerline-lemonbar.py
+   :prog: powerline-lemonbar
    :minimal: true
 
-I3 bar
-======
-
-.. note::
-   As the patch to include background-colors in i3bar is likely not to be
-   merged, it is recommended to instead run ``bar`` (see above). The source for
-   i3bgbar is however still available `here
-   <https://github.com/S0lll0s/i3bgbar>`_.
-
-Add the following to :file:`~/.i3/config`::
-
-    bar {
-        i3bar_command i3bgbar
-
-        status_command python /path/to/powerline/bindings/i3/powerline-i3.py
-        font pango:PowerlineFont 12
-    }
-
-where ``i3bgbar`` may be replaced with the path to the custom i3bar binary and
-``PowerlineFont`` is any system font with powerline support.
