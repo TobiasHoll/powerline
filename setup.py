@@ -32,7 +32,7 @@ def compile_client():
 		cflags = os.environ.get('CFLAGS', str('-O3'))
 		# A normal split would do a split on each space which might be incorrect. The
 		# shlex will not split if a space occurs in an arguments value.
-		subprocess.check_call(compiler + shlex.split(cflags) + ['client/powerline.c', '-o', 'scripts/powerline'])
+		subprocess.check_call(compiler + shlex.split(cflags) + ['-std=c11', 'client/powerline.c', '-o', 'scripts/powerline'])
 
 try:
 	compile_client()

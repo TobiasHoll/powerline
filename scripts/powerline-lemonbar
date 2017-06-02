@@ -14,20 +14,33 @@ from powerline.bindings.wm import get_connected_xrandr_outputs
 
 
 if __name__ == '__main__':
+
+	def execute(process, shell):
+		for stdout_line in iter(process.stdout.readline, b''):
+			print("execute: " + str(stdout_line))
+			if shell:
+				shell.stdin.write(stdout_line)
+				shell.stdin.flush()
+			yield stdout_line
+		process.stdout.close()
+
 	parser = get_argparser()
 	args = parser.parse_args()
 
 	powerline = LemonbarPowerline()
 	powerline.update_renderer()
 	bars = []
-	shells = []
+	execs = []
+	shell = None
+	if args.clicks:
+		shell = subprocess.Popen(['/bin/sh'], stdin=subprocess.PIPE)
+
 
 	for screen in get_connected_xrandr_outputs(powerline.pl):
 		command = [args.bar_command, '-g', '{0}x{1}+{2}+{3}'.format(screen['width'], args.height, screen['x'], screen['y'])] + args.args[1:]
 		process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 		bars.append((screen['name'], process, int(screen['width']) / 5))
-		if args.clicks:
-			shells.append(subprocess.Popen(['/bin/sh'], stdin=process.stdout))
+		execs.append(execute(process, shell))
 
 	lock = Lock()
 	modes = ['default']
@@ -53,6 +66,10 @@ if __name__ == '__main__':
 
 	render(reschedule=True)
 
+	for e in execs:
+		for ls in e:
+			print(ls)
+
 	if args.i3:
 		import i3ipc
 		conn = i3ipc.Connection()
@@ -67,4 +84,4 @@ if __name__ == '__main__':
 			powerline.update_renderer()
 
 	while True:
-		time.sleep(1e8)
+		sleep(1e8)
