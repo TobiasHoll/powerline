@@ -3,6 +3,7 @@ from __future__ import (unicode_literals, division, absolute_import, print_funct
 
 from powerline.renderer import Renderer
 from powerline.theme import Theme
+from powerline.lemonbar import SEGMENT_NAME
 
 class LemonbarRenderer(Renderer):
 	'''
@@ -30,7 +31,7 @@ class LemonbarRenderer(Renderer):
 				if not key in button_map:
 					continue
 				st = click[key].format(escaped_contents.strip(), **click_values).strip()
-				text += '%{{A{1}:{0}:}}'.format(st, button_map[key])
+				text += '%{{A{1}:{0}{2}{3}:}}'.format(st, button_map[key], SEGMENT_NAME.decode(), kwargs['name'])
 				click_count += 1
 
 		if fg is not None:

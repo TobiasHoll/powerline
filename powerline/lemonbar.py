@@ -19,3 +19,6 @@ class LemonbarPowerline(Powerline):
 			(key, {'config': self.load_theme_config(val)})
 			for key, val in local_themes.items()
 		))
+
+INTERNAL_BAR_COMMAND = b"#bar;"
+SEGMENT_NAME = b"#sname;"
