@@ -87,7 +87,7 @@ def get_next_ws(ws, outputs):
     return []
 
 @requires_segment_info
-def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS, show_icons=True, show_multiple_icons=True, show_dummy_workspace=False):
+def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS, show_icons=True, show_multiple_icons=True, show_dummy_workspace=False, show_output=False):
     '''Return list of used workspaces
 
         :param list only_show:
@@ -124,20 +124,26 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
                 If this is set to True, this segment will alway display an additional, non-existing
                 workspace. This workspace will be handled as if it was a non-urgent and non-focused
                 regular workspace, i.e., click events will work as with normal workspaces.
+        :param boolean show_output:
+                Show the name of the output if more than one output is connected and output is not set to ``__all__``.
 
         Highlight groups used: ``workspace`` or ``workspace:visible``, ``workspace`` or ``workspace:focused``, ``workspace`` or ``workspace:urgent`` or ``output``.
 
         Click values supplied: ``workspace_name`` (string) for workspaces and ``output_name`` (string) for outputs.
         '''
 
+    output_count = 1
     if not output == "__all__":
         output = output or segment_info.get('output')
+        if show_output:
+            output_count = len([o for o in get_i3_connection().get_outputs() if o['active']])
     else:
         output = None
     if output:
         output = [output]
     else:
         output = [o['name'] for o in get_i3_connection().get_outputs() if o['active']]
+
 
     def sort_ws(ws):
         import re
@@ -147,7 +153,10 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
         return sorted(ws, key=natural_key) + (get_next_ws(ws, output) if show_dummy_workspace else [])
 
     if len(output) <= 1:
-        return [{
+        res = []
+        if output_count > 1:
+            res += [{'contents': output[0], 'highlight_groups': ['output'], 'click_values': {'output_name': output[0]}}]
+        res += [{
             'contents': w['name'][min(len(w['name']), strip):] + (get_icon(w, separator, icons, show_multiple_icons) if show_icons else ""),
             'highlight_groups': workspace_groups(w),
             'click_values': {'workspace_name': w['name']}
@@ -155,6 +164,7 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
             if (not only_show or any(w[typ] for typ in only_show))
             and w['output'] == output[0]
             ]
+        return res
     else:
         res = []
         for n in output:
