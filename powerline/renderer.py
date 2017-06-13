@@ -344,6 +344,7 @@ class Renderer(object):
 
 		divider_widths = self.compute_divider_widths(theme)
 
+
 		# Create an ordered list of segments that can be dropped
 		segments_priority = sorted((segment for segment in segments if segment['priority'] is not None), key=lambda segment: segment['priority'], reverse=True)
 		no_priority_segments = filter(lambda segment: segment['priority'] is None, segments)
@@ -356,7 +357,7 @@ class Renderer(object):
 			segments_priority = iter(segments_priority)
 			if current_width > width and len(segments) > 100:
 				# When there are too many segments use faster, but less correct
-				# algorythm for width computation
+				# algorithm for width computation
 				diff = current_width - width
 				for segment in segments_priority:
 					segments.remove(segment)

@@ -73,7 +73,7 @@ def restart_bar(output_name):
         thr = Thread(target=execute, args=(process, shell, lambda x, y: bar_callback(screen['name'], x, y)))
         thr.start()
 
-        bars.update({output_name: (process, thr, int(screen['width']) / 5)})
+        bars.update({output_name: (process, thr, int(screen['width']) / 10)})
         return
 
 

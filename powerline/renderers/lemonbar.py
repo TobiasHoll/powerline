@@ -50,10 +50,10 @@ class LemonbarRenderer(Renderer):
 
 		return text + escaped_contents + '%{F-B-}' + ('%{A}' * click_count)
 
-	def render(self, *args, **kwargs):
+	def render(self, width, *args, **kwargs):
 		return '%{{r}}{1}%{{l}}{0}'.format(
-			super(LemonbarRenderer, self).render(side='left', segment_info={'output': kwargs.get('matcher_info')}, *args, **kwargs),
-			super(LemonbarRenderer, self).render(side='right', segment_info={'output': kwargs.get('matcher_info')}, *args, **kwargs),
+			super(LemonbarRenderer, self).render(width=width//2,side='left', segment_info={'output': kwargs.get('matcher_info')}, *args, **kwargs),
+			super(LemonbarRenderer, self).render(width=width//2,side='right', segment_info={'output': kwargs.get('matcher_info')}, *args, **kwargs),
 		)
 
 	def get_theme(self, matcher_info):
