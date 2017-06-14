@@ -24,7 +24,8 @@ def execute(process, shell, callback):
         if shell:
             shell.stdin.write(line + b'\n')
             shell.stdin.flush()
-        callback(line.decode(), segment_name.decode())
+        if callback:
+            callback(line.decode(), segment_name.decode())
     process.stdout.close()
 
 def render(reschedule=False):
@@ -77,7 +78,7 @@ def restart_bar(output_name):
         if not args.no_clicks:
             thr = Thread(target=execute, args=(process, shell, lambda x, y: bar_callback(screen['name'], x, y)))
         else:
-            thr = Thread(target=execute, args=(process, shell, lambda x, y: pass))
+            thr = Thread(target=execute, args=(process, shell, None))
         thr.start()
 
         bars.update({output_name: (process, thr, int(screen['width']) / 10)})
