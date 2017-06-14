@@ -37,10 +37,10 @@ This fork extends the files used by the powerline to configure the color scheme 
 * `attrs` is now optional, i.e., it can be omitted
 * `click` is a new optional field to configure the behavior of a highlight group on a click.
  Where `click` is a drictionary mapping the values `left`, `right`, `middle`, `scroll up` or `scroll down`
- to a string to be executed by a shell. (Currently only the lemonbar binding supports this and only if it is run
- with the `--clicks` flag.)
+ to a string to be executed by a shell. (Currently only the lemonbar binding supports this. You can disable clicks via the `no_clicks` flag.)
  Further, the string to be executed may contain a placeholder for the segment's content. This placeholder uses python's
  `string.format` syntax.
+* You may pass an `alt_output` flag to `powerline-lemonbar`, then it uses the `-O` flag for setting the output for the bar. (Use this together with the `bar_command` flag to use custom bar forks.)
 * The colors in `fg` and `bg` can be specified directly through hex values using `0x` as a prefix (`0xRRGGBB` or `0xAARRGGBB`). These hex values will be translated back into xterm color indices whenever possible.
 
 Examples
@@ -90,12 +90,12 @@ To actually _use_ the powerline in your i3 setup, replace the following lines in
 
 with this line (you may want to adjust the height and the font size):
 
-      exec_always "killall powerline-lemonbar; powerline-lemonbar --i3 --clicks --height 16 -- -a 40 -b -f 'DejaVu Sans Mono for Powerline-11' -f 'FontAwesome-11'"
+      exec "powerline-lemonbar --i3 --height 16 -- -a 40 -b -f 'DejaVu Sans Mono for Powerline-11' -f 'FontAwesome-11'"
 
 Note that ``Font Awesome`` is used to display some icons, thus changing it to some other font will likely break these icons.
 
 Some screens
------------- 
+------------
 Some big, blue, beautiful powerlines.
 ![Everything](https://github.com/PH111P/powerline/blob/develop/docs/source/_static/img/pl-i3demo1.png)
 ![Modes](https://github.com/PH111P/powerline/blob/develop/docs/source/_static/img/pl-i3demo2.png)
