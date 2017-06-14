@@ -68,7 +68,10 @@ def restart_bar(output_name):
     for screen in get_connected_xrandr_outputs(powerline.pl):
         if screen['name'] != output_name:
             continue
-        command = [args.bar_command, '-g', '{0}x{1}+{2}+{3}'.format(screen['width'], args.height, screen['x'], screen['y'])] + args.args[1:]
+        if not args.alt-output:
+            command = [args.bar_command, '-g', '{0}x{1}+{2}+{3}'.format(screen['width'], args.height, screen['x'], screen['y'])] + args.args[1:]
+        else:
+            command = [args.bar_command, '-O', '{0}'.format(screen['name'])] + args.args[1:]
         process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         thr = Thread(target=execute, args=(process, shell, lambda x, y: bar_callback(screen['name'], x, y)))
         thr.start()

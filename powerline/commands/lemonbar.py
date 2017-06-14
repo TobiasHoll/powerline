@@ -18,6 +18,10 @@ def get_argparser(ArgumentParser=argparse.ArgumentParser):
 		help='Redirect lemonbar output to /bin/sh'
 	)
 	parser.add_argument(
+		'--alt-output', action='store_true',
+		help='Use alternative output detection'
+	)
+	parser.add_argument(
 		'--height', default='',
 		metavar='PIXELS', help='Bar height.'
 	)
