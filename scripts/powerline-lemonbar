@@ -15,6 +15,7 @@ bars = {}
 shell = None
 powerline = None
 lock = Lock()
+args = []
 
 def execute(process, shell, callback):
     for stdout_line in iter(process.stdout.readline, b''):
@@ -68,12 +69,15 @@ def restart_bar(output_name):
     for screen in get_connected_xrandr_outputs(powerline.pl):
         if screen['name'] != output_name:
             continue
-        if not args.alt-output:
+        if not args.alt_output:
             command = [args.bar_command, '-g', '{0}x{1}+{2}+{3}'.format(screen['width'], args.height, screen['x'], screen['y'])] + args.args[1:]
         else:
             command = [args.bar_command, '-O', '{0}'.format(screen['name'])] + args.args[1:]
         process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        thr = Thread(target=execute, args=(process, shell, lambda x, y: bar_callback(screen['name'], x, y)))
+        if not args.no_clicks:
+            thr = Thread(target=execute, args=(process, shell, lambda x, y: bar_callback(screen['name'], x, y)))
+        else:
+            thr = Thread(target=execute, args=(process, shell, lambda x, y: pass))
         thr.start()
 
         bars.update({output_name: (process, thr, int(screen['width']) / 10)})
@@ -86,7 +90,7 @@ if __name__ == '__main__':
 
     powerline = LemonbarPowerline()
     powerline.update_renderer()
-    if args.clicks:
+    if not args.no_clicks:
         shell = subprocess.Popen(['/bin/sh'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
     for screen in get_connected_xrandr_outputs(powerline.pl):

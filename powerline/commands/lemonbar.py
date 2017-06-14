@@ -15,10 +15,14 @@ def get_argparser(ArgumentParser=argparse.ArgumentParser):
 	)
 	parser.add_argument(
 		'--clicks', action='store_true',
-		help='Redirect lemonbar output to /bin/sh'
+		help="Unused."
 	)
 	parser.add_argument(
-		'--alt-output', action='store_true',
+		'--no_clicks', action='store_true',
+		help="Don't redirect lemonbar output to /bin/sh"
+	)
+	parser.add_argument(
+		'--alt_output', action='store_true',
 		help='Use alternative output detection'
 	)
 	parser.add_argument(
@@ -31,7 +35,7 @@ def get_argparser(ArgumentParser=argparse.ArgumentParser):
 		metavar='SECONDS', help='Refresh interval.'
 	)
 	parser.add_argument(
-		'--bar-command', '-C',
+		'--bar_command', '-C',
 		default='lemonbar',
 		metavar='CMD', help='Name of the lemonbar executable to use.'
 	)
