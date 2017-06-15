@@ -30,6 +30,7 @@ def execute(process, shell, callback):
 
 def render(reschedule=False):
     t = Timer(args.interval, render, kwargs={'reschedule': True})
+    global lock
     with lock:
         try:
             for output in bars:
