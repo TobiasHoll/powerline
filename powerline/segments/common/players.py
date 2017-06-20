@@ -39,7 +39,7 @@ def _convert_seconds(seconds):
 
 
 class PlayerSegment(Segment):
-	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', short_format='{state_symbol}{title}', state_symbols=STATE_SYMBOLS, progress_args={'full':'#', 'empty':'_', 'steps': 5}, auto_disable=False, show_controls=False, **kwargs):
+	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', short_format='{state_symbol}{title:15.15}', state_symbols=STATE_SYMBOLS, progress_args={'full':'#', 'empty':'_', 'steps': 5}, auto_disable=False, show_controls=False, **kwargs):
 		stats = {
 			'state': 'fallback',
 			'shuffle': 'fallback',
@@ -80,7 +80,7 @@ class PlayerSegment(Segment):
 			'contents': format.format(**stats),
 			'highlight_groups': ['player:' + (stats['state'] or 'fallback'), 'player'],
 			'draw_inner_divider': True,
-			'truncate': lambda pl, wd, segment: short_format.format(**stats)
+			'truncate': lambda pl, wd, segment: short_format.format(**stats).strip(' -,.')
 		}]
 
 		if show_controls:
