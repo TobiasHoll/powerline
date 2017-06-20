@@ -354,7 +354,12 @@ class Renderer(object):
 			for segment in chain(segments_priority, no_priority_segments):
 				if segment['truncate'] is not None:
 					segment['contents'] = segment['truncate'](self.pl, current_width - width, segment)
+					self._prepare_segments(segments, output_width or width)
+					current_width = self._render_length(theme, segments, divider_widths)
+					if current_width <= width:
+						break
 
+		if current_width > width:
 			segments_priority = iter(segments_priority)
 			if current_width > width and len(segments) > 100:
 				# When there are too many segments use faster, but less correct

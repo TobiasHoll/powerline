@@ -31,7 +31,7 @@ def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 		return socket.gethostname().split('.')[0]
 	return socket.gethostname()
 
-def wireless(pl, device, format='{quality:3.0%} at {essid}'):
+def wireless(pl, device, format='{quality:3.0%} at {essid}', short_format='{quality:3.0%}'):
 	'''Returns the current connection quality.
 
 	:param string device:
@@ -61,7 +61,8 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}'):
 	    'contents': format.format(quality=quality/85, essid=essid.decode(), frequency=frequency),
 	    'highlight_groups': ['quality_gradient'],
 	    'gradient_level': 100 * (85 - quality) / 85,
-	    'click_values': {'essid': essid, 'quality': quality * 100 / 85}
+	    'click_values': {'essid': essid, 'quality': quality * 100 / 85},
+	    'truncate': lambda a,b,c: short_format.format(quality=quality/85, essid=essid.decode(), frequency=frequency)
 	    }]
 
 def _external_ip(query_url='http://ipv6.icanhazip.com/'):

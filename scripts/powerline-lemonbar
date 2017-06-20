@@ -83,7 +83,7 @@ def restart_bar(output_name):
         if not thr.is_alive():
             thr.start()
 
-        bars.update({output_name: (process, thr, int(screen['width']) / 10)})
+        bars.update({output_name: (process, thr, int(int(screen['width']) / (int(args.height) * 0.555)))})
         return
 
 
