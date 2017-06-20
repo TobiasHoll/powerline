@@ -73,7 +73,7 @@ class GoogleCalendarSegment(ThreadedSegment):
         result = [(c['items'], self.get_remind(c['defaultReminders'])) for c in result]
         return sum([[(e,r) for e in c] for c, r in result], []) or []
 
-    def render(self, events, format='{summary}{time}', time_format=' (%H:%M)', count=3, show_count=False, hide_times=[" (00:00)"], **kwargs):
+    def render(self, events, format='{summary}{time}', short_format='{short_summary}{time}', time_format=' (%H:%M)', count=3, show_count=False, hide_times=[" (00:00)"], **kwargs):
         if events is None:
             return [{
                 'contents': 'No valid credentials',
@@ -102,12 +102,22 @@ class GoogleCalendarSegment(ThreadedSegment):
         if count != 0:
             events = events[:count]
 
+        def shorten(summary):
+            words = summary.split(' ')
+            res = ''
+            for w in words:
+                if len(w) and w[0].isupper():
+                    res += w[0:3]
+            return res
+
         # check if these events are relevant
         now = datetime.now(timezone.utc)
         return [{
             'contents': format.format(time="" if (dt + bf).strftime(time_format) in hide_times else (dt + bf).strftime(time_format), summary=sm, location=lc),
             'highlight_groups': ['appoint:urgent', 'appoint'] if now < dt + bf else ['appoint'],
-            'draw_inner_divider': True
+            'draw_inner_divider': True,
+            '_data': {'time': "" if (dt + bf).strftime(time_format) in hide_times else (dt + bf).strftime(time_format), 'summary': sm, 'short_summary': shorten(sm), 'location': lc },
+            'truncate': lambda a,b,seg: short_format.format(**seg['_data'])
         } for dt, sm, lc, bf in events if dt <= now] + segments
 
 gcalendar = with_docstring(GoogleCalendarSegment(),
@@ -115,6 +125,9 @@ gcalendar = with_docstring(GoogleCalendarSegment(),
 
 :param string format:
     The format to use when displaying events. Valid fields are time, summary and location.
+:param string short_format:
+    The format to use when displaying events with few space. Valid fields are time, summary,
+    short_summary and location.
 :param string time_format:
     The format to use when displaying times and dates.
 :param int count:
