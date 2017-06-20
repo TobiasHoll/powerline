@@ -39,7 +39,7 @@ def _convert_seconds(seconds):
 
 
 class PlayerSegment(Segment):
-	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', short_format='{state_symbol}{title:15.15}', state_symbols=STATE_SYMBOLS, progress_args={'full':'#', 'empty':'_', 'steps': 5}, auto_disable=False, show_controls=False, **kwargs):
+	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', short_format='{state_symbol}{short_title}', state_symbols=STATE_SYMBOLS, progress_args={'full':'#', 'empty':'_', 'steps': 5}, auto_disable=False, show_controls=False, **kwargs):
 		stats = {
 			'state': 'fallback',
 			'shuffle': 'fallback',
@@ -49,7 +49,8 @@ class PlayerSegment(Segment):
 			'title': None,
 			'elapsed': None,
 			'total': None,
-			'progress': None
+			'progress': None,
+			'short_title': None
 		}
 		func_stats = self.get_player_status(**kwargs)
 		if not func_stats:
@@ -67,6 +68,12 @@ class PlayerSegment(Segment):
 		if auto_disable and stats['state'] == 'stop':
 			return None
 
+		def truncate(pl, wd, seg):
+			ttl = seg['_data']['title']
+			nw_ttl = ttl[0:max(14, len(ttl)-wd)].strip(' .,;(-')
+			seg['_data']['short_title'] = nw_ttl + '…' if len(nw_ttl) < len(ttl) else nw_ttl
+			return short_format.format(**seg['_data'])
+
 		segments = []
 
 		if show_controls:
@@ -80,7 +87,8 @@ class PlayerSegment(Segment):
 			'contents': format.format(**stats),
 			'highlight_groups': ['player:' + (stats['state'] or 'fallback'), 'player'],
 			'draw_inner_divider': True,
-			'truncate': lambda pl, wd, segment: short_format.format(**stats).strip(' -,.(:;')
+			'_data': stats,
+			'truncate': truncate
 		}]
 
 		if show_controls:
