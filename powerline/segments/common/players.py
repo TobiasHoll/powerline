@@ -80,7 +80,7 @@ class PlayerSegment(Segment):
 			'contents': format.format(**stats),
 			'highlight_groups': ['player:' + (stats['state'] or 'fallback'), 'player'],
 			'draw_inner_divider': True,
-			'truncate': lambda pl, wd, segment: short_format.format(**stats).strip(' -,.():;')
+			'truncate': lambda pl, wd, segment: short_format.format(**stats).strip(' -,.(:;')
 		}]
 
 		if show_controls:
