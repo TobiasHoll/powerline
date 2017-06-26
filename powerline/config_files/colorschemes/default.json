@@ -48,6 +48,7 @@
 		"battery:0":                 "level:3",
 		"battery:online":            { "fg": "yellow",              "bg": "level:3_bg" },
 		"battery:full":              { "fg": "mediumgreen",         "bg": "level:3_bg" },
+		"battery:unknown":           { "fg": "yellow",              "bg": "level:3_bg" },
 		"player":                    { "fg": "level:3_fg",          "bg": "level:3_bg" },
 		"user":                      "level:1_bold",
 		"superuser":                 { "fg": "level:1_fg",          "bg": "brightred",          "attrs": ["bold"] },

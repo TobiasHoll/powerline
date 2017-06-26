@@ -2,17 +2,11 @@
     "segments": {
         "right": [
             {
-                "function":             "powerline.segments.common.net.wireless",
-                "args": {
-                    "device":           "wlo1"
-                },
-                "before":               " "
-            },
-            {
                 "function":             "powerline.segments.common.players.gpmdp",
                 "name":                 "gpmdp",
                 "args": {
                     "format":           "{state_symbol}{artist} — {title} ({progress})",
+                    "short_format":     "{state_symbol}{short_title}",
                     "state_symbols": {
                         "fallback":         "♫",
                         "play":             "▶ ",
@@ -36,8 +30,16 @@
             {
                 "function":             "powerline.segments.common.volume.vol",
                 "args": {
-                    "format":           "♫ {volume:2.0%}",
+                    "format":           " {volume:3.0%}",
                     "format_muted":     null
+                }
+            },
+            {
+                "function":             "powerline.segments.common.net.wireless",
+                "args": {
+                    "device":           "wlo1",
+                    "format":           "  {quality:3.0%} at {essid}",
+                    "short_format":     "  {quality:3.0%} at {essid}"
                 }
             },
             {
@@ -90,6 +92,9 @@
         "left": [
             {
                 "function":             "powerline.segments.common.net.hostname"
+            },
+            {
+                "function":             "powerline.segments.common.env.clip"
             },
             {
                 "function":             "powerline.segments.i3wm.mode",

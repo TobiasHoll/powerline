@@ -59,7 +59,7 @@ class PlayerSegment(Segment):
 		stats['state_symbol'] = state_symbols.get(stats['state'])
 		stats['shuffle_symbol'] = state_symbols.get(stats['shuffle'])
 		stats['repeat_symbol'] = state_symbols.get(stats['repeat'])
-		if stats['total_raw'] and stats['elapsed_raw']:
+		if 'total_raw' in stats and stats['total_raw'] and 'elapsed_raw' in stats and stats['elapsed_raw']:
 			stats['progress'] = progress_args['full'] * int( stats['elapsed_raw'] *
 				( 1 + int(progress_args['steps']) ) / stats['total_raw'] ) + \
 				progress_args['empty'] * int( 1 + int(progress_args['steps']) -
@@ -69,8 +69,9 @@ class PlayerSegment(Segment):
 			return None
 
 		def truncate(pl, wd, seg):
+			wd -= len(seg['contents'])
 			ttl = seg['_data']['title']
-			nw_ttl = ttl[0:max(14, len(ttl)-wd)].strip(' .,;(-')
+			nw_ttl = ttl[0:max(14, -wd)].strip(' .,;(-')
 			seg['_data']['short_title'] = nw_ttl + '…' if len(nw_ttl) < len(ttl) else nw_ttl
 			return short_format.format(**seg['_data'])
 
