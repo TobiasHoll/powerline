@@ -4,7 +4,7 @@
         "clip":                      { "fg": "level:2_fg",          "bg": "level:2_bg",         "click": {
             "left": "xsel -cb"
         } },
-        "volume_gradient":           { "fg": "green_yellow_red",    "bg": "level:3_bg",           "click": {
+        "volume_gradient":           { "fg": "white_red",    "bg": "level:3_bg",           "click": {
             "scroll up": "pactl set-sink-volume 0 +1%",
             "scroll down": "pactl set-sink-volume 0 -1%"
         } },
