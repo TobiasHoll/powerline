@@ -559,14 +559,24 @@ class Renderer(object):
 
 					if side == 'left':
 						if render_highlighted:
-							contents_highlighted = self.hl(self.escape(contents_raw), **segment['highlight'], **segment)
+							contents_highlighted = self.hl(self.escape(contents_raw),
+								fg=segment['highlight']['fg'],
+								bg=segment['highlight']['bg'],
+								attrs=segment['highlight']['attrs'],
+								click=segment['highlight']['click'],
+								**segment)
 							divider_highlighted = self.hl(divider_raw, divider_fg, divider_bg, False)
 						segment['_rendered_raw'] = contents_raw + divider_raw
 						segment['_rendered_hl'] = contents_highlighted + divider_highlighted
 					else:
 						if render_highlighted:
 							divider_highlighted = self.hl(divider_raw, divider_fg, divider_bg, False)
-							contents_highlighted = self.hl(self.escape(contents_raw), **segment['highlight'], **segment)
+							contents_highlighted = self.hl(self.escape(contents_raw),
+								fg=segment['highlight']['fg'],
+								bg=segment['highlight']['bg'],
+								attrs=segment['highlight']['attrs'],
+								click=segment['highlight']['click'],
+								**segment)
 						segment['_rendered_raw'] = divider_raw + contents_raw
 						segment['_rendered_hl'] = divider_highlighted + contents_highlighted
 				else:
@@ -575,7 +585,12 @@ class Renderer(object):
 					else:
 						contents_raw = contents_raw + outer_padding
 
-					contents_highlighted = self.hl(self.escape(contents_raw), **segment['highlight'], **segment)
+					contents_highlighted = self.hl(self.escape(contents_raw),
+						fg=segment['highlight']['fg'],
+						bg=segment['highlight']['bg'],
+						attrs=segment['highlight']['attrs'],
+						click=segment['highlight']['click'],
+						**segment)
 					segment['_rendered_raw'] = contents_raw
 					segment['_rendered_hl'] = contents_highlighted
 				prev_segment = segment

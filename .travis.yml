@@ -21,7 +21,8 @@ install: tests/install.sh
 script:  echo "tests disabled" #tests/test.sh
 matrix:
     include:
+        - python: "3.4"
         - python: "3.5"
-#        - python: "3.6"
+        - python: "3.6"
 
 # vim: et
