@@ -82,7 +82,7 @@ class Colorscheme(object):
 
 		# Create a dict of color tuples with both a cterm and hex value
 		for color_name, color in colors_config['colors'].items():
-			if type(color) == int:
+			if type(color) == int or type(color) == bool:
 				self.colors[color_name] = (color, cterm_to_hex[color])
 			elif type(color) == str:
 				self.colors[color_name] = (hex_to_cterm(color), int(color, 16))
@@ -97,13 +97,16 @@ class Colorscheme(object):
 				if len(gradient) > 1 and type(gradient[1][0]) == float:
 					self.gradients[gradient_name]= gradient
 					self.gradient_types[gradient_name] = "hsv"
-				else: # legacy [[cterm], [hex]]
+				elif len(gradient) > 1: # legacy [[cterm], [hex]]
 					self.gradients[gradient_name] = [int(color, 16) for color in gradient[1]]
+					self.gradient_types[gradient_name] = "hex"
+				else:
+					self.gradients[gradient_name] = [cterm_to_hex[color] for color in gradient[0]]
 					self.gradient_types[gradient_name] = "hex"
 			elif type(gradient[0]) == str:
 				self.gradients[gradient_name] = [int(color, 16) for color in gradient]
 				self.gradient_types[gradient_name] = "hex"
-			elif type(gradient[0]) == int:
+			elif type(gradient[0]) == int or type(gradient[0]) == bool:
 				self.gradients[gradient_name] = [cterm_to_hex[color] for color in gradient[0]]
 				self.gradient_types[gradient_name] = "hex"
 

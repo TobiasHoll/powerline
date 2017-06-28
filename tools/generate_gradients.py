@@ -95,7 +95,7 @@ def find_color(ulab, colors, ctrans):
 
 
 def print_color(color):
-	if type(color) is int:
+	if type(color) is int or type(color) in bool:
 		colstr = '5;' + str(color)
 	else:
 		rgb = convert_color(color, sRGBColor)
