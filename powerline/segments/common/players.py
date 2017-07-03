@@ -70,7 +70,7 @@ class PlayerSegment(Segment):
 
 		def truncate(pl, wd, seg):
 			wd -= len(seg['contents'])
-			ttl = seg['_data']['title']
+			ttl = seg['_data']['title'] or 'None'
 			nw_ttl = ttl[0:max(14, -wd)].strip(' .,;(-')
 			seg['_data']['short_title'] = nw_ttl + '…' if len(nw_ttl) < len(ttl) else nw_ttl
 			return short_format.format(**seg['_data'])
