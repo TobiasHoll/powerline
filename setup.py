@@ -113,17 +113,23 @@ setup(
 	packages=find_packages(exclude=('tests', 'tests.*')),
 	include_package_data=True,
 	zip_safe=False,
-	install_requires=['i3ipc', 'pyalsaaudio', 'iwlib', 'psutil']+(['argparse'] if OLD_PYTHON else []),
+	install_requires=['i3ipc', 'pyalsaaudio']+(['argparse'] if OLD_PYTHON else []),
 	extras_require={
 		'docs': [
 			'Sphinx',
 			'sphinx_rtd_theme',
 		],
-		'appoints segment': [
+		'appoints segment support': [
 			'appoints'
 		],
-		'appoints segment, Google Calendar': [
+		'appoints segment support, Google Calendar': [
 			'google-api-python-client'
+		],
+		'cpu load segment support': [
+			'psutil'
+		],
+		'wifi segment support': [
+			'iwlib'
 		]
 	},
 	test_suite='tests' if not OLD_PYTHON else None,
