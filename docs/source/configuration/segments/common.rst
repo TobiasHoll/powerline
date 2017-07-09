@@ -68,4 +68,9 @@ Volume
 .. automodule:: powerline.segments.common.volume
    :members:
 
+Generic Segments
+================
+
+.. automodule:: powerline.segments.common.generic
+   :members:
 
