@@ -113,7 +113,7 @@ setup(
 	packages=find_packages(exclude=('tests', 'tests.*')),
 	include_package_data=True,
 	zip_safe=False,
-	install_requires=['i3ipc', 'pyalsaaudio', 'iwlib']+(['argparse'] if OLD_PYTHON else []),
+	install_requires=['i3ipc', 'pyalsaaudio', 'iwlib', 'psutil']+(['argparse'] if OLD_PYTHON else []),
 	extras_require={
 		'docs': [
 			'Sphinx',
@@ -124,9 +124,6 @@ setup(
 		],
 		'appoints segment, Google Calendar': [
 			'google-api-python-client'
-		],
-		'cpu load segment': [
-			'psutil'
 		]
 	},
 	test_suite='tests' if not OLD_PYTHON else None,
