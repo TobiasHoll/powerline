@@ -359,6 +359,14 @@ else:
 			return
 		if not info:
 			return
+
+		try:
+			elapsed = iface.Get(iface_player, 'Position')
+		except dbus.exceptions.DBusException:
+			pl.warning('Missing player elapsed time')
+			elapsed = None
+		else:
+			elapsed = _convert_seconds(elapsed / 1e6)
 		album = info.get('xesam:album')
 		title = info.get('xesam:title')
 		artist = info.get('xesam:artist')
@@ -374,6 +382,7 @@ else:
 			'album': album,
 			'artist': artist,
 			'title': title,
+			'elapsed': elapsed,
 			'total': _convert_seconds(info.get('mpris:length') / 1e6),
 		}
 
@@ -438,7 +447,7 @@ class SpotifyAppleScriptPlayerSegment(PlayerSegment):
 						set artist_name to artist of current track
 						set album_name to album of current track
 						set track_length to duration of current track
-						set now_playing to "" & player state & "{0}" & album_name & "{0}" & artist_name & "{0}" & track_name & "{0}" & track_length
+						set now_playing to "" & player state & "{0}" & album_name & "{0}" & artist_name & "{0}" & track_name & "{0}" & track_length & "{0}" & player position
 						return now_playing
 					else
 						return player state
@@ -463,7 +472,8 @@ class SpotifyAppleScriptPlayerSegment(PlayerSegment):
 			'album': spotify_status[1],
 			'artist': spotify_status[2],
 			'title': spotify_status[3],
-			'total': _convert_seconds(int(spotify_status[4]))
+			'total': _convert_seconds(int(spotify_status[4])/1000),
+			'elapsed': _convert_seconds(spotify_status[5]),
 		}
 
 
@@ -476,7 +486,7 @@ Requires ``osascript`` available in $PATH.
 ''').format(_common_args.format('spotify_apple_script')))
 
 
-if 'dbus' in globals() or not sys.platform.startswith('darwin'):
+if not sys.platform.startswith('darwin'):
 	spotify = spotify_dbus
 	_old_name = 'spotify_dbus'
 else:
@@ -633,3 +643,59 @@ Requires ``osascript``.
 
 {0}
 ''').format(_common_args.format('itunes')))
+
+
+class MocPlayerSegment(PlayerSegment):
+	def get_player_status(self, pl):
+		'''Return Music On Console (mocp) player information.
+
+		``mocp -i`` returns current information i.e.
+
+		.. code-block::
+
+		   File: filename.format
+		   Title: full title
+		   Artist: artist name
+		   SongTitle: song title
+		   Album: album name
+		   TotalTime: 00:00
+		   TimeLeft: 00:00
+		   TotalSec: 000
+		   CurrentTime: 00:00
+		   CurrentSec: 000
+		   Bitrate: 000kbps
+		   AvgBitrate: 000kbps
+		   Rate: 00kHz
+
+		For the information we are looking for we don’t really care if we have 
+		extra-timing information or bit rate level. The dictionary comprehension 
+		in this method takes anything in ignore_info and brings the key inside 
+		that to the right info of the dictionary.
+		'''
+		now_playing_str = run_cmd(pl, ['mocp', '-i'])
+		if not now_playing_str:
+			return
+
+		now_playing = dict((
+			line.split(': ', 1)
+			for line in now_playing_str.split('\n')[:-1]
+		))
+		state = _convert_state(now_playing.get('State', 'stop'))
+		return {
+			'state': state,
+			'album': now_playing.get('Album', ''),
+			'artist': now_playing.get('Artist', ''),
+			'title': now_playing.get('SongTitle', ''),
+			'elapsed': _convert_seconds(now_playing.get('CurrentSec', 0)),
+			'total': _convert_seconds(now_playing.get('TotalSec', 0)),
+		}
+
+
+mocp = with_docstring(MocPlayerSegment(),
+('''Return MOC (Music On Console) player information
+
+Requires version >= 2.3.0 and ``mocp`` executable in ``$PATH``.
+
+{0}
+''').format(_common_args.format('mocp')))
+
