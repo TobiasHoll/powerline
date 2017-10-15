@@ -54,8 +54,8 @@ def handle_bar_command(output_name, cmd, segment_name):
         render(reschedule=True)
 
 def bar_callback(output_name, line, segment_name):
-    powerline.pl.info('click on {0} (segment {2}): {1}'.format(output_name, line, segment_name))
-    print('click on {0} (segment {2}): {1}'.format(output_name, line, segment_name))
+    # powerline.pl.info('click on {0} (segment {2}): {1}'.format(output_name, line, segment_name))
+    # print('click on {0} (segment {2}): {1}'.format(output_name, line, segment_name))
     if line.startswith(INTERNAL_BAR_COMMAND.decode()):
         for cmd in line.split(';'):
             handle_bar_command(output_name, cmd, segment_name)
