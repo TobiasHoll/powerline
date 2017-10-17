@@ -5,7 +5,7 @@
                 "function":             "powerline.segments.common.players.gpmdp",
                 "name":                 "gpmdp",
                 "args": {
-                    "format":           "{state_symbol}{artist} — {title} ({progress})",
+                    "format":           "{state_symbol}{artist} — {title}",
                     "short_format":     "{state_symbol}{short_title}",
                     "state_symbols": {
                         "fallback":         "♫",
@@ -25,6 +25,32 @@
                     },
                     "auto_disable":     true,
                     "show_controls":    true
+                }
+            },
+            {
+                "function":             "powerline.segments.common.players.dbus_player",
+                "name":                 "vlc",
+                "args": {
+                    "format":           "{state_symbol}{artist} — {title}",
+                    "short_format":     "{state_symbol}{short_title}",
+                    "auto_disable":     true,
+                    "show_controls":    true,
+                    "state_symbols": {
+                        "fallback":         "♫",
+                        "play":             "▶ ",
+                        "pause":            "▮▮ ",
+                        "stop":             " ",
+                        "repeat":           "↺ ",
+                        "loop":             "↺1 ",
+                        "shuffle":          " ",
+                        "next":             "",
+                        "previous":         ""
+                    },
+                    "player_name":          "vlc",
+                    "bus_name":             "org.mpris.MediaPlayer2.vlc",
+                    "player_path":          "/org/mpris/MediaPlayer2",
+                    "iface_prop":           "org.freedesktop.DBus.Properties",
+                    "iface_player":         "org.mpris.MediaPlayer2.Player"
                 }
             },
             {
