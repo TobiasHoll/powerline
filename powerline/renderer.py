@@ -424,7 +424,7 @@ class Renderer(object):
 			return True
 		if not first_bg or not second_bg:
 			return False
-		return first_bg[0] == second_bg[0]
+		return first_bg[0] == second_bg[0] and first_bg[1] == second_bg[1]
 
 	def _render_length(self, theme, segments, divider_widths):
 		'''Update segments lengths and return them
