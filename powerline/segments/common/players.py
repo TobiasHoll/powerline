@@ -313,8 +313,8 @@ class MpdPlayerSegment(PlayerSegment):
 				'title': now_playing.get('title'),
 				'elapsed': _convert_seconds(status.get('elapsed', 0)),
 				'total': _convert_seconds(now_playing.get('time', 0)),
-				'elapsed_raw': int(status.get('elapsed', 0)),
-				'total_raw': int(now_playing.get('time', 0)),
+				'elapsed_raw': int(float(status.get('elapsed', 0))),
+				'total_raw': int(float(now_playing.get('time', 0))),
 			}
 
 
