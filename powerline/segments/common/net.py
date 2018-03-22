@@ -51,9 +51,15 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}', short_format='{qual
 		return None
 
 	stats = iwlib.get_iwconfig(device)
-	essid = stats['ESSID']
-	quality = stats['stats']['quality']
-	frequency = stats['Frequency']
+	essid = ''
+	quality = 0
+	frequency = 0
+	if 'ESSID' in stats:
+		essid = stats['ESSID']
+		if 'stats' in stats and 'quality' in stats['stats']:
+			quality = stats['stats']['quality']
+		if 'Frequency' in stats:
+			frequency = stats['Frequency']
 
 	if essid == '' or quality == 0:
 		return None
