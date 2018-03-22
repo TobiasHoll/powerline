@@ -8,12 +8,18 @@ class GoogleCalendarSegment(ThreadedSegment):
     interval = 300
     service = None
     dev_key = None
+    first_run = True
 
     def set_state(self, developer_key, credentials=os.path.expanduser('~') + '/.config/powerline/gcalendar_credentials', range=1, **kwargs):
         self.dev_key = developer_key
         self.cred_path = credentials
         self.range = range
+        self.invalid = True
+        self.service = None
 
+        super(GoogleCalendarSegment, self).set_state(**kwargs)
+
+    def init_service(self, **kwargs):
         if not self.service:
             import httplib2
 
@@ -23,12 +29,12 @@ class GoogleCalendarSegment(ThreadedSegment):
             # If the Credentials don't exist or are invalid, run through the native client
             # flow. The Storage object will ensure that if successful the good
             # Credentials will get written back to a file.
-            if not os.path.exists(credentials):
+            if not os.path.exists(self.cred_path):
                 super(GoogleCalendarSegment, self).set_state(**kwargs)
                 self.invalid = True
                 return None
 
-            storage = Storage(credentials)
+            storage = Storage(self.cred_path)
             credentials = storage.get()
             if credentials is None or credentials.invalid == True:
                 super(GoogleCalendarSegment, self).set_state(**kwargs)
@@ -40,10 +46,9 @@ class GoogleCalendarSegment(ThreadedSegment):
             http = httplib2.Http()
             http = credentials.authorize(http)
 
-            self.service = build(serviceName='calendar', version='v3', http=http, developerKey=developer_key)
-
+            self.service = build(serviceName='calendar', version='v3',
+                    http=http, developerKey=self.dev_key)
         self.invalid = False
-        super(GoogleCalendarSegment, self).set_state(**kwargs)
 
     def get_remind(self, dict):
         mx = 0
@@ -53,8 +58,14 @@ class GoogleCalendarSegment(ThreadedSegment):
 
     def update(self, *args, **kwargs):
         if self.invalid:
+            # If the user has a really slow internet connection,
+            # we don't want that this segment incurs a delay before the
+            # powerline is shown.
+            if self.first_run:
+                self.first_run = False
+                return []
             if self.dev_key:
-                self.set_state(self.dev_key, self.cred_path, self.range, **kwargs)
+                self.init_service(**kwargs)
             if self.invalid:
                 return None
 
