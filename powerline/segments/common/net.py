@@ -31,15 +31,21 @@ def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 		return socket.gethostname().split('.')[0]
 	return socket.gethostname()
 
-def wireless(pl, device, format='{quality:3.0%} at {essid}', short_format='{quality:3.0%}'):
+def wireless(pl, device, format='{quality:3.0%} at {essid}', short_format='{quality:3.0%}', format_down=None):
 	'''Returns the current connection quality.
 
 	:param string device:
 		the device to use
 	:param string format:
 		the output format
+	:param string short_format:
+		optional shorter format when the powerline needs to shrink segments
+	:param string format_down:
+		if set to any other value than ``None``, it will be shown when no wireless connection is
+		present.
 
-	Highlight groups used: ``quality_gradient`` (gradient)
+	Highlight groups used: ``quality_gradient`` (gradient, deprecated), ``wireless:quality`` (gradient),
+	    ``wireless:down`` (when no connection is present)
 
 	Click values supplied: ``quality`` (int), ``essid`` (string)
 	'''
@@ -48,7 +54,11 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}', short_format='{qual
 		import iwlib
 	except ImportError:
 		pl.info("Couldn't load iwlib")
-		return None
+		return None if not format_down else [{
+		    'contents': format_down.format(quality=0, essid=None, frequency=0),
+		    'highlight_groups': ['wireless:down', 'wireless:quality', 'quality_gradient'],
+		    'gradient_level': 100
+		}]
 
 	stats = iwlib.get_iwconfig(device)
 	essid = ''
@@ -62,10 +72,14 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}', short_format='{qual
 			frequency = stats['Frequency']
 
 	if essid == '' or quality == 0:
-		return None
+		return None if not format_down else [{
+		    'contents': format_down.format(quality=0, essid=None, frequency=0),
+		    'highlight_groups': ['wireless:down', 'wireless:quality', 'quality_gradient'],
+		    'gradient_level': 100
+		}]
 	return [{
 	    'contents': format.format(quality=quality/85, essid=essid.decode(), frequency=frequency),
-	    'highlight_groups': ['quality_gradient'],
+	    'highlight_groups': ['wireless:gradient', 'quality_gradient'],
 	    'gradient_level': 100 * (85 - quality) / 85,
 	    'click_values': {'essid': essid, 'quality': quality * 100 / 85},
 	    'truncate': lambda a,b,c: short_format.format(quality=quality/85, essid=essid.decode(), frequency=frequency)
