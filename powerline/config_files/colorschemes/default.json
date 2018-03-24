@@ -21,6 +21,7 @@
         "date":                      "level:2",
         "time":                      "level:1_bold",
         "time:divider":              "level:1",
+        "fuzzy_time":                "level:1",
         "email_alert":               { "bg": "level:3_bg",          "fg": "brightred",          "attrs": ["bold"] },
         "email_alert_gradient":      { "bg": "level:3_bg",          "fg": "yellow_orange_red",  "attrs": ["bold"] },
         "hostname":                  "level:1",
