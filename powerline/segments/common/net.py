@@ -31,7 +31,9 @@ def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 		return socket.gethostname().split('.')[0]
 	return socket.gethostname()
 
-def wireless(pl, device, format='{quality:3.0%} at {essid}', short_format='{quality:3.0%}', format_down=None):
+@requires_segment_info
+def wireless(pl, segment_info, device, format='{quality:3.0%} at {essid}',
+	short_format='{quality:3.0%}', format_down=None, auto_shrink=False):
 	'''Returns the current connection quality.
 
 	:param string device:
@@ -43,12 +45,17 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}', short_format='{qual
 	:param string format_down:
 		if set to any other value than ``None``, it will be shown when no wireless connection is
 		present.
+	:param bool auto_shrink:
+		if set to true, this segment will use ``short_format`` per default,
+		only using ``format`` when any message is present on the ``net.wireless``
+		message channel.
 
 	Highlight groups used: ``quality_gradient`` (gradient, deprecated), ``wireless:quality`` (gradient),
 	    ``wireless:down`` (when no connection is present)
 
 	Click values supplied: ``quality`` (int), ``essid`` (string)
 	'''
+	payload_name = 'net.wireless'
 
 	try:
 		import iwlib
@@ -57,7 +64,8 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}', short_format='{qual
 		return None if not format_down else [{
 		    'contents': format_down.format(quality=0, essid=None, frequency=0),
 		    'highlight_groups': ['wireless:down', 'wireless:quality', 'quality_gradient'],
-		    'gradient_level': 100
+		    'gradient_level': 100,
+		    'payload_name': payload_name
 		}]
 
 	stats = iwlib.get_iwconfig(device)
@@ -75,15 +83,29 @@ def wireless(pl, device, format='{quality:3.0%} at {essid}', short_format='{qual
 		return None if not format_down else [{
 		    'contents': format_down.format(quality=0, essid=None, frequency=0),
 		    'highlight_groups': ['wireless:down', 'wireless:quality', 'quality_gradient'],
-		    'gradient_level': 100
+		    'gradient_level': 100,
+		    'payload_name': payload_name
 		}]
+
+	if not auto_shrink or ('payloads' in segment_info and payload_name in
+		segment_info['payloads'] and segment_info['payloads'][payload_name]):
+			return [{
+			    'contents': format.format(quality=quality/85,
+				essid=essid.decode(), frequency=frequency),
+			    'highlight_groups': ['wireless:gradient', 'quality_gradient'],
+			    'gradient_level': 100 * (85 - quality) / 85,
+			    'click_values': {'essid': essid, 'quality': quality * 100 / 85},
+			    'payload_name': payload_name
+			    }]
 	return [{
-	    'contents': format.format(quality=quality/85, essid=essid.decode(), frequency=frequency),
+	    'contents': short_format.format(quality=quality/85, essid=essid.decode(), frequency=frequency),
 	    'highlight_groups': ['wireless:gradient', 'quality_gradient'],
 	    'gradient_level': 100 * (85 - quality) / 85,
 	    'click_values': {'essid': essid, 'quality': quality * 100 / 85},
+	    'payload_name': payload_name,
 	    'truncate': lambda a,b,c: short_format.format(quality=quality/85, essid=essid.decode(), frequency=frequency)
 	    }]
+
 
 def _external_ip(query_url='http://ipv6.icanhazip.com/'):
 	return urllib_read(query_url).strip()

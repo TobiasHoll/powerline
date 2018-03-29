@@ -62,6 +62,10 @@ def handle_bar_command(output_name, cmd, segment_name):
         if segment_name:
             segment_info['payloads'].update({segment_name: None})
         render(reschedule=True)
+    elif cmd == 'ch_fill':
+        if segment_name:
+            segment_info['payloads'].update({segment_name: True})
+        render(reschedule=True)
     elif cmd.startswith('pass:'):
         # print('passed {0} to comm chan {1}.'.format(cmd.split(':')[1], segment_name))
         if segment_name:
