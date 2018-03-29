@@ -31,7 +31,10 @@ class LemonbarRenderer(Renderer):
 				if not key in button_map:
 					continue
 				st = click[key].format(escaped_contents.strip(), **click_values).strip()
-				text += '%{{A{1}:{0}{2}{3}:}}'.format(st, button_map[key], SEGMENT_NAME.decode(), kwargs['name'])
+				text += '%{{A{1}:{0}{2}{3}:}}'.format(st.replace(':', '\\:'),
+					button_map[key], SEGMENT_NAME.decode(),
+					((kwargs['payload_name']) if 'payload_name' in kwargs
+					    else kwargs['name']))
 				click_count += 1
 
 		if fg is not None:
@@ -51,9 +54,16 @@ class LemonbarRenderer(Renderer):
 		return text + escaped_contents + '%{F-B-}' + ('%{A}' * click_count)
 
 	def render(self, width, *args, **kwargs):
+		kw2 = kwargs
+		if 'segment_info' in kwargs:
+			kw2['segment_info'].update({'output': kwargs.get('matcher_info')})
+		else:
+			kw2.update({'segment_info': {'output': kwargs.get('matcher_info')}})
 		return '%{{r}}{1}%{{l}}{0}'.format(
-			super(LemonbarRenderer, self).render(width=width//2,side='left', segment_info={'output': kwargs.get('matcher_info')}, *args, **kwargs),
-			super(LemonbarRenderer, self).render(width=width//2,side='right', segment_info={'output': kwargs.get('matcher_info')}, *args, **kwargs),
+			super(LemonbarRenderer, self).render(width=width//2,side='left',
+			    *args, **kw2),
+			super(LemonbarRenderer, self).render(width=width//2,side='right',
+			    *args, **kw2)
 		)
 
 	def get_theme(self, matcher_info):
