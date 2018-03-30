@@ -1,5 +1,4 @@
 from __future__ import (unicode_literals, division, absolute_import, print_function)
-from datetime import (datetime, timedelta, timezone)
 from powerline.lib.threaded import ThreadedSegment
 from powerline.segments import with_docstring
 from powerline.theme import requires_segment_info
@@ -49,6 +48,7 @@ class ScreenRotationSegment(ThreadedSegment):
     mode = 1
 
     last_oneshot = 0
+    bar_needs_resize = None
 
     def set_state(self, output, states=['normal', 'inverted', 'left', 'right'],
             gravity_triggers=None, mapped_inputs=[], touchpads=[], touchpad_states=None,
@@ -94,6 +94,9 @@ class ScreenRotationSegment(ThreadedSegment):
         super(ScreenRotationSegment, self).set_state(**kwargs)
 
     def rotate(self, state):
+        if (self.STATES[self.current_state] in ['left', 'right']) != (self.STATES[state] in ['left', 'right']):
+            self.bar_needs_resize = self.output
+
         check_call(['xrandr', '--output', self.output, '--rotate', self.STATES[state]])
         needs_map = [i.decode('utf-8') for i in self.devices if len([j for j in self.mapped_inputs
             if j in i.decode('utf-8')])]
@@ -125,8 +128,8 @@ class ScreenRotationSegment(ThreadedSegment):
             if i == self.current_state:
                 continue
             if self.checks[self.STATES[i]](x, y):
+                self.rotate(i)
                 self.current_state = i
-                self.rotate(self.current_state)
                 self.update_touchpad(self.current_state)
 
 
@@ -140,6 +143,13 @@ class ScreenRotationSegment(ThreadedSegment):
         channel_value = None
         if 'payloads' in segment_info and channel_name in segment_info['payloads']:
             channel_value = segment_info['payloads'][channel_name]
+
+        if self.bar_needs_resize:
+            scrn = self.bar_needs_resize
+            self.bar_needs_resize = None
+            if segment_info['output'] == scrn:
+                segment_info['restart'](scrn)
+
 
         # A user wants to map devices to a different screen
         if channel_value and channel_value == 'capture_input' and 'output' in segment_info:
@@ -159,7 +169,6 @@ class ScreenRotationSegment(ThreadedSegment):
 
 
         if 'output' in segment_info and segment_info['output'] != self.initial_output:
-            print(segment_info)
             self.mode = 0
             if not show_on_all_outputs:
                 return None

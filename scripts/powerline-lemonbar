@@ -19,6 +19,8 @@ args = []
 
 segment_info={'payloads': {}}
 
+needs_restart = []
+
 def execute(process, shell, callback):
     for stdout_line in iter(process.stdout.readline, b''):
         line = stdout_line[0:stdout_line.rfind(SEGMENT_NAME)]
@@ -32,18 +34,28 @@ def execute(process, shell, callback):
 
 def render(reschedule=False):
     t = Timer(args.interval, render, kwargs={'reschedule': True})
+    stamp = time.time()
     global lock
-    with lock:
-        try:
-            for output in bars:
-                process, thread, width = bars[output]
+    try:
+        for output in bars:
+            process, thread, width = bars[output]
+            with lock:
                 process.stdin.write(powerline.render(mode=modes[0], width=width,
                     matcher_info=output, segment_info=segment_info).encode('utf-8') + b'\n')
                 process.stdin.flush()
                 if reschedule and not t.is_alive():
                     t.start()
-        except BrokenPipeError: # The lemonbar died, so should we
-            pass
+    except BrokenPipeError: # The lemonbar died, so should we
+        pass
+    global needs_restart
+    n_r = needs_restart
+    if len(n_r):
+        with lock:
+            n_r = needs_restart
+            needs_restart = []
+        for output in n_r:
+            restart_bar(output)
+        render(reschedule=True)
 
 def handle_bar_command(output_name, cmd, segment_name):
     if cmd.find('#') > 0:
@@ -117,6 +129,9 @@ def restart_bar(output_name):
         bars.update({output_name: (process, thr, int(int(screen['width']) / (int(args.height) * 0.555)))})
         return
 
+def restart_callback(output):
+    global needs_restart
+    needs_restart.extend([output])
 
 if __name__ == '__main__':
     parser = get_argparser()
@@ -131,6 +146,8 @@ if __name__ == '__main__':
         restart_bar(screen['name'])
 
     modes = ['default']
+
+    segment_info['restart'] = restart_callback
 
     def update(evt):
         modes[0] = evt.change
