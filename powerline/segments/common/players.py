@@ -6,6 +6,7 @@ import sys
 from powerline.lib.shell import asrun, run_cmd
 from powerline.lib.unicode import out_u
 from powerline.segments import Segment, with_docstring
+from powerline.theme import requires_segment_info
 
 
 STATE_SYMBOLS = {
@@ -38,8 +39,12 @@ def _convert_seconds(seconds):
 	return '{0:.0f}:{1:02.0f}'.format(*divmod(float(seconds), 60))
 
 
+@requires_segment_info
 class PlayerSegment(Segment):
-	def __call__(self, format='{state_symbol} {artist} - {title} ({total})', short_format='{state_symbol}{short_title}', state_symbols=STATE_SYMBOLS, progress_args={'full':'#', 'empty':'_', 'steps': 5}, auto_disable=False, show_controls=False, **kwargs):
+	def __call__(self, segment_info, format='{state_symbol} {artist} - {title} ({total})',
+		short_format='{state_symbol}{short_title}', state_symbols=STATE_SYMBOLS,
+		progress_args={'full':'#', 'empty':'_', 'steps': 5}, auto_disable=False,
+		show_controls=False, auto_shrink=False, channel_name=None, **kwargs):
 		stats = {
 			'state': 'fallback',
 			'shuffle': 'fallback',
@@ -55,6 +60,10 @@ class PlayerSegment(Segment):
 		func_stats = self.get_player_status(**kwargs)
 		if not func_stats:
 			return None
+
+		channel_name = channel_name or self.get_channel_name(**kwargs)
+		long = 'payloads' in segment_info and channel_name in segment_info['payloads'] and segment_info['payloads'][channel_name]
+
 		stats.update(func_stats)
 		stats['state_symbol'] = state_symbols.get(stats['state'])
 		stats['shuffle_symbol'] = state_symbols.get(stats['shuffle'])
@@ -81,21 +90,26 @@ class PlayerSegment(Segment):
 		    segments += [{
 			'contents': state_symbols.get('previous'),
 			'highlight_groups': ['player:previous', 'player'],
+			'payload_name':	channel_name + '.prev',
 			'draw_inner_divider': True
 		    }]
 
+		stats['short_title'] = stats['short_title'] or stats['title']
 		segments += [{
-			'contents': format.format(**stats),
+			'contents': format.format(**stats) if not auto_shrink or long
+			    else short_format.format(**stats),
 			'highlight_groups': ['player:' + (stats['state'] or 'fallback'), 'player'],
 			'draw_inner_divider': True,
+			'payload_name':	channel_name,
 			'_data': stats,
-			'truncate': truncate
+			'truncate': truncate if not auto_shrink else None
 		}]
 
 		if show_controls:
 		    segments += [{
 			'contents': state_symbols.get('next'),
 			'highlight_groups': ['player:next', 'player'],
+			'payload_name':	channel_name + '.next',
 			'draw_inner_divider': True
 		    }]
 
@@ -103,6 +117,9 @@ class PlayerSegment(Segment):
 
 	def get_player_status(self, pl):
 		pass
+
+	def get_channel_name(self, pl):
+		return 'players.generic'
 
 	def argspecobjs(self):
 		for ret in super(PlayerSegment, self).argspecobjs():
@@ -166,6 +183,9 @@ Highlight groups used: ``player:fallback`` or ``player``, ``player:play`` or ``p
 _player = with_docstring(PlayerSegment(), _common_args.format('_player'))
 
 class GPMDPlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.gpmpd'
+
 	last = { }
 	def get_player_status(self, pl):
 		'''Return Google Play Music Desktop player information'''
@@ -220,6 +240,9 @@ gpmdp = with_docstring(GPMDPlayerSegment(),
 ''').format(_common_args.format('gpmdp')))
 
 class CmusPlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.cmus'
+
 	def get_player_status(self, pl):
 		'''Return cmus player information.
 
@@ -270,6 +293,9 @@ Requires cmus-remote command be acessible from $PATH.
 
 
 class MpdPlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.mpd'
+
 	def get_player_status(self, pl, host='localhost', password=None, port=6600):
 		try:
 			import mpd
@@ -388,6 +414,9 @@ else:
 
 
 class DbusPlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.dbus_player'
+
 	get_player_status = staticmethod(_get_dbus_player_status)
 
 
@@ -412,6 +441,9 @@ Requires ``dbus`` python module. Only for players that support specific protocol
 
 
 class SpotifyDbusPlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.spotify_dbus'
+
 	def get_player_status(self, pl):
 		player_status = _get_dbus_player_status(
 			pl=pl,
@@ -444,6 +476,9 @@ Requires ``dbus`` python module.
 
 
 class SpotifyAppleScriptPlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.spotify_apple_script'
+
 	def get_player_status(self, pl):
 		status_delimiter = '-~`/='
 		ascript = '''
@@ -509,6 +544,9 @@ spotify = with_docstring(spotify, spotify.__doc__.replace(_old_name, 'spotify'))
 
 
 class ClementinePlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.clementine'
+
 	def get_player_status(self, pl):
 		return _get_dbus_player_status(
 			pl=pl,
@@ -530,6 +568,9 @@ Requires ``dbus`` python module.
 
 
 class RhythmboxPlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.rhythmbox'
+
 	def get_player_status(self, pl):
 		now_playing = run_cmd(pl, [
 			'rhythmbox-client',
@@ -558,6 +599,9 @@ Requires ``rhythmbox-client`` available in $PATH.
 
 
 class RDIOPlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.rdio'
+
 	def get_player_status(self, pl):
 		status_delimiter = '-~`/='
 		ascript = '''
@@ -606,6 +650,9 @@ Requires ``osascript`` available in $PATH.
 
 
 class ITunesPlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.itunes'
+
 	def get_player_status(self, pl):
 		status_delimiter = '-~`/='
 		ascript = '''
@@ -657,6 +704,9 @@ Requires ``osascript``.
 
 
 class MocPlayerSegment(PlayerSegment):
+	def get_channel_name(self, pl):
+		return 'players.mocp'
+
 	def get_player_status(self, pl):
 		'''Return Music On Console (mocp) player information.
 
@@ -678,9 +728,9 @@ class MocPlayerSegment(PlayerSegment):
 		   AvgBitrate: 000kbps
 		   Rate: 00kHz
 
-		For the information we are looking for we don’t really care if we have 
-		extra-timing information or bit rate level. The dictionary comprehension 
-		in this method takes anything in ignore_info and brings the key inside 
+		For the information we are looking for we don’t really care if we have
+		extra-timing information or bit rate level. The dictionary comprehension
+		in this method takes anything in ignore_info and brings the key inside
 		that to the right info of the dictionary.
 		'''
 		now_playing_str = run_cmd(pl, ['mocp', '-i'])
