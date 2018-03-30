@@ -66,6 +66,13 @@ def handle_bar_command(output_name, cmd, segment_name):
         if segment_name:
             segment_info['payloads'].update({segment_name: True})
         render(reschedule=True)
+    elif cmd == 'ch_toggle':
+        if segment_name:
+            if segment_name in segment_info['payloads'] and segment_info['payloads'][segment_name]:
+                segment_info['payloads'].update({segment_name: None})
+            else:
+                segment_info['payloads'].update({segment_name: True})
+        render(reschedule=True)
     elif cmd.startswith('pass:'):
         # print('passed {0} to comm chan {1}.'.format(cmd.split(':')[1], segment_name))
         if segment_name:
@@ -79,7 +86,7 @@ def handle_bar_command(output_name, cmd, segment_name):
 
 def bar_callback(output_name, line, segment_name):
     # powerline.pl.info('click on {0} (segment {2}): {1}'.format(output_name, line, segment_name))
-    print('click on {0} (segment {2}): {1}'.format(output_name, line, segment_name))
+    # print('click on {0} (segment {2}): {1}'.format(output_name, line, segment_name))
     if line.startswith(INTERNAL_BAR_COMMAND.decode()):
         for cmd in line.split(';'):
             handle_bar_command(output_name, cmd, segment_name)

@@ -2,9 +2,12 @@ from __future__ import (unicode_literals, division, absolute_import, print_funct
 from datetime import (datetime, timedelta, timezone)
 from powerline.lib.threaded import ThreadedSegment
 from powerline.segments import with_docstring
+from powerline.theme import requires_segment_info
 import os
 
+@requires_segment_info
 class GoogleCalendarSegment(ThreadedSegment):
+
     interval = 300
     service = None
     dev_key = None
@@ -84,16 +87,29 @@ class GoogleCalendarSegment(ThreadedSegment):
         result = [(c['items'], self.get_remind(c['defaultReminders'])) for c in result]
         return sum([[(e,r) for e in c] for c, r in result], []) or []
 
-    def render(self, events, format='{summary}{time}', short_format='{short_summary}{time}', time_format=' (%H:%M)', count=3, show_count=False, hide_times=[" (00:00)"], **kwargs):
+    def render(self, events, segment_info, format='{summary}{time}',
+            short_format='{short_summary}{time}', time_format=' (%H:%M)', count=3, show_count=False,
+            hide_times=[" (00:00)"], auto_shrink=False, single_when_shrunk=True, **kwargs):
+
+        channel_name = 'appoints.gcalendar'
+        channel_full = 'payloads' in segment_info and channel_name in segment_info['payloads'] and segment_info['payloads'][channel_name]
+
+        long_mode = not auto_shrink or channel_full
+        short_mode = single_when_shrunk and not long_mode
+
         if events is None:
             return [{
-                'contents': 'No valid credentials',
+                'contents': 'No valid credentials' if long_mode else
+                    short_format.format(short_summary='', summary='', time='', location='',
+                    count='', error='/!\\'),
+                'payload_name': channel_name,
                 'highlight_groups': ['appoint:error', 'appoint:urgent', 'appoint']
             }]
         segments = []
-        if show_count and len(events) > 0:
+        if show_count and len(events) > 0 and not short_mode:
             segments += [{
                 'contents': str(len(events)),
+                'payload_name': channel_name,
                 'highlight_groups': ['appoint:count', 'appoint']
             }]
 
@@ -110,6 +126,7 @@ class GoogleCalendarSegment(ThreadedSegment):
 
         events = sorted([(dt - bf, sm, lc, bf) for dt, sm, lc, bf in events])
 
+        evt_count = len(events)
         if count != 0:
             events = events[:count]
 
@@ -123,22 +140,37 @@ class GoogleCalendarSegment(ThreadedSegment):
 
         # check if these events are relevant
         now = datetime.now(timezone.utc)
-        return [{
-            'contents': format.format(time="" if (dt + bf).strftime(time_format) in hide_times else (dt + bf).strftime(time_format), summary=sm, location=lc),
-            'highlight_groups': ['appoint:urgent', 'appoint'] if now < dt + bf else ['appoint'],
-            'draw_inner_divider': True,
-            '_data': {'time': "" if (dt + bf).strftime(time_format) in hide_times else (dt + bf).strftime(time_format), 'summary': sm, 'short_summary': shorten(sm), 'location': lc },
-            'truncate': lambda a,b,seg: short_format.format(**seg['_data'])
-        } for dt, sm, lc, bf in events if dt <= now] + segments
+        if not short_mode:
+            return [{
+                'contents': (format if long_mode else short_format).format(summary=sm, location=lc,
+                    error='', time='' if (dt + bf).strftime(time_format) in hide_times else
+                    (dt + bf).strftime(time_format), short_summary=shorten(sm), count=evt_count),
+                'highlight_groups': ['appoint:urgent', 'appoint'] if now < dt + bf else ['appoint'],
+                'draw_inner_divider': True,
+                'payload_name': channel_name,
+                '_data': {'time': "" if (dt + bf).strftime(time_format) in hide_times
+                    else (dt + bf).strftime(time_format), 'summary': sm,
+                    'short_summary': shorten(sm), 'location': lc, 'count': evt_count},
+                'truncate': (lambda a,b,seg: short_format.format(**seg['_data'])) if
+                    not auto_shrink else None
+            } for dt, sm, lc, bf in events if dt <= now] + segments
+        elif evt_count:
+            return [{
+                'contents': short_format.format(time='', summary='', short_summary='',
+                    location='', count=evt_count, error=''),
+                'highlight_groups': ['appoint'],
+                'payload_name': channel_name
+                }]
 
 gcalendar = with_docstring(GoogleCalendarSegment(),
 '''Return the next ``count`` appoints found in your Google Calendar.
 
 :param string format:
-    The format to use when displaying events. Valid fields are time, summary and location.
+    The format to use when displaying events. Valid fields are time, summary, short_summary,
+    count, error, and location.
 :param string short_format:
     The format to use when displaying events with few space. Valid fields are time, summary,
-    short_summary and location.
+    short_summary, count, error, and location.
 :param string time_format:
     The format to use when displaying times and dates.
 :param int count:
@@ -153,6 +185,11 @@ gcalendar = with_docstring(GoogleCalendarSegment(),
     Your Google dev key.
 :param int range:
     Number of days into the future to check. No more than 250 events will be displayed in any case.
+:param bool auto_shrink:
+    Use ``short_format`` per default unless the ``appoints.gcalendar`` channel is full.
+:param bool single_when_shrunk:
+    Only show a single segment using ``short_format`` when this segment is in its short mode.
+
 
 Highlight groups used: ``appoint``, ``appoint:urgent``, ``appoint:count``.
 ''')
