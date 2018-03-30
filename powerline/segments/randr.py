@@ -99,6 +99,12 @@ class ScreenRotationSegment(ThreadedSegment):
 
     def rotate(self, state):
         check_call(['xrandr', '--output', self.output, '--rotate', self.STATES[state]])
+
+        if (self.STATES[self.current_state] in ['left', 'right']) != (self.STATES[state] in ['left', 'right']):
+            self.bar_needs_resize = self.output
+            if self.rotation_hook:
+                run(self.rotation_hook, shell=True)
+
         needs_map = [i.decode('utf-8') for i in self.devices if len([j for j in self.mapped_inputs
             if j in i.decode('utf-8')])]
 
@@ -106,12 +112,6 @@ class ScreenRotationSegment(ThreadedSegment):
                 for i in needs_map]
         for i in ids:
             check_call(['xinput', '--map-to-output', i, self.touch_output])
-
-        if (self.STATES[self.current_state] in ['left', 'right']) != (self.STATES[state] in ['left', 'right']):
-            self.bar_needs_resize = self.output
-            if self.rotation_hook:
-                run(self.rotation_hook, shell=True)
-
 
     def update_touchpad(self, state):
         needs_map = [i.decode('utf-8') for i in self.devices if len([j for j in self.touchpads
