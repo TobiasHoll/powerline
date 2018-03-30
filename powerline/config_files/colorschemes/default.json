@@ -65,6 +65,7 @@
         "cwd":                       "level:2",
         "cwd:current_folder":        "level:2_bold",
         "cwd:divider":               "level:2",
-        "virtualenv":                "level:3"
+        "virtualenv":                "level:3",
+        "srot":                      "level:2"
     }
 }
