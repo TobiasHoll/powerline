@@ -3,7 +3,7 @@ from powerline.lib.threaded import ThreadedSegment
 from powerline.segments import with_docstring
 from powerline.theme import requires_segment_info
 from os import path
-from subprocess import check_call, check_output
+from subprocess import check_call, check_output, run
 from glob import glob
 
 MODES = ['locked', 'auto']
@@ -50,12 +50,16 @@ class ScreenRotationSegment(ThreadedSegment):
     last_oneshot = 0
     bar_needs_resize = None
 
+    rotation_hook = None
+
     def set_state(self, output, states=['normal', 'inverted', 'left', 'right'],
             gravity_triggers=None, mapped_inputs=[], touchpads=[], touchpad_states=None,
-            **kwargs):
+            rotation_hook=None, **kwargs):
         self.initial_output = output
         self.output = output
         self.touch_output = output
+
+        self.rotation_hook = rotation_hook
 
         for basedir in glob('/sys/bus/iio/devices/iio:device*'):
             if 'accel' in open(path.join(basedir, 'name')).read():
@@ -94,9 +98,6 @@ class ScreenRotationSegment(ThreadedSegment):
         super(ScreenRotationSegment, self).set_state(**kwargs)
 
     def rotate(self, state):
-        if (self.STATES[self.current_state] in ['left', 'right']) != (self.STATES[state] in ['left', 'right']):
-            self.bar_needs_resize = self.output
-
         check_call(['xrandr', '--output', self.output, '--rotate', self.STATES[state]])
         needs_map = [i.decode('utf-8') for i in self.devices if len([j for j in self.mapped_inputs
             if j in i.decode('utf-8')])]
@@ -105,6 +106,12 @@ class ScreenRotationSegment(ThreadedSegment):
                 for i in needs_map]
         for i in ids:
             check_call(['xinput', '--map-to-output', i, self.touch_output])
+
+        if (self.STATES[self.current_state] in ['left', 'right']) != (self.STATES[state] in ['left', 'right']):
+            self.bar_needs_resize = self.output
+            if self.rotation_hook:
+                run(self.rotation_hook, shell=True)
+
 
     def update_touchpad(self, state):
         needs_map = [i.decode('utf-8') for i in self.devices if len([j for j in self.touchpads
