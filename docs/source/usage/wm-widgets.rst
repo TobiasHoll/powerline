@@ -25,7 +25,7 @@ Then add the ``powerline_widget`` to ``wibox``:
 
    -- awesome3.5
    right_layout:add(powerline_widget)
-   
+
    -- awesome4+
    s.mywibox:setup {
    ...
@@ -73,13 +73,13 @@ You can specify options to be passed to ``lemonbar`` after ``--``, like so:
 
     powerline-lemonbar --height 16 -- -f "Source Code Pro for Powerline-9"
 
-to run with i3, simply ``exec`` this in the i3 config file and set the ``--i3`` switch:
+To run with i3, simply ``exec`` this in the i3 config file and set the ``--i3`` switch:
 
     exec powerline-lemonbar --i3
 
-Further, to enable the click functionality, also set the ``--clicks`` switch and increase the number of clickable areas to some apporpriate number (default is 10):
+Further, increase the number of clickable areas to some apporpriate number (default is 10):
 
-    exec powerline-lemonbar --i3 --clicks -- -a 40
+    exec powerline-lemonbar --i3 -- -a 40
 
 Running the binding in i3-mode will require `i3ipc <https://github.com/acrisci/i3ipc-python>`_
 (or the outdated `i3-py <https://github.com/ziberna/i3-py>`_).
@@ -87,12 +87,6 @@ Running the binding in i3-mode will require `i3ipc <https://github.com/acrisci/i
 See the `lemonbar documentation <https://github.com/LemonBoy/bar>`_ for more
 information and options.
 =======
-
-All ``powerline-lemonbar`` arguments:
-
-.. automan:: powerline.commands.lemonbar
-   :prog: powerline-lemonbar
-   :minimal: true
 
 All ``powerline-lemonbar`` arguments:
 

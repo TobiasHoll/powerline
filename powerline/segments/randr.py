@@ -159,11 +159,13 @@ class ScreenRotationSegment(ThreadedSegment):
 
 
         # A user wants to map devices to a different screen
-        if channel_value and channel_value == 'capture_input' and 'output' in segment_info:
+        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0] == 'capture_input' and 'output' in segment_info and channel_value[1] > self.last_oneshot:
+            self.last_oneshot = channel_value[1]
             self.touch_output = segment_info['output']
             self.rotate(self.current_state)
         # A user wants to rotate a different screen
-        if channel_value and channel_value == 'capture' and 'output' in segment_info:
+        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0] == 'capture' and 'output' in segment_info and channel_value[1] > self.last_oneshot:
+            self.last_oneshot = channel_value[1]
             self.output = segment_info['output']
             self.touch_output = segment_info['output']
             self.mode = 1
@@ -185,7 +187,14 @@ class ScreenRotationSegment(ThreadedSegment):
                 'contents': format.format(rotation=self.STATES[self.current_state],
                     mode=MODES[self.mode], icon=icons[self.STATES[self.current_state]]),
                 'payload_name': channel_name,
-                'highlight_groups': ['srot:' + self.STATES[data], 'srot:rotation', 'srot']
+                'highlight_groups': ['srot:' + self.STATES[data], 'srot:rotation', 'srot'],
+                'click_values': {
+                    'mode': MODES[self.mode],
+                    'rotation': self.STATES[self.current_state],
+                    'output': segment_info['output'],
+                    'managed_output': self.output,
+                    'touch_output': self.touch_output
+                }
             }]
 
         if name == 'mode':
@@ -193,14 +202,93 @@ class ScreenRotationSegment(ThreadedSegment):
                 'contents': format.format(rotation=self.STATES[self.current_state],
                     mode=MODES[self.mode], icon=icons[MODES[self.mode]]),
                 'payload_name': channel_name,
-                'highlight_groups': ['srot:' + MODES[self.mode], 'srot:mode', 'srot']
+                'highlight_groups': ['srot:' + MODES[self.mode], 'srot:mode', 'srot'],
+                'click_values': {
+                    'mode': MODES[self.mode],
+                    'rotation': self.STATES[self.current_state],
+                    'output': segment_info['output'],
+                    'managed_output': self.output,
+                    'touch_output': self.touch_output
+                }
             }]
 
         return None
 
 
 srot = with_docstring(ScreenRotationSegment(),
-''' Manage screen rotation and optionally display some information.
+''' Manage screen rotation and optionally display some information. Optionally disables
+    Touchpads in rotated states.
+    Requires ``xinput`` and ``xrandr`` and an accelerometer.
 
-Requires ``xinput`` and ``xrandr`` and an accelerometer.
+    :param string output:
+        The initial output to be rotated and to which touchscreen and stylus inputs are mapped.
+        (Note that this can be changed at runtime via interaction with the segment.)
+    :param bool show_on_all_outputs:
+        If set to false, this segment is only visible on the specified output.
+    :param string name:
+        Possible values are ``rotation`` and ``mode``. This value is used to determine
+        which highlight groups to use and how to populate the ``icon`` field in the
+        format string in the returned segment.
+        If set to any other value, this segment will produce no output.
+    :param string format:
+        Format string. Possible fields are ``rotation`` (the current rotation state of the screen),
+        ``mode`` (eiteher ``auto`` or ``locked``, depending on whether auto-rotation on the
+        screen is enabled or not), and ``icon`` (an icon depicting either the rotation status
+        or the auto-rotation status, depending on the segment's name).
+    :param dict icons:
+        Dictionary mapping rotation states (``normal``, ``inverted``, ``left``, ``right``)
+        and auto-rotation states (``locked``, ``auto``) to strings to use to display them.
+        Depending on the given name parameter, not all of these fields must be populated.
+    :param string list states:
+        Allowed rotation states. Possible entries are ``normal``, ``inverted``, ``left``, and
+        ``right``. Per default, all of them are enabled.
+    :param dict gravity_triggers:
+        Sensor values that trigger rotation as a dictionary mapping rotation states
+        (``normal``, ``inverted``, ``left``, ``right``) to numbers.
+        Defaults to ``{'normal': -8, 'inverted': 8, 'left': 8, 'right': -8}``, meaning that
+        a (scaled) reading of the ``in_accel_x_raw`` reading greater than 8 triggers a
+        rotation to state ``left`` and a reading less than -8 triggers a rotation to state
+        ``right``. Readings of ``in_accel_y_raw`` greater and less than 8 and -8 respectively
+        will yield a rotation to the ``inverted`` and ``normal`` states respectively.
+    :param string list mapped_inputs:
+        List of substrings of device names that should be mapped to the specified output.
+        The entries in the specified list should be only substrings of devices listed as
+        ``Virtual core pointer``, not of devices listed as ``Virtual core keyboard``.
+    :param string list touchpads:
+        List of substrings of device names of touchpads to be managed.
+        The entries in the specified list should be only substrings of devices listed as
+        ``Virtual core pointer``, not of devices listed as ``Virtual core keyboard``.
+    :param dict touchpad_states:
+        Dictionary mapping a rotation state (``normal``, ``inverted``, ``left``, ``right``)
+        to either ``enabled`` or ``disabled``, depending on whether the touchpads shall be
+        enabled or disabled if the output is currently in the corresponding state.
+    :param string rotation_hook:
+        A string to be run by a shell after a rotation that changes the screen ratio
+        (e.g. from ``normal`` to ``left``).
+        It will be executed after the rotation takes place, but before the inputs are
+        mapped to the output and before the bar resizes itself.
+
+    Highlight groups used: ``srot:normal``, ``srot:inverted``, ``srot:right``, ``srot:left``,
+    ``srot:rotation``, ``srot`` if the name parameter is ``rotation``, ``srot:auto``,
+    ``srot:locked``, ``srot:mode``, ``srot`` if the name parameter is ``mode``.
+    None if the name is set to something else.
+
+    Click values supplied: ``mode`` (string), ``rotation`` (string), ``output`` (string,
+    the output this regment is rendered to), ``managed_output`` (string, the screen
+    currently managed), ``touch_output`` (string, the screen where touch inputs are mapped to).
+
+    Interaction: This segment supports interaction via bar commands in the following way:
+
+    +----------------------------------+---------------------------------------------------+
+    | Bar command                      | Description                                       |
+    +==================================+===================================================+
+    | #bar;pass_oneshot:capture_input  | Map all specified input devices to the output     |
+    |                                  | this command originates from. (experimental)      |
+    +----------------------------------+---------------------------------------------------+
+    | #bar;pass_oneshot:capture        | Rotate the screen where this command originates   |
+    |                                  | from. (experimental)                              |
+    +----------------------------------+---------------------------------------------------+
+    | #bar;pass_oneshot:toggle_rot     | Toggle auto rotation if used on the screen        |
+    |                                  | that is currently managed; otherwise ignored.     |
+    +----------------------------------+---------------------------------------------------+
 ''')
