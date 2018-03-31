@@ -144,7 +144,7 @@ class ScreenRotationSegment(ThreadedSegment):
 
     def render(self, data, segment_info, show_on_all_outputs=True, name='rotation',
             format='{icon}', icons={'left':'l', 'right':'r', 'normal':'n', 'inverted':'i',
-                'locked':'l', 'auto':'a'}, **kwargs):
+                'locked':'l', 'auto':'a'}, additional_controls=[], **kwargs):
 
         channel_name = 'randr.srot'
         channel_value = None
@@ -159,17 +159,23 @@ class ScreenRotationSegment(ThreadedSegment):
 
 
         # A user wants to map devices to a different screen
-        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0] == 'capture_input' and 'output' in segment_info and channel_value[1] > self.last_oneshot:
+        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0].startswith('capture_input:') and 'output' in segment_info and channel_value[1] > self.last_oneshot:
             self.last_oneshot = channel_value[1]
-            self.touch_output = segment_info['output']
-            self.rotate(self.current_state)
+            new_output = channel_value[0].split(':')[1]
+            self.touch_output = new_output
+            if self.output == segment_info['output']:
+                self.rotate(self.current_state)
         # A user wants to rotate a different screen
-        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0] == 'capture' and 'output' in segment_info and channel_value[1] > self.last_oneshot:
+        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0].startswith('capture:') and 'output' in segment_info and channel_value[1] > self.last_oneshot:
             self.last_oneshot = channel_value[1]
-            self.output = segment_info['output']
-            self.touch_output = segment_info['output']
-            self.mode = 1
-            self.rotate(self.current_state)
+            new_output = channel_value[0].split(':')[1]
+            self.output = new_output
+            self.touch_output = new_output
+            if new_output == segment_info['output']:
+                self.mode = 1
+                self.rotate(self.current_state)
+            else:
+                self.mode = 0
         # A user wants to toggle auto rotation
         if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0] == 'toggle_rot' and 'output' in segment_info and self.output == segment_info['output'] and channel_value[1] > self.last_oneshot:
             self.last_oneshot = channel_value[1]
@@ -182,37 +188,47 @@ class ScreenRotationSegment(ThreadedSegment):
             if not show_on_all_outputs:
                 return None
 
-        if name == 'rotation':
-            return [{
-                'contents': format.format(rotation=self.STATES[self.current_state],
-                    mode=MODES[self.mode], icon=icons[self.STATES[self.current_state]]),
-                'payload_name': channel_name,
-                'highlight_groups': ['srot:' + self.STATES[data], 'srot:rotation', 'srot'],
-                'click_values': {
+        c_vals = {
                     'mode': MODES[self.mode],
                     'rotation': self.STATES[self.current_state],
                     'output': segment_info['output'],
                     'managed_output': self.output,
                     'touch_output': self.touch_output
                 }
-            }]
+
+        add_segments = [{
+                'contents': i[0].format(rotation=self.STATES[self.current_state],
+                    mode=MODES[self.mode],
+                    managed_output=self.output, touch_output=self.touch_output),
+                'payload_name': channel_name,
+                'highlight_groups': i[1] + ['srot'],
+                'click_values': c_vals,
+                'draw_inner_divider': True
+            } for i in additional_controls]
+
+        if name == 'rotation':
+            return [{
+                'contents': format.format(rotation=self.STATES[self.current_state],
+                    mode=MODES[self.mode], icon=icons[self.STATES[self.current_state]],
+                    managed_output=self.output, touch_output=self.touch_output),
+                'payload_name': channel_name,
+                'highlight_groups': ['srot:' + self.STATES[data], 'srot:rotation', 'srot'],
+                'click_values': c_vals,
+                'draw_inner_divider': True
+            }] + add_segments
 
         if name == 'mode':
             return [{
                 'contents': format.format(rotation=self.STATES[self.current_state],
-                    mode=MODES[self.mode], icon=icons[MODES[self.mode]]),
+                    mode=MODES[self.mode], icon=icons[MODES[self.mode]],
+                    managed_output=self.output, touch_output=self.touch_output),
                 'payload_name': channel_name,
                 'highlight_groups': ['srot:' + MODES[self.mode], 'srot:mode', 'srot'],
-                'click_values': {
-                    'mode': MODES[self.mode],
-                    'rotation': self.STATES[self.current_state],
-                    'output': segment_info['output'],
-                    'managed_output': self.output,
-                    'touch_output': self.touch_output
-                }
-            }]
+                'click_values': c_vals,
+                'draw_inner_divider': True
+            }] + add_segments
 
-        return None
+        return add_segments if len(add_segments) else None
 
 
 srot = with_docstring(ScreenRotationSegment(),
@@ -232,7 +248,7 @@ srot = with_docstring(ScreenRotationSegment(),
         If set to any other value, this segment will produce no output.
     :param string format:
         Format string. Possible fields are ``rotation`` (the current rotation state of the screen),
-        ``mode`` (eiteher ``auto`` or ``locked``, depending on whether auto-rotation on the
+        ``mode`` (either ``auto`` or ``locked``, depending on whether auto-rotation on the
         screen is enabled or not), and ``icon`` (an icon depicting either the rotation status
         or the auto-rotation status, depending on the segment's name).
     :param dict icons:
@@ -250,11 +266,11 @@ srot = with_docstring(ScreenRotationSegment(),
         rotation to state ``left`` and a reading less than -8 triggers a rotation to state
         ``right``. Readings of ``in_accel_y_raw`` greater and less than 8 and -8 respectively
         will yield a rotation to the ``inverted`` and ``normal`` states respectively.
-    :param string list mapped_inputs:
+    :param string_list mapped_inputs:
         List of substrings of device names that should be mapped to the specified output.
         The entries in the specified list should be only substrings of devices listed as
         ``Virtual core pointer``, not of devices listed as ``Virtual core keyboard``.
-    :param string list touchpads:
+    :param string_list touchpads:
         List of substrings of device names of touchpads to be managed.
         The entries in the specified list should be only substrings of devices listed as
         ``Virtual core pointer``, not of devices listed as ``Virtual core keyboard``.
@@ -267,6 +283,12 @@ srot = with_docstring(ScreenRotationSegment(),
         (e.g. from ``normal`` to ``left``).
         It will be executed after the rotation takes place, but before the inputs are
         mapped to the output and before the bar resizes itself.
+    :param (string, string_list)_list additional_controls:
+        A list of (contents, highlight_groups) pairs. For each entry, an additional
+        segment with the given contents and highlight groups is omitted. These segments
+        obtain the same click values and may also be used to control the segment behavior.
+        Also, all segments additionally use the ``srot`` highlight group and the contents
+        may be a format string with all fields (except ``icon``) available.
 
     Highlight groups used: ``srot:normal``, ``srot:inverted``, ``srot:right``, ``srot:left``,
     ``srot:rotation``, ``srot`` if the name parameter is ``rotation``, ``srot:auto``,
@@ -274,21 +296,23 @@ srot = with_docstring(ScreenRotationSegment(),
     None if the name is set to something else.
 
     Click values supplied: ``mode`` (string), ``rotation`` (string), ``output`` (string,
-    the output this regment is rendered to), ``managed_output`` (string, the screen
+    the output this segment is rendered to), ``managed_output`` (string, the screen
     currently managed), ``touch_output`` (string, the screen where touch inputs are mapped to).
 
-    Interaction: This segment supports interaction via bar commands in the following way:
+    Interaction: This segment supports interaction via bar commands in the following way.
+    (Note that parameters given to the bar may be combined with click values.)
 
-    +----------------------------------+---------------------------------------------------+
-    | Bar command                      | Description                                       |
-    +==================================+===================================================+
-    | #bar;pass_oneshot:capture_input  | Map all specified input devices to the output     |
-    |                                  | this command originates from. (experimental)      |
-    +----------------------------------+---------------------------------------------------+
-    | #bar;pass_oneshot:capture        | Rotate the screen where this command originates   |
-    |                                  | from. (experimental)                              |
-    +----------------------------------+---------------------------------------------------+
-    | #bar;pass_oneshot:toggle_rot     | Toggle auto rotation if used on the screen        |
-    |                                  | that is currently managed; otherwise ignored.     |
-    +----------------------------------+---------------------------------------------------+
+    +------------------------------------------+---------------------------------------------+
+    | Bar command                              | Description                                 |
+    +==========================================+=============================================+
+    | #bar;pass_oneshot:capture_input:<output> | Map all specified input devices to <output> |
+    |                                          | (experimental)                              |
+    +------------------------------------------+---------------------------------------------+
+    | #bar;pass_oneshot:capture:<output>       | Rotate the screen <output> instead          |
+    |                                          | (experimental)                              |
+    +------------------------------------------+---------------------------------------------+
+    | #bar;pass_oneshot:toggle_rot             | Toggle auto rotation if used on the screen  |
+    |                                          | that is currently managed; otherwise        |
+    |                                          | ignored.                                    |
+    +------------------------------------------+---------------------------------------------+
 ''')
