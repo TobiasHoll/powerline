@@ -72,6 +72,8 @@ The following Arch Linux packages should be installed:
 * python-iwlib (wifi segment)
 * i3ipc-python-git (workspace segment)
 * python-pyalsaaudio (volume segment)
+* xorg-xrandr (RandR segment)
+* xorg-xinput (RandR segment)
 
 If you have successfully installed all the previous packages, installing this fork becomes as easy
 as
