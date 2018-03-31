@@ -133,6 +133,7 @@ class ScreenRotationSegment(ThreadedSegment):
 
         x = self.read_accel(self.accel_x)
         y = self.read_accel(self.accel_y)
+        self.devices = check_output(['xinput', '--list', '--name-only']).splitlines()
 
         for i in range(len(self.STATES)):
             if i == self.current_state:
