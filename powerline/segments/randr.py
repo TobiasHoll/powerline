@@ -53,14 +53,16 @@ class ScreenRotationSegment(ThreadedSegment):
     bar_needs_resize = None
 
     rotation_hook = None
+    hide_controls = { }
 
     def set_state(self, output, states=['normal', 'inverted', 'left', 'right'],
             gravity_triggers=None, mapped_inputs=[], touchpads=[], touchpad_states=None,
-            rotation_hook=None, **kwargs):
+            rotation_hook=None, hide_controls=True, **kwargs):
         self.output = output
         self.touch_output = output
 
         self.rotation_hook = rotation_hook
+        self.hide_controls = { 'default': hide_controls, output: hide_controls }
 
         for basedir in glob('/sys/bus/iio/devices/iio:device*'):
             if 'accel' in open(path.join(basedir, 'name')).read():
@@ -183,7 +185,15 @@ class ScreenRotationSegment(ThreadedSegment):
             self.last_oneshot = channel_value[1]
             self.mode = 1 - self.mode
             self.rotate(self.current_state)
-
+        # A user wants to toggle visibility of controls
+        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0].startswith('toggle_controls') and current_output and channel_value[1] > self.last_oneshot:
+            new_output = channel_value[0].split(':')[1]
+            if current_output == new_output:
+                self.last_oneshot = channel_value[1]
+                if new_output in self.hide_controls:
+                    self.hide_controls[new_output] = not self.hide_controls[new_output]
+                else:
+                    self.hide_controls[new_output] = not self.hide_controls['default']
 
         c_vals = {
                     'mode': MODES[self.mode],
@@ -193,15 +203,18 @@ class ScreenRotationSegment(ThreadedSegment):
                     'touch_output': self.touch_output
                 }
 
-        add_segments = [{
-                'contents': i[0].format(rotation=self.STATES[self.current_state],
-                    mode=MODES[self.mode],
-                    managed_output=self.output, touch_output=self.touch_output),
-                'payload_name': channel_name,
-                'highlight_groups': i[1] + ['srot'],
-                'click_values': c_vals,
-                'draw_inner_divider': True
-            } for i in additional_controls]
+        if (current_output in self.hide_controls and not self.hide_controls[current_output]) or (not current_output in self.hide_controls and not self.hide_controls['default']):
+            add_segments = [{
+                    'contents': i[0].format(rotation=self.STATES[self.current_state],
+                        mode=MODES[self.mode],
+                        managed_output=self.output, touch_output=self.touch_output),
+                    'payload_name': channel_name,
+                    'highlight_groups': i[1] + ['srot'],
+                    'click_values': c_vals,
+                    'draw_inner_divider': True
+                } for i in additional_controls]
+        else:
+            add_segments = []
 
         if current_output and current_output != self.output:
             if not show_on_all_outputs:
@@ -290,6 +303,8 @@ srot = with_docstring(ScreenRotationSegment(),
         obtain the same click values and may also be used to control the segment behavior.
         Also, all segments additionally use the ``srot`` highlight group and the contents
         may be a format string with all fields (except ``icon``) available.
+    :param bool hide_controls:
+        Hide the extra control segments. They may be shown via segment interaction.
 
     Highlight groups used: ``srot:normal``, ``srot:inverted``, ``srot:right``, ``srot:left``,
     ``srot:rotation``, ``srot`` if the name parameter is ``rotation``, ``srot:auto``,
@@ -315,5 +330,8 @@ srot = with_docstring(ScreenRotationSegment(),
     | #bar;pass_oneshot:toggle_rot             | Toggle auto rotation if used on the screen  |
     |                                          | that is currently managed; otherwise        |
     |                                          | ignored.                                    |
+    +------------------------------------------+---------------------------------------------+
+    | #bar;pass_oneshot:toggle_controls:<outpt>| Toggles the visibility of additional        |
+    |                                          | control segments on output <output>         |
     +------------------------------------------+---------------------------------------------+
 ''')
