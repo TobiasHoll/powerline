@@ -87,7 +87,9 @@ def get_next_ws(ws, outputs):
     return []
 
 @requires_segment_info
-def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ", icons=WS_ICONS, show_icons=True, show_multiple_icons=True, show_dummy_workspace=False, show_output=False):
+def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator=" ",
+        icons=WS_ICONS, show_icons=True, show_multiple_icons=True, show_dummy_workspace=False,
+        show_output=False, priority_workspaces=[]):
     '''Return list of used workspaces
 
         :param list only_show:
@@ -125,7 +127,11 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
                 workspace. This workspace will be handled as if it was a non-urgent and non-focused
                 regular workspace, i.e., click events will work as with normal workspaces.
         :param boolean show_output:
-                Show the name of the output if more than one output is connected and output is not set to ``__all__``.
+                Show the name of the output if more than one output is connected and output is not
+                set to ``__all__``.
+        :param string list priority_workspaces:
+                A list of workspace names to be sorted before any other workspaces in the given
+                order.
 
         Highlight groups used: ``workspace`` or ``workspace:visible``, ``workspace`` or ``workspace:focused``, ``workspace`` or ``workspace:urgent`` or ``output``.
 
@@ -150,7 +156,11 @@ def workspaces(pl, segment_info, only_show=None, output=None, strip=0, separator
         def natural_key(ws):
             str = ws['name']
             return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', str)]
-        return sorted(ws, key=natural_key) + (get_next_ws(ws, output) if show_dummy_workspace else [])
+        ws = sorted(ws, key=natural_key) + (get_next_ws(ws, output) if show_dummy_workspace else [])
+        result = []
+        for n in priority_workspaces:
+            result += [w for w in ws if w['name'] == n]
+        return result + [w for w in ws if not w['name'] in priority_workspaces]
 
     if len(output) <= 1:
         res = []
