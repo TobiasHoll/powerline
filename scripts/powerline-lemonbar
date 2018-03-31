@@ -66,35 +66,35 @@ def handle_bar_command(output_name, cmd, segment_name):
         restart_bar(output_name)
         render(reschedule=True)
     elif cmd.startswith('restart:'):
-        restart_bar(cmd.split(':')[1])
+        restart_bar(cmd[len(cmd.split(':')[0]) + 1:])
         render(reschedule=True)
     # communication with segments
     elif cmd == 'ch_clear':
         # print('cleared comm chan {0}.'.format(segment_name))
         if segment_name:
             segment_info['payloads'].update({segment_name: None})
-        render(reschedule=True)
+        render()
     elif cmd == 'ch_fill':
         if segment_name:
             segment_info['payloads'].update({segment_name: True})
-        render(reschedule=True)
+        render()
     elif cmd == 'ch_toggle':
         if segment_name:
             if segment_name in segment_info['payloads'] and segment_info['payloads'][segment_name]:
                 segment_info['payloads'].update({segment_name: None})
             else:
                 segment_info['payloads'].update({segment_name: True})
-        render(reschedule=True)
+        render()
     elif cmd.startswith('pass:'):
         # print('passed {0} to comm chan {1}.'.format(cmd.split(':')[1], segment_name))
         if segment_name:
-            segment_info['payloads'].update({segment_name: cmd.split(':')[1]})
-        render(reschedule=True)
+            segment_info['payloads'].update({segment_name: cmd[len(cmd.split(':')[0]) + 1:]})
+        render()
     elif cmd.startswith('pass_oneshot:'):
         if segment_name:
             import time
-            segment_info['payloads'].update({segment_name: (cmd.split(':')[1], time.time())})
-        render(reschedule=True)
+            segment_info['payloads'].update({segment_name: (cmd[len(cmd.split(':')[0]) + 1:], time.time())})
+        render()
 
 def bar_callback(output_name, line, segment_name):
     # powerline.pl.info('click on {0} (segment {2}): {1}'.format(output_name, line, segment_name))

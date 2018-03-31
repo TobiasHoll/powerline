@@ -5,6 +5,9 @@ from powerline.theme import requires_segment_info
 from os import path
 from subprocess import check_call, check_output, run
 from glob import glob
+from threading import Lock
+
+lock = Lock()
 
 MODES = ['locked', 'auto']
 @requires_segment_info
@@ -15,7 +18,6 @@ class ScreenRotationSegment(ThreadedSegment):
     current_state = 0
 
     # output to manage
-    initial_output = None
     output = None
     touch_output = None
 
@@ -55,7 +57,6 @@ class ScreenRotationSegment(ThreadedSegment):
     def set_state(self, output, states=['normal', 'inverted', 'left', 'right'],
             gravity_triggers=None, mapped_inputs=[], touchpads=[], touchpad_states=None,
             rotation_hook=None, **kwargs):
-        self.initial_output = output
         self.output = output
         self.touch_output = output
 
@@ -135,10 +136,13 @@ class ScreenRotationSegment(ThreadedSegment):
             if i == self.current_state:
                 continue
             if self.checks[self.STATES[i]](x, y):
-                self.rotate(i)
-                self.current_state = i
-                self.update_touchpad(self.current_state)
-
+                global lock
+                with lock:
+                    if i == self.current_state:
+                        continue
+                    self.rotate(i)
+                    self.current_state = i
+                    self.update_touchpad(self.current_state)
 
         return self.current_state
 
@@ -151,47 +155,40 @@ class ScreenRotationSegment(ThreadedSegment):
         if 'payloads' in segment_info and channel_name in segment_info['payloads']:
             channel_value = segment_info['payloads'][channel_name]
 
+        current_output = segment_info['output'] if 'output' in segment_info else None
+
         if self.bar_needs_resize:
             scrn = self.bar_needs_resize
             self.bar_needs_resize = None
-            if segment_info['output'] == scrn:
-                segment_info['restart'](scrn)
+            segment_info['restart'](scrn)
 
 
         # A user wants to map devices to a different screen
-        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0].startswith('capture_input:') and 'output' in segment_info and channel_value[1] > self.last_oneshot:
-            self.last_oneshot = channel_value[1]
+        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0].startswith('capture_input:') and current_output and channel_value[1] > self.last_oneshot:
             new_output = channel_value[0].split(':')[1]
-            self.touch_output = new_output
-            if self.output == segment_info['output']:
+            if current_output == new_output:
+                self.last_oneshot = channel_value[1]
+                self.touch_output = new_output
                 self.rotate(self.current_state)
         # A user wants to rotate a different screen
-        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0].startswith('capture:') and 'output' in segment_info and channel_value[1] > self.last_oneshot:
-            self.last_oneshot = channel_value[1]
+        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0].startswith('capture:') and current_output and channel_value[1] > self.last_oneshot:
             new_output = channel_value[0].split(':')[1]
-            self.output = new_output
-            self.touch_output = new_output
-            if new_output == segment_info['output']:
-                self.mode = 1
+            if current_output == new_output:
+                self.last_oneshot = channel_value[1]
+                self.output = new_output
+                self.touch_output = new_output
                 self.rotate(self.current_state)
-            else:
-                self.mode = 0
         # A user wants to toggle auto rotation
-        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0] == 'toggle_rot' and 'output' in segment_info and self.output == segment_info['output'] and channel_value[1] > self.last_oneshot:
+        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0] == 'toggle_rot' and current_output and self.output == current_output and channel_value[1] > self.last_oneshot:
             self.last_oneshot = channel_value[1]
             self.mode = 1 - self.mode
             self.rotate(self.current_state)
 
 
-        if 'output' in segment_info and segment_info['output'] != self.initial_output:
-            self.mode = 0
-            if not show_on_all_outputs:
-                return None
-
         c_vals = {
                     'mode': MODES[self.mode],
                     'rotation': self.STATES[self.current_state],
-                    'output': segment_info['output'],
+                    'output': current_output,
                     'managed_output': self.output,
                     'touch_output': self.touch_output
                 }
@@ -205,6 +202,10 @@ class ScreenRotationSegment(ThreadedSegment):
                 'click_values': c_vals,
                 'draw_inner_divider': True
             } for i in additional_controls]
+
+        if current_output and current_output != self.output:
+            if not show_on_all_outputs:
+                return add_segments if len(add_segments) else None
 
         if name == 'rotation':
             return [{
