@@ -2,6 +2,7 @@ from __future__ import (unicode_literals, division, absolute_import, print_funct
 from powerline.lib.threaded import ThreadedSegment
 from powerline.segments import with_docstring
 from powerline.theme import requires_segment_info
+from powerline.bindings.wm import get_randr_outputs
 from os import path
 from subprocess import check_call, check_output, run
 from glob import glob
@@ -336,3 +337,56 @@ srot = with_docstring(ScreenRotationSegment(),
     |                                          | control segments on output <output>         |
     +------------------------------------------+---------------------------------------------+
 ''')
+
+@requires_segment_info
+class OutputSegment(ThreadedSegment):
+    interval = 1
+    outputs = {}
+
+    segment_state = 0 # 0: minimal, 1: list outputs, 2: show modes for chosen output
+
+    MIRROR_STATES = ['extend', 'mirror']
+    mirror_state = 0 # 0: extend, 1: mirror
+
+    def set_state(self, **kwargs):
+        self.outputs = get_randr_outputs()
+
+        super(OutputSegment, self).set_state(**kwargs)
+
+    def update(self, *args, **kwargs):
+        return None
+
+    def render(self, data, segment_info, mirror_format='{mirror_icon}',
+            mirror_icons={'mirror': 'M', 'extend': 'E'}, output_format='{output} {status_icon}',
+            status_icons={'on': 'on', 'off': 'off'}, **kwargs):
+
+        result = []
+
+        return None
+
+        result += [{
+            'contents': mirror_format.format(mirror_state=self.MIRROR_STATES[self.mirror_state],
+                mirror_icon=mirror_icons[self.MIRROR_STATES[self.mirror_state]]),
+            'highlight_groups': ['output:' + self.MIRROR_STATES[self.mirror_state], 'output'],
+            'draw_inner_divider': True,
+            'click_values': {'mirror_state': self.MIRROR_STATES[self.mirror_state]}
+        }]
+
+        result += [{
+            'contents': output_format.format(output=o['name'],
+                status_icon=status_icons[o['status']]),
+            'highlight_groups': ['output:' + o['status'], 'output'],
+            'draw_inner_divider': True,
+            'click_values': {'output_name': o['name'], 'output_status': o['status']}
+        } for o in self.outputs]
+
+        return result
+
+    # [ ][ ] / [=] / ... > eDPI (--o) > HDMI1 (o--) >
+    # extend/mirror/ ... > only show connected outputs, use different colors for enabled/ disabled
+    # Click on [ ][ ] / [=] cycles through modes
+    # Click on outputs toggles them on / off acc to mode;
+    # In extend mode: sort outputs according to their relative position
+
+output = with_docstring(OutputSegment(),
+'''Manage connected outputs.''')

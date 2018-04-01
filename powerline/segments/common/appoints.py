@@ -117,14 +117,23 @@ class GoogleCalendarSegment(ThreadedSegment):
         def remove_at(string, pos):
             return string[:pos] + string[pos+1:]
 
-        events = [(
-            datetime.strptime(ev['start']['date']+'+0000', "%Y-%m-%d%z") if 'date' in ev['start'] else datetime.strptime(remove_at(ev['start']['dateTime'],-3), "%Y-%m-%dT%H:%M:%S%z"),
-            ev['summary'],
-            ev['location'] if 'location' in ev else '(???)',
-            timedelta(minutes=self.get_remind(ev['reminders']['overrides']), seconds=self.interval) if 'reminders' in ev and 'overrides' in ev['reminders'] else timedelta(minutes=bf)
-        ) for ev, bf in events]
+        try:
+            events = [(
+                datetime.strptime(ev['start']['date']+'+0000', "%Y-%m-%d%z") if 'date' in ev['start'] else datetime.strptime(remove_at(ev['start']['dateTime'],-3), "%Y-%m-%dT%H:%M:%S%z"),
+                ev['summary'],
+                ev['location'] if 'location' in ev else '(???)',
+                timedelta(minutes=self.get_remind(ev['reminders']['overrides']), seconds=self.interval) if 'reminders' in ev and 'overrides' in ev['reminders'] else timedelta(minutes=bf)
+            ) for ev, bf in events]
+        except ValueError:
+            events = [(
+                datetime.strptime(ev['start']['date']+'+0000', "%Y-%m-%d%z") if 'date' in ev['start'] else datetime.strptime(remove_at(ev['start']['dateTime'],-3)+'+0000', "%Y-%m-%dT%H:%M:%SZ%z"),
+                ev['summary'],
+                ev['location'] if 'location' in ev else '(???)',
+                timedelta(minutes=self.get_remind(ev['reminders']['overrides']), seconds=self.interval) if 'reminders' in ev and 'overrides' in ev['reminders'] else timedelta(minutes=bf)
+            ) for ev, bf in events]
 
-        events = sorted([(dt - bf, sm, lc, bf) for dt, sm, lc, bf in events])
+        now = datetime.now(timezone.utc)
+        events = [e for e in sorted([(dt - bf, sm, lc, bf) for dt, sm, lc, bf in events]) if e[0] <= now]
 
         evt_count = len(events)
         if count != 0:
@@ -139,7 +148,6 @@ class GoogleCalendarSegment(ThreadedSegment):
             return res
 
         # check if these events are relevant
-        now = datetime.now(timezone.utc)
         if not short_mode:
             return [{
                 'contents': (format if long_mode else short_format).format(summary=sm, location=lc,

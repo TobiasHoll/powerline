@@ -9,7 +9,7 @@ from threading import Lock, Timer, Thread
 
 from powerline.lemonbar import LemonbarPowerline, INTERNAL_BAR_COMMAND, SEGMENT_NAME
 from powerline.commands.lemonbar import get_argparser
-from powerline.bindings.wm import get_connected_xrandr_outputs
+from powerline.bindings.wm import get_connected_randr_outputs
 
 bars = {}
 shell = None
@@ -111,7 +111,7 @@ def restart_bar(output_name):
         p, t, w = bars.pop(output_name)
         p.kill()
 
-    for screen in get_connected_xrandr_outputs(powerline.pl):
+    for screen in get_connected_randr_outputs(powerline.pl):
         if screen['name'] != output_name:
             continue
         if not args.alt_output:
@@ -142,7 +142,7 @@ if __name__ == '__main__':
     if not args.no_clicks:
         shell = subprocess.Popen(['/bin/sh'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
-    for screen in get_connected_xrandr_outputs(powerline.pl):
+    for screen in get_connected_randr_outputs(powerline.pl):
         restart_bar(screen['name'])
 
     modes = ['default']
