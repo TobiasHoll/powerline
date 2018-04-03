@@ -147,6 +147,11 @@ class GoogleCalendarSegment(ThreadedSegment):
                     res += w[0:3]
             return res
 
+        def truncate_long(pl, wd, seg):
+            wd -= len(seg['contents'])
+            nw_con = seg['contents'][0:max(len(seg['contents'])//2, -wd)].strip(' .,;(-')
+            return nw_con + '…' if len(nw_con) < len(seg['contents']) else nw_con
+
         # check if these events are relevant
         if not short_mode:
             return [{
@@ -160,7 +165,7 @@ class GoogleCalendarSegment(ThreadedSegment):
                     else (dt + bf).strftime(time_format), 'summary': sm,
                     'short_summary': shorten(sm), 'location': lc, 'count': evt_count},
                 'truncate': (lambda a,b,seg: short_format.format(**seg['_data'])) if
-                    not auto_shrink else None
+                    not auto_shrink else truncate_long
             } for dt, sm, lc, bf in events if dt <= now] + segments
         elif evt_count:
             return [{

@@ -47,6 +47,8 @@ def render(reschedule=False):
                     t.start()
     except BrokenPipeError: # The lemonbar died, so should we
         pass
+    except RuntimeError:
+        pass
     global needs_restart
     n_r = needs_restart
     if len(n_r):
@@ -131,7 +133,10 @@ def restart_bar(output_name):
 
 def restart_callback(output):
     global needs_restart
-    needs_restart.extend([output])
+    if not isinstance(output, str):
+        needs_restart += output
+    else:
+        needs_restart.extend([output])
 
 if __name__ == '__main__':
     parser = get_argparser()
