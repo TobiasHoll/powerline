@@ -69,12 +69,12 @@ Alternatively, you may use `pip` for the installation:
 Note that using this fork (or the powerline in general) requires some additional packages to be installed,
 namely:
 
-* powerline-fonts
-* ttf-font-awesome
+* [powerline-fonts](https://www.archlinux.org/packages/community/x86_64/powerline-fonts/)
+* [ttf-font-awesome-4](https://aur.archlinux.org/packages/ttf-font-awesome-4/) (Version 5 relocated some symbols)
 * i3 or i3-gaps
-* lemonbar-xft-git
-* python-xlib
-* i3ipc-python-git (workspace segment, available from AUR)
+* [lemonbar-xft-git](https://aur.archlinux.org/packages/lemonbar-xft-git/) ([Lemonbar](https://github.com/krypt-n/bar) supporting fontconfig fonts)
+* [python-xlib](https://github.com/python-xlib/python-xlib)
+* [i3ipc-python-git](https://github.com/acrisci/i3ipc-python) (workspace segment, available from AUR)
 
 Optionally, the following packages should be installed if you want to use the corresponding segments.
 
