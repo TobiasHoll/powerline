@@ -61,28 +61,29 @@ Note that the `lemonbar` allows for only a fixed number of clickable areas, whic
 Installation
 ------------
 
-The following Arch Linux packages should be installed:
+This fork is available from the AUR (`powerline-i3-git`).
+Alternatively, you may use `pip` for the installation:
 
-* i3 or i3-gaps
-* powerline-fonts-git
-* lemonbar-xft-git
+	pip install git+https://github.com/PH111P/powerline.git@develop
+
+Note that using this fork (or the powerline in general) requires some additional packages to be installed,
+namely:
+
+* powerline-fonts
 * ttf-font-awesome
-* wpa_actiond (wifi segment)
-* wireless_tools (wifi segment)
+* i3 or i3-gaps
+* lemonbar-xft-git
+* xorg-xrandr
+* i3ipc-python-git (workspace segment, available from AUR)
+
+Optionally, the following packages should be installed if you want to use the corresponding segments.
+
 * python-iwlib (wifi segment)
-* i3ipc-python-git (workspace segment)
-* python-pyalsaaudio (volume segment)
-* xorg-xrandr (RandR segment)
-* xorg-xinput (RandR segment)
-
-If you have successfully installed all the previous packages, installing this fork becomes as easy
-as
-
-      pip install git+https://github.com/PH111P/powerline.git@develop
-
-or
-
-      yaourt -S powerline-i3-git
+* python-pyalsaaudio (volume segment, available from AUR)
+* xorg-xinput (screen rotation segment, used to map input devices to outputs)
+* python-google-api-python-client (Google Calendar segment; this segment also requires a valid dev key to work)
+* python-psutil (cpu load segment)
+* python-pygit2 (better performance of the vcs segment)
 
 
 To actually _use_ the powerline in your i3 setup, replace the following lines in your `.config/i3/config`
@@ -93,9 +94,10 @@ To actually _use_ the powerline in your i3 setup, replace the following lines in
 
 with this line (you may want to adjust the height and the font size):
 
-      exec "powerline-lemonbar --i3 --height 16 -- -a 40 -b -f 'DejaVu Sans Mono for Powerline-11' -f 'FontAwesome-11'"
+      exec "powerline-lemonbar --i3 --height 16 -- -a 40 -b -f 'DejaVu Sans Mono-11' -f 'PowerlineSymbols-12' -f 'FontAwesome-11'"
 
 Note that ``Font Awesome`` is used to display some icons, thus changing it to some other font will likely break these icons.
+**Attention: `-f 'PowerlineSymbols-12'` is required if you have the non-git version of the powerline-fonts package installed. If you have the git version of that package installed (from the AUR), use `-f 'DejaVu Sans Mono for Powerline-11'` instead.**
 
 Configuration
 -------------
