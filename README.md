@@ -97,6 +97,7 @@ with this line (you may want to adjust the height and the font size):
       exec "powerline-lemonbar --i3 --height 16 -- -a 40 -b -f 'DejaVu Sans Mono-11' -f 'PowerlineSymbols-12' -f 'FontAwesome-11'"
 
 Note that ``Font Awesome`` is used to display some icons, thus changing it to some other font will likely break these icons.
+
 **Attention: `-f 'PowerlineSymbols-12'` is required if you have the non-git version of the powerline-fonts package installed. If you have the git version of that package installed (from the AUR), use `-f 'DejaVu Sans Mono for Powerline-11'` instead.**
 
 Configuration
