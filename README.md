@@ -72,6 +72,8 @@ The following Arch Linux packages should be installed:
 * python-iwlib (wifi segment)
 * i3ipc-python-git (workspace segment)
 * python-pyalsaaudio (volume segment)
+* xorg-xrandr (RandR segment)
+* xorg-xinput (RandR segment)
 
 If you have successfully installed all the previous packages, installing this fork becomes as easy
 as
@@ -94,6 +96,35 @@ with this line (you may want to adjust the height and the font size):
       exec "powerline-lemonbar --i3 --height 16 -- -a 40 -b -f 'DejaVu Sans Mono for Powerline-11' -f 'FontAwesome-11'"
 
 Note that ``Font Awesome`` is used to display some icons, thus changing it to some other font will likely break these icons.
+
+Configuration
+-------------
+
+Basic powerline configuration is done via `JSON` files located at `.config/powerline/`. It is a good idea to start by copying the default configuration located at `powerline_root/powerline/config_files/` to `.config/powerline/`. 
+If you installed the powerline from the AUR or via pip, `powerline_root` should be `/usr/lib/python3.6/site-packages/` or something similar, depending on your python version. 
+
+This should yield you the following directory structure:
+
+```
+.config/powerline/
+├── colorschemes
+│   ├── ...
+│   └── wm
+|       └── default.json  // Your configuration goes here
+├── colors.json
+├── config.json
+└── themes
+    ├── ...
+    └── wm
+        └── default.json  // Your configuration goes here
+
+```
+
+The files in the subdirectories of `themes` are used to specify which segments shall be shown; the files in subdirectories of `colorschemes` are used to specify which colors (as defined in `colors.json`) shall be used to display a segment.
+
+Note that your local configuration only overrides the global configuration, it does not replace it, i.e. if you don't configure something locally, the global default will be used instead.
+
+Consult the [documentation](https://powerline-i3.readthedocs.io/en/latest/configuration.html#quick-setup-guide) for more details. See also the [segment reference](https://powerline-i3.readthedocs.io/en/latest/configuration/segments.html) for available segments and their configuration.
 
 Some screens
 ------------
