@@ -73,7 +73,7 @@ namely:
 * ttf-font-awesome
 * i3 or i3-gaps
 * lemonbar-xft-git
-* xorg-xrandr
+* python-xlib
 * i3ipc-python-git (workspace segment, available from AUR)
 
 Optionally, the following packages should be installed if you want to use the corresponding segments.
@@ -81,6 +81,7 @@ Optionally, the following packages should be installed if you want to use the co
 * python-iwlib (wifi segment)
 * python-pyalsaaudio (volume segment, available from AUR)
 * xorg-xinput (screen rotation segment, used to map input devices to outputs)
+* xorg-xrandr (screen rotation segment, used to rotate the screen)
 * python-google-api-python-client (Google Calendar segment; this segment also requires a valid dev key to work)
 * python-psutil (cpu load segment)
 * python-pygit2 (better performance of the vcs segment)
