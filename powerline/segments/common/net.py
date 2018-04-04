@@ -32,12 +32,12 @@ def hostname(pl, segment_info, only_if_ssh=False, exclude_domain=False):
 	return socket.gethostname()
 
 @requires_segment_info
-def wireless(pl, segment_info, device, format='{quality:3.0%} at {essid}',
+def wireless(pl, segment_info, device=None, format='{quality:3.0%} at {essid}',
 	short_format='{quality:3.0%}', format_down=None, auto_shrink=False):
 	'''Returns the current connection quality.
 
 	:param string device:
-		the device to use
+		the device to use. Per default this segment will try to be smart.
 	:param string format:
 		the output format
 	:param string short_format:
@@ -56,6 +56,12 @@ def wireless(pl, segment_info, device, format='{quality:3.0%} at {essid}',
 	Click values supplied: ``quality`` (int), ``essid`` (string)
 	'''
 	payload_name = 'net.wireless'
+
+	if not device:
+		for interface in os.listdir('/sys/class/net'):
+			if interface.startswith('w'):
+				device = interface
+				break
 
 	try:
 		import iwlib

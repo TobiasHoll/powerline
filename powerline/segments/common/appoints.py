@@ -168,10 +168,14 @@ class GoogleCalendarSegment(ThreadedSegment):
                     not auto_shrink else truncate_long
             } for dt, sm, lc, bf in events if dt <= now] + segments
         elif evt_count:
+            urgent = False
+            for dt, sm, lc, bf in events:
+                if now < dt + bf:
+                    urgent = True
             return [{
                 'contents': short_format.format(time='', summary='', short_summary='',
                     location='', count=evt_count, error=''),
-                'highlight_groups': ['appoint'],
+                'highlight_groups': ['appoint:urgent', 'appoint'] if urgent else ['appoint'],
                 'payload_name': channel_name
                 }]
 

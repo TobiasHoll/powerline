@@ -5,7 +5,7 @@
                 "function":             "powerline.segments.common.players.gpmdp",
                 "name":                 "gpmdp",
                 "args": {
-                    "format":           "{state_symbol}{artist} — {title}",
+                    "format":           "{state_symbol}{artist} — {title} ({album})",
                     "short_format":     "{state_symbol}{short_title}",
                     "state_symbols": {
                         "fallback":         "♫",
@@ -24,17 +24,20 @@
                         "steps":            5
                     },
                     "auto_disable":     true,
-                    "show_controls":    true
+                    "show_controls":    true,
+                    "auto_shrink":      true
                 }
             },
             {
                 "function":             "powerline.segments.common.players.dbus_player",
                 "name":                 "vlc",
                 "args": {
-                    "format":           "{state_symbol}{artist} — {title}",
+                    "format":           "{state_symbol}{artist} — {title} ({album})",
                     "short_format":     "{state_symbol}{short_title}",
                     "auto_disable":     true,
                     "show_controls":    true,
+                    "auto_shrink":      true,
+                    "channel_name":     "players.vlc",
                     "state_symbols": {
                         "fallback":         "♫",
                         "play":             "▶ ",
@@ -58,15 +61,17 @@
                 "args": {
                     "format":           " {volume:3.0%}",
                     "format_muted":     null
-                }
+                },
+                "priority":             40
             },
             {
                 "function":             "powerline.segments.common.net.wireless",
                 "args": {
-                    "device":           "wlo1",
-                    "format":           "  {quality:3.0%} at {essid}",
-                    "short_format":     "  {quality:3.0%} at {essid}"
-                }
+                    "format":           " {quality:3.0%} at {essid}",
+                    "short_format":     " {quality:3.0%}",
+                    "auto_shrink":      true
+                },
+                "priority":             40
             },
             {
                 "function":             "powerline.segments.common.bat.battery",
@@ -96,6 +101,14 @@
                 "draw_soft_divider":    false,
                 "function":             "powerline.segments.common.bat.battery",
                 "args": {
+                    "format":           "{capacity:3.0%}",
+                    "original_health":  true
+                }
+            },
+            {
+                "draw_soft_divider":    true,
+                "function":             "powerline.segments.common.bat.battery",
+                "args": {
                     "name":             "rem_time",
                     "original_health":  true
                 }
@@ -104,7 +117,8 @@
                 "function":             "powerline.segments.common.time.date",
                 "args": {
                     "format":           "%m-%d"
-                }
+                },
+                "priority":             10
             },
             {
                 "function":             "powerline.segments.common.time.date",
@@ -112,15 +126,57 @@
                 "args": {
                     "format":           "%H:%M",
                     "istime":           true
-                }
+                },
+                "priority":             1
             }
         ],
         "left": [
             {
-                "function":             "powerline.segments.common.net.hostname"
+                "function":             "powerline.segments.common.net.hostname",
+                "priority":             70
             },
             {
-                "function":             "powerline.segments.common.env.clip"
+                "function":             "powerline.segments.randr.output",
+                "args": {
+                    "status_icons": {
+                        "on":           "",
+                        "off":          ""
+                    },
+                    "mirror_icons": {
+                        "extend":       "",
+                        "mirror":       ""
+                    }
+                }
+            },
+            {
+                "function":             "powerline.segments.randr.srot",
+                "args": {
+                    "name":             "mode",
+                    "output":           "eDP1",
+                    "mapped_inputs": [
+                        "Insert your touch screen/ digitizer name from xinput --list here",
+                        "Wacom HID 481C Finger",
+                        "Wacom HID 481C Pen Pen",
+                        "Wacom HID 481C Pen Eraser"
+                    ],
+                    "touchpads": [
+                        "Insert your touchpad names here",
+                        "ALP0016:00 044E:1215",
+                        "AlpsPS/2 ALPS GlidePoint"
+                    ],
+                    "icons": {
+                        "auto":         "",
+                        "locked":       ""
+                    },
+                    "additional_controls": [
+                        [ " {touch_output}", ["srot:tc"] ],
+                        [ " {managed_output}", ["srot:rc"] ]
+                    ]
+                }
+            },
+            {
+                "function":             "powerline.segments.common.env.clip",
+                "priority":             80
             },
             {
                 "function":             "powerline.segments.i3wm.mode",
@@ -132,7 +188,8 @@
                         "gaps-o":       "Outer Gaps: p|m|0 (local), Shift + p|m|0 (global)",
                         "gaps-i":       "Inner Gaps: p|m|0 (local), Shift + p|m|0 (global)"
                     }
-                }
+                },
+                "priority":             60
             },
             {
                 "function":             "powerline.segments.i3wm.workspaces",
@@ -141,10 +198,12 @@
                 "draw_soft_divider":    true,
                 "args": {
                     "only_show":        [ "focused", "visible" ],
-                    "output":           "__all__",
                     "separator":        " ",
-                    "show_multiple_icons": false
-                }
+                    "show_multiple_icons": false,
+                    "show_dummy_workspace": true,
+                    "show_output":      true
+                },
+                "priority":             30
             },
             {
                 "function":             "powerline.segments.i3wm.workspaces",
@@ -152,12 +211,15 @@
                 "draw_inner_divider":   true,
                 "draw_soft_divider":    true,
                 "args": {
-                    "output":           "__all__",
-                    "separator":        " "
-                }
+                    "separator":        " ",
+                    "show_dummy_workspace": true,
+                    "show_output":      true
+                },
+                "priority":             30
             },
             {
-                "function": "powerline.segments.i3wm.scratchpad"
+                "function":             "powerline.segments.i3wm.scratchpad",
+                "priority":             30
             }
         ]
     }
