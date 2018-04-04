@@ -341,6 +341,9 @@ srot = with_docstring(ScreenRotationSegment(),
 @requires_segment_info
 class OutputSegment(ThreadedSegment):
     interval = 1
+
+    d = None
+    window = None
     outputs = {}
 
     segment_state = 0 # 0: minimal, 1: list outputs, 2: show modes for chosen output
@@ -348,35 +351,151 @@ class OutputSegment(ThreadedSegment):
     MIRROR_STATES = ['extend', 'mirror']
     mirror_state = 0 # 0: extend, 1: mirror
 
+    last_oneshot = 0
+
+    bar_needs_resize = None
+
     def set_state(self, **kwargs):
-        self.outputs = get_randr_outputs()
+        from Xlib import X, display
+        from Xlib.ext import randr
+        self.d = display.Display()
+        s = self.d.screen()
+        self.window = s.root.create_window(0, 0, 1, 1, 1, s.root_depth)
+
+        self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
 
         super(OutputSegment, self).set_state(**kwargs)
 
     def update(self, *args, **kwargs):
+        self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
         return None
+
+    def update_mirror_state(self):
+        print(f'TODO: Update mirror state to {self.mirror_state}')
+
+    def enable_output(self, output):
+        from Xlib.ext import randr
+        used_crtc = [o['crtc_id'] for o in self.outputs if o['crtc_id']]
+        free_crtc = [c for c in output['crtcs'] if c not in used_crtc]
+
+        if len(free_crtc) < 1:
+            # No crtc available, so we cannot enable this output
+            return False
+
+        if self.mirror_state:
+            # We need to find a mode that every connected output supports
+            enabled_outputs = [o for o in self.outputs if o['crtc']]
+
+            mode = output['mode_ids']
+            for e in enabled_outputs:
+                mode = [m for m in mode if m in e['mode_ids']]
+
+            if not len(mode):
+                # Outputs couldn't agree on mode
+                return False
+
+            randr.set_crtc_config(self.d, free_crtc[0],
+                    0, 0, 0, mode[0], randr.Rotate_0, [output['id']])
+            for o in self.outputs:
+                if o['crtc_id'] in used_crtc:
+                    randr.set_crtc_config(self.d, o['crtc_id'],
+                            0, 0, 0, mode[0], randr.Rotate_0, [o['id']])
+
+            # Everything worked (hopefully), so redraw the bar
+            self.bar_needs_resize = [output['name']] + [o['name'] for o in self.outputs
+                    if o['crtc_id'] in used_crtc]
+            return True
+
+    def disable_output(self, output):
+        from Xlib.ext import randr
+        # remove the output from the crtc it is mapped to
+        if self.mirror_state:
+            # We need to find a mode that every connected output supports
+            enabled_outputs = [o for o in self.outputs if o['crtc'] and o['name'] != output['name']]
+
+            if len(enabled_outputs) == 0:
+                # Prohibit the user from disabling the last output
+                return False
+
+            mode = enabled_outputs[0]['mode_ids']
+            for e in enabled_outputs:
+                mode = [m for m in mode if m in e['mode_ids']]
+
+            # disable the output
+            randr.set_crtc_config(self.d, output['crtc_id'], 0, 0, 0, 0, randr.Rotate_0, [])
+            for o in enabled_outputs:
+                randr.set_crtc_config(self.d, o['crtc_id'],
+                    0, 0, 0, mode[0], randr.Rotate_0, [o['id']])
+
+            # Everything worked (hopefully), so redraw the bar
+            self.bar_needs_resize = [output['name']] + [o['name'] for o in enabled_outputs]
+            return True
 
     def render(self, data, segment_info, mirror_format='{mirror_icon}',
             mirror_icons={'mirror': 'M', 'extend': 'E'}, output_format='{output} {status_icon}',
-            status_icons={'on': 'on', 'off': 'off'}, **kwargs):
+            status_icons={'on': 'on', 'off': 'off'}, hide_if_single_output=True, **kwargs):
+        channel_name = 'randr.output'
+
+        channel_value = None
+        if 'payloads' in segment_info and channel_name in segment_info['payloads']:
+            channel_value = segment_info['payloads'][channel_name]
+
+        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0].startswith('mode:') and channel_value[1] > self.last_oneshot:
+            command = channel_value[0].split(':')[1]
+            self.last_oneshot = channel_value[1]
+            if command == 'toggle':
+                self.mirror_state = (self.mirror_state + 1) % len(self.MIRROR_STATES)
+            else:
+                for i in self.MIRROR_STATES:
+                    if i == command:
+                        self.mirror_state = i
+            self.update_mirror_state()
+
+        if channel_value and not isinstance(channel_value, str) and len(channel_value) == 2 and channel_value[0].startswith('output:') and channel_value[1] > self.last_oneshot:
+            self.last_oneshot = channel_value[1]
+            output = channel_value[0].split(':')[1]
+            command = channel_value[0].split(':')[2]
+
+            output = [o for o in self.outputs if o['name'] == output]
+            if len(output) == 1:
+                output = output[0]
+                if command == 'on':
+                    self.enable_output(output)
+                if command == 'off':
+                    self.disable_output(output)
+                if command == 'toggle':
+                    if output['crtc']:
+                        self.disable_output(output)
+                    else:
+                        self.enable_output(output)
+
+        if self.bar_needs_resize:
+            scrn = self.bar_needs_resize
+            self.bar_needs_resize = None
+            segment_info['restart'](scrn)
+
+
+        if hide_if_single_output and len(self.outputs) < 2:
+            return None
 
         result = []
-
-        return None
 
         result += [{
             'contents': mirror_format.format(mirror_state=self.MIRROR_STATES[self.mirror_state],
                 mirror_icon=mirror_icons[self.MIRROR_STATES[self.mirror_state]]),
-            'highlight_groups': ['output:' + self.MIRROR_STATES[self.mirror_state], 'output'],
+            'highlight_groups': ['output:' + self.MIRROR_STATES[self.mirror_state], 'output:mirror',
+                'output'],
             'draw_inner_divider': True,
+            'payload_name': channel_name,
             'click_values': {'mirror_state': self.MIRROR_STATES[self.mirror_state]}
         }]
 
         result += [{
             'contents': output_format.format(output=o['name'],
                 status_icon=status_icons[o['status']]),
-            'highlight_groups': ['output:' + o['status'], 'output'],
+            'highlight_groups': ['output:' + o['status'], 'output:status', 'output'],
             'draw_inner_divider': True,
+            'payload_name': channel_name,
             'click_values': {'output_name': o['name'], 'output_status': o['status']}
         } for o in self.outputs]
 

@@ -1,65 +1,174 @@
 {
-    "name": "Default",
+    "name":                     "Default",
     "groups": {
-        "clip":                      { "fg": "level:2_fg",          "bg": "level:2_bg",         "click": {
-            "left": "xsel -cb"
-        } },
-        "volume_gradient":           { "fg": "white_red",    "bg": "level:3_bg",           "click": {
-            "scroll up": "pactl set-sink-volume 0 +1%",
-            "scroll down": "pactl set-sink-volume 0 -1%"
-        } },
-        "player":                    { "fg": "level:3_fg",            "bg": "level:3_bg",           "click": {
-            "left": "xdotool key XF86AudioPlay"
-        } },
-        "player:next":               { "fg": "level:3_fg",            "bg": "level:3_bg",           "click": {
-            "left": "xdotool key XF86AudioNext"
-        } },
-        "player:previous":           { "fg": "level:3_fg",            "bg": "level:3_bg",           "click": {
-            "left": "xdotool key XF86AudioPrev"
-        } },
-        "workspace":                 { "fg": "level:2_fg",            "bg": "level:2_bg",           "click": {
-            "left": "i3-msg workspace {workspace_name}",
-            "right": "i3-msg move to workspace {workspace_name}"
-        } },
-        "workspace:focused":         "level:3",
-        "workspace:visible":         "level:1",
-        "workspace:urgent":          { "bg": "level:2_bg",            "fg": "0xffaf00",           "click": {
-            "left": "i3-msg workspace {workspace_name}",
-            "right": "i3-msg move to workspace {workspace_name}"
-        } },
-        "scratchpad":                { "fg": "level:2_fg",            "bg": "level:2_bg",           "click": {
-            "left": "i3-msg scratchpad show",
-            "right": "i3-msg move to scratchpad"
-        } },
-        "scratchpad:focused":        { "fg": "level:3_fg",            "bg": "level:3_bg",           "click": {
-            "left": "i3-msg scratchpad show",
-            "right": "i3-msg move to scratchpad"
-        } },
-        "scratchpad:visible":        { "fg": "level:1_fg",            "bg": "level:1_bg",           "click": {
-            "left": "i3-msg scratchpad show",
-            "right": "i3-msg move to scratchpad"
-        } },
-        "scratchpad:urgent":         { "bg": "level:3_bg",            "fg": "brightorange",       "click": {
-            "left": "i3-msg scratchpad show",
-            "right": "i3-msg move to scratchpad"
-        } },
-        "output":                    { "bg": "level:3_bg",            "fg": "brightorange" },
-        "appoint":                   "level:3",
-        "appoint:urgent":            "level:2_bold",
-        "appoint:error":             { "fg": "level:3_fg",            "bg": "red",                "click": {
-            "left": "powerline-gcal-auth 'client_id' 'client_secret'"
-        } },
-        "mode":                      "level:2",
-        "active_window_title":       "level:2",
-        "hostname":                  { "fg": "level:1_fg",            "bg": "level:1_bg",         "click": {
-            "left": "#bar;restart"
-        } },
+        "clip": {
+            "fg":               "level:2_fg",
+            "bg":               "level:2_bg",
+            "click": {
+                "left":         "xsel -cb"
+            }
+        },
+        "volume_gradient": {
+            "fg":               "white_red",
+            "bg":               "level:3_bg",
+            "click": {
+                "scroll up":    "pactl set-sink-volume @DEFAULT_SINK@ +1%",
+                "scroll down":  "pactl set-sink-volume @DEFAULT_SINK@ -1%"
+            }
+        },
+        "player": {
+            "fg":               "level:3_fg",
+            "bg":               "level:3_bg",
+            "click": {
+                "left":         "xdotool key XF86AudioPlay",
+                "middle":       "#bar;ch_toggle"
+            }
+        },
+        "player:next": {
+            "fg":               "level:3_fg",
+            "bg":               "level:3_bg",
+            "click": {
+                "left":         "xdotool key XF86AudioNext"
+            }
+        },
+        "player:previous": {
+            "fg":               "level:3_fg",
+            "bg":               "level:3_bg",
+            "click": {
+                "left":         "xdotool key XF86AudioPrev"
+            }
+        },
+        "workspace": {
+            "fg":               "level:3_fg",
+            "bg":               "level:3_bg",
+            "click": {
+                "left":         "i3-msg workspace {workspace_name}",
+                "right":        "i3-msg move to workspace {workspace_name}"
+            }
+        },
+        "workspace:focused": {
+            "fg":               "level:3_bg",
+            "bg":               "level:3_fg"
+        },
+        "workspace:visible": {
+            "fg":               "level:3_bg",
+            "bg":               "level:3_fg"
+        },
+        "workspace:urgent": {
+            "bg":               "level:2_bg",
+            "fg":               "0xffaf00",
+            "click": {
+                "left":         "i3-msg workspace {workspace_name}",
+                "right":        "i3-msg move to workspace {workspace_name}"
+            }
+        },
+        "scratchpad": {
+            "fg":               "level:3_fg",
+            "bg":               "level:3_bg",
+            "click": {
+                "left":         "i3-msg scratchpad show",
+                "right":        "i3-msg move to scratchpad"
+            }
+        },
+        "scratchpad:focused": {
+            "fg":               "level:3_bg",
+            "bg":               "level:3_fg",
+            "click": {
+                "left":         "i3-msg scratchpad show",
+                "right":        "i3-msg move to scratchpad"
+            }
+        },
+        "scratchpad:visible":   "scratchpad:focused",
+        "scratchpad:urgent": {
+            "bg":               "level:3_bg",
+            "fg":               "brightorange",
+            "click": {
+                "left":         "i3-msg scratchpad show",
+                "right":        "i3-msg move to scratchpad"
+            }
+        },
+        "output": {
+            "bg":               "level:2_bg",
+            "fg":               "level:2_fg"
+        },
+        "output:status": {
+            "bg":               "level:2_bg",
+            "fg":               "level:2_fg",
+            "click": {
+                "left":         "#bar;pass_oneshot:output:{output_name}:toggle"
+            }
+        },
+        "output:mirror": {
+            "bg":               "level:2_bg",
+            "fg":               "level:2_fg",
+            "click": {
+                "left":         "#bar;pass_oneshot:mode:toggle"
+            }
+        },
+        "srot":                 "level:2",
         "srot:mode": {
             "bg":               "level:2_bg",
             "fg":               "level:2_fg",
             "click": {
-                "left":         "#bar;pass_oneshot:toggle_rot"
+                "left":         "#bar;pass_oneshot:toggle_rot",
+                "middle":       "#bar;pass_oneshot:toggle_controls:{output}"
+            }
+        },
+        "srot:tc": {
+            "bg":               "level:2_bg",
+            "fg":               "level:2_fg",
+            "click": {
+                "left":         "#bar;pass_oneshot:capture_input:{output}",
+                "middle":       "#bar;pass_oneshot:toggle_controls:{output}"
+            }
+        },
+        "srot:rc": {
+            "bg":               "level:2_bg",
+            "fg":               "level:2_fg",
+            "click": {
+                "left":         "#bar;pass_oneshot:capture:{output}",
+                "middle":       "#bar;pass_oneshot:toggle_controls:{output}"
+            }
+        },
+        "appoint": {
+            "bg":               "level:3_bg",
+            "fg":               "level:3_fg",
+            "click": {
+                "left":         "#bar;ch_toggle"
+            }
+        },
+        "appoint:urgent": {
+            "bg":               "level:2_bg",
+            "fg":               "level:2_fg",
+            "click": {
+                "left":         "#bar;ch_toggle"
+            }
+        },
+        "appoint:error": {
+            "fg":               "level:3_fg",
+            "bg":               "red",
+            "click": {
+                "right":        "powerline-gcal-auth '<insert client_id here>' '<insert client_secrect here>'",
+                "left":         "#bar;ch_toggle"
+            }
+        },
+        "generic_shell":        "level:1",
+        "mode":                 "level:2",
+        "active_window_title":  "level:2",
+        "hostname": {
+            "fg":               "level:1_fg",
+            "bg":               "level:1_bg",
+            "click": {
+                "left":         "#bar;restart"
+            }
+        },
+        "wireless:gradient": {
+            "fg":               "level:3_fg",
+            "bg":               "level:3_bg",
+            "click": {
+                "left":         "#bar;ch_toggle"
             }
         }
     }
 }
+

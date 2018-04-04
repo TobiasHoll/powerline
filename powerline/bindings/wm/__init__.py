@@ -62,7 +62,7 @@ def get_i3_connection():
 		conn = i3ipc.Connection()
 	return conn
 
-def get_randr_outputs():
+def get_randr_outputs(d = None, window = None):
 	'''Return all randr outputs as a list.
 
 	Outputs are represented by a dictionary with at least the ``name``, ``width``,
@@ -72,44 +72,66 @@ def get_randr_outputs():
 	from Xlib import X, display
 	from Xlib.ext import randr
 
-	d = display.Display()
+	d = d or display.Display()
 	s = d.screen()
-	window = s.root.create_window(0, 0, 1, 1, 1, s.root_depth)
-	outputs = randr.get_screen_resources(window).outputs
+	if not window:
+		window = s.root.create_window(0, 0, 1, 1, 1, s.root_depth)
 
+	ress = randr.get_screen_resources(window)
+	outputs = ress.outputs
 	primary = randr.get_output_primary(window).output
 
-	outputs = [(o, randr.get_output_info(window, o, 0)) for o in outputs]
+	npos = 0
+	modes = { }
+	for mode in ress.modes:
+		data = mode._data
+		data['name'] = ress.mode_names[npos:npos + mode.name_length]
+		npos += data['name_length']
+		modes[data['id']] = data
+
+	outputs = [(o, d.xrandr_get_output_info(o, ress.config_timestamp)) for o in outputs]
 	outputs = [{
 	    'name': o[1].name,
-	    'crtc': randr.get_crtc_info(window, o[1].crtc, 0) if not o[1].connection else None,
+	    'crtc_id': o[1].crtc,
+	    'crtc': d.xrandr_get_crtc_info(o[1].crtc, ress.config_timestamp)if o[1].crtc else None,
 	    'primary': ' primary' if o[0] == primary else None, # space intended for bw comp
-	    'status': ['on', 'off'][o[1].connection],
+	    'connection': o[1].connection,
+	    'status': ['on', 'off'][o[1].crtc == 0],
+	    'modes': [modes[i] for i in o[1].modes],
+	    'mode_ids': o[1].modes,
+	    'crtcs': o[1].crtcs,
+	    'id': o[0]
 	} for o in outputs] # only return connectad outputs
 
 	outputs = [{
 	    'name': o['name'],
 	    'primary': o['primary'],
+	    'crtc_id': o['crtc_id'],
 	    'x': o['crtc'].x if o['crtc'] else None,
 	    'y': o['crtc'].y if o['crtc'] else None,
 	    'height': o['crtc'].height if o['crtc'] else None,
 	    'width': o['crtc'].width if o['crtc'] else None,
 	    'crtc': o['crtc'],
-	    'status': o['status']
+	    'status': o['status'],
+	    'connection': not o['connection'],
+	    'modes': o['modes'],
+	    'mode_ids': o['mode_ids'],
+	    'crtcs': o['crtcs'],
+	    'id': o['id']
 	} for o in outputs]
 
 	return outputs
 
 
 def get_connected_randr_outputs(pl):
-	'''Iterate over randr outputs
+	'''Iterate over randr outputs. Yields all connected outputs that are not ``off``.
 
 	Outputs are represented by a dictionary with at least the ``name``, ``width``,
 	``height``, ``primary``, ``x`` and ``y`` keys.
 	'''
 	try:
 		for o in get_randr_outputs():
-			if o['status'] == 'on':
+			if o['connection'] and o['status'] == 'on':
 				yield o
 
 	except ImportError:
