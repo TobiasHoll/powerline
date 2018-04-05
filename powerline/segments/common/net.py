@@ -50,7 +50,7 @@ def wireless(pl, segment_info, device=None, format='{quality:3.0%} at {essid}',
 		only using ``format`` when any message is present on the ``net.wireless``
 		message channel.
 
-	Highlight groups used: ``quality_gradient`` (gradient, deprecated), ``wireless:quality`` (gradient),
+	Highlight groups used: ``wireless:quality`` (gradient), ``quality_gradient`` (gradient, deprecated),
 	    ``wireless:down`` (when no connection is present)
 
 	Click values supplied: ``quality`` (int), ``essid`` (string)

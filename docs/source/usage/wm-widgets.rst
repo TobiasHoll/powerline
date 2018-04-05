@@ -71,7 +71,8 @@ To run the bar simply start the binding script:
 
 You can specify options to be passed to ``lemonbar`` after ``--``, like so:
 
-    powerline-lemonbar --height 16 -- -f "Source Code Pro for Powerline-9"
+    powerline-lemonbar -- -a 40 -f 'DejaVu Sans Mono-11' -f 'PowerlineSymbols-12' -f 'FontAwesome-11'"
+
 
 To run with i3, simply ``exec`` this in the i3 config file and set the ``--i3`` switch:
 

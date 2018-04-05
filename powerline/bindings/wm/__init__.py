@@ -5,48 +5,10 @@ from powerline.theme import requires_segment_info
 from powerline.bindings.wm.awesome import AwesomeThread
 
 
-DEFAULT_UPDATE_INTERVAL = 0.5
+DEFAULT_UPDATE_INTERVAL = 2
 
 
 conn = None
-
-
-def i3_subscribe(conn, event, callback):
-	'''Subscribe to i3 workspace event
-
-	:param conn:
-		Connection returned by :py:func:`get_i3_connection`.
-	:param str event:
-		Event to subscribe to, e.g. ``'workspace'``.
-	:param func callback:
-		Function to run on event.
-	'''
-	try:
-		import i3
-	except ImportError:
-		pass
-	else:
-		conn.Subscription(callback, event)
-		return
-
-	conn.on(event, callback)
-
-	from threading import Thread
-
-	class I3Thread(Thread):
-		daemon = True
-
-		def __init__(self, conn):
-			super(I3Thread, self).__init__()
-			self.__conn = conn
-
-		def run(self):
-			self.__conn.main()
-
-	thread = I3Thread(conn=conn)
-
-	thread.start()
-
 
 def get_i3_connection():
 	'''Return a valid, cached i3 Connection instance
@@ -94,7 +56,7 @@ def get_randr_outputs(d = None, window = None):
 	    'name': o[1].name,
 	    'crtc_id': o[1].crtc,
 	    'crtc': d.xrandr_get_crtc_info(o[1].crtc, ress.config_timestamp)if o[1].crtc else None,
-	    'primary': ' primary' if o[0] == primary else None, # space intended for bw comp
+	    'primary': 'primary' if o[0] == primary else None,
 	    'connection': o[1].connection,
 	    'status': ['on', 'off'][o[1].crtc == 0],
 	    'modes': [modes[i] for i in o[1].modes],
@@ -125,33 +87,20 @@ def get_randr_outputs(d = None, window = None):
 
 def get_connected_randr_outputs(pl):
 	'''Iterate over randr outputs. Yields all connected outputs that are not ``off``.
+	If multiple outputs should be mirrored, only one of them wil be shown.
 
 	Outputs are represented by a dictionary with at least the ``name``, ``width``,
 	``height``, ``primary``, ``x`` and ``y`` keys.
 	'''
-	try:
-		for o in get_randr_outputs():
-			if o['connection'] and o['status'] == 'on':
-				yield o
-
-	except ImportError:
-		import re
-		from powerline.lib.shell import run_cmd
-
-		XRANDR_OUTPUT_RE = re.compile(r'^(?P<name>[0-9A-Za-z-]+) connected(?P<primary> primary)? (?P<width>\d+)x(?P<height>\d+)\+(?P<x>\d+)\+(?P<y>\d+)', re.MULTILINE)
-
-		return (match.groupdict() for match in XRANDR_OUTPUT_RE.finditer(
-		    run_cmd(pl, ['xrandr', '-q'])
-		))
-
-def get_connected_xrandr_outputs(pl):
-	'''Iterate over xrandr outputs (deprecated, use ``get_connected_randr_outputs``)
-
-	Outputs are represented by a dictionary with ``name``, ``width``,
-	``height``, ``primary``, ``x`` and ``y`` keys.
-	'''
-
-	return get_connected_randr_outputs(pl)
+	outs = get_randr_outputs()
+	for i in range(0, len(outs)):
+		o = outs[i]
+		for j in range(0, i): # Being quadriatic is ok, as #outs < 5 in most cases
+			if outs[j]['x'] == outs[i]['x'] and outs[j]['y'] == outs[i]['y']:
+				o = None
+				break
+		if o and o['connection'] and o['status'] == 'on':
+			yield o
 
 wm_threads = {
 	'awesome': AwesomeThread,

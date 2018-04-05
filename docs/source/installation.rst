@@ -31,8 +31,12 @@ Generic requirements
 * ``pyuv`` python package. Required for :ref:`libuv-based watcher
   <config-common-watcher>` to work.
 * ``i3ipc`` python package. Required for i3wm bindings and segments.
-* ``xrandr`` program. Required for the multi-monitor lemonbar binding and the
-  :py:func:`powerline.listers.i3wm.output_lister`.
+* ``xlib`` python package. Required for the multi-monitor lemonbar binding and the
+  :py:func:`powerline.listers.i3wm.output_lister`. As an inferior alternative,
+  the ``xrandr`` program can be used instead.
+* ``iwlib`` python package. Required for the wireless segment to display information
+  about the current connection.
+* ``pyalsaaudio`` python package. Required for the volume segment.
 
 .. note::
     Until bazaar supports Python-3 or PyPy powerline will not support

@@ -355,6 +355,8 @@ class OutputSegment(ThreadedSegment):
 
     bar_needs_resize = None
 
+    lock = Lock()
+
     def set_state(self, **kwargs):
         from Xlib import X, display
         from Xlib.ext import randr
@@ -367,69 +369,124 @@ class OutputSegment(ThreadedSegment):
         super(OutputSegment, self).set_state(**kwargs)
 
     def update(self, *args, **kwargs):
-        self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
+        with self.lock:
+            self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
         return None
 
     def update_mirror_state(self):
-        print(f'TODO: Update mirror state to {self.mirror_state}')
+        if self.mirror_state == 0:
+            self.configure_extend()
+        elif self.mirror_state == 1:
+            self.configure_mirror()
 
-    def enable_output(self, output):
+    def configure_mirror(self, output=None):
         from Xlib.ext import randr
-        used_crtc = [o['crtc_id'] for o in self.outputs if o['crtc_id']]
-        free_crtc = [c for c in output['crtcs'] if c not in used_crtc]
 
-        if len(free_crtc) < 1:
-            # No crtc available, so we cannot enable this output
+        used_crtc = [o['crtc_id'] for o in self.outputs if o['crtc_id']]
+        if output:
+            free_crtc = [c for c in output['crtcs'] if c not in used_crtc]
+
+            if len(free_crtc) < 1:
+                # No crtc available, so we cannot enable this output
+                return False
+
+        # We need to find a mode that every connected output supports
+        enabled_outputs = [o for o in self.outputs if o['crtc']]
+
+        if len(enabled_outputs) == 0:
             return False
 
-        if self.mirror_state:
-            # We need to find a mode that every connected output supports
-            enabled_outputs = [o for o in self.outputs if o['crtc']]
-
+        if output:
             mode = output['mode_ids']
-            for e in enabled_outputs:
-                mode = [m for m in mode if m in e['mode_ids']]
+        else:
+            mode = enabled_outputs[0]['mode_ids']
+        for e in enabled_outputs:
+            mode = [m for m in mode if m in e['mode_ids']]
 
-            if not len(mode):
-                # Outputs couldn't agree on mode
-                return False
+        if not len(mode):
+            # Outputs couldn't agree on mode
+            return False
 
+        if output:
             randr.set_crtc_config(self.d, free_crtc[0],
                     0, 0, 0, mode[0], randr.Rotate_0, [output['id']])
-            for o in self.outputs:
-                if o['crtc_id'] in used_crtc:
-                    randr.set_crtc_config(self.d, o['crtc_id'],
-                            0, 0, 0, mode[0], randr.Rotate_0, [o['id']])
 
-            # Everything worked (hopefully), so redraw the bar
-            self.bar_needs_resize = [output['name']] + [o['name'] for o in self.outputs
-                    if o['crtc_id'] in used_crtc]
-            return True
+        for o in enabled_outputs:
+            randr.set_crtc_config(self.d, o['crtc_id'],
+                0, 0, 0, mode[0], randr.Rotate_0, [o['id']])
 
-    def disable_output(self, output):
+        with self.lock:
+            self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
+        enabled_outputs = [o for o in self.outputs if o['crtc']]
+        # Everything worked (hopefully), so redraw the bar
+        self.bar_needs_resize = [o['name'] for o in enabled_outputs]
+        return True
+
+    def configure_extend(self, output=None):
         from Xlib.ext import randr
-        # remove the output from the crtc it is mapped to
-        if self.mirror_state:
-            # We need to find a mode that every connected output supports
-            enabled_outputs = [o for o in self.outputs if o['crtc'] and o['name'] != output['name']]
 
-            if len(enabled_outputs) == 0:
-                # Prohibit the user from disabling the last output
+        used_crtc = [o['crtc_id'] for o in self.outputs if o['crtc_id']]
+        if output:
+            free_crtc = [c for c in output['crtcs'] if c not in used_crtc]
+
+            if len(free_crtc) < 1:
+                # No crtc available, so we cannot enable this output
                 return False
 
-            mode = enabled_outputs[0]['mode_ids']
-            for e in enabled_outputs:
-                mode = [m for m in mode if m in e['mode_ids']]
+        enabled_outputs = [o for o in self.outputs if o['crtc']]
 
-            # disable the output
-            randr.set_crtc_config(self.d, output['crtc_id'], 0, 0, 0, 0, randr.Rotate_0, [])
-            for o in enabled_outputs:
-                randr.set_crtc_config(self.d, o['crtc_id'],
-                    0, 0, 0, mode[0], randr.Rotate_0, [o['id']])
+        if len(enabled_outputs) == 0:
+            return False
 
-            # Everything worked (hopefully), so redraw the bar
-            self.bar_needs_resize = [output['name']] + [o['name'] for o in enabled_outputs]
-            return True
+        wd = 0
+        for o in enabled_outputs:
+            randr.set_crtc_config(self.d, o['crtc_id'],
+                0, wd, 0, o['mode_ids'][0], randr.Rotate_0, [o['id']])
+            wd += [m['width'] for m in o['modes'] if m['id'] == o['mode_ids'][0]][0]
+
+        if output:
+            randr.set_crtc_config(self.d, free_crtc[0],
+                    0, wd, 0, output['mode_ids'][0], randr.Rotate_0, [output['id']])
+
+        with self.lock:
+            self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
+        enabled_outputs = [o for o in self.outputs if o['crtc']]
+        # Everything worked (hopefully), so redraw the bar
+        self.bar_needs_resize = [o['name'] for o in enabled_outputs]
+        return True
+
+    def enable_output(self, output):
+        if self.mirror_state == 0:
+            return self.configure_extend(output)
+        elif self.mirror_state == 1:
+            return self.configure_mirror(output)
+
+        return False
+
+    def disable_output(self, output):
+        enabled_outputs = [o for o in self.outputs if o['crtc']]
+        if len(enabled_outputs) <= 1:
+            # Yeah, I know most users are stupid, but at least don't let them disable all outputs
+            return False
+
+        from Xlib.ext import randr
+        # disable the output
+        randr.set_crtc_config(self.d, output['crtc_id'], 0, 0, 0, 0, randr.Rotate_0, [])
+        with self.lock:
+            self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
+
+        if self.mirror_state == 0:
+            res = self.configure_extend(None)
+            if res:
+                self.bar_needs_resize += [output['name']]
+            return res
+        elif self.mirror_state == 1:
+            res = self.configure_mirror(None)
+            if res:
+                self.bar_needs_resize += [output['name']]
+            return res
+
+        return False
 
     def render(self, data, segment_info, mirror_format='{mirror_icon}',
             mirror_icons={'mirror': 'M', 'extend': 'E'}, output_format='{output} {status_icon}',
