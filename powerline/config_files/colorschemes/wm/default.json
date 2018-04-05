@@ -98,7 +98,7 @@
                 "left":         "#bar;pass_oneshot:output:{output_name}:toggle"
             }
         },
-        "output:mirror": {
+        "output:mirror_state": {
             "bg":               "level:2_bg",
             "fg":               "level:2_fg",
             "click": {

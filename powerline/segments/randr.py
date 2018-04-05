@@ -617,7 +617,7 @@ output = with_docstring(OutputSegment(),
         Also restarts bars appropriately.
 
 
-    Highlight groups used: ``output:mirror``, ``output:extend``, ``output:mirror_stata``,
+    Highlight groups used: ``output:mirror``, ``output:extend``, ``output:mirror_state``,
     ``output``, for the mirror mode part, and
     ``output:off``, ``output:on``, ``output:status``, ``output``, for the outputs.
 
