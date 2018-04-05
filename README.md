@@ -61,26 +61,30 @@ Note that the `lemonbar` allows for only a fixed number of clickable areas, whic
 Installation
 ------------
 
-The following Arch Linux packages should be installed:
+This fork is available from the AUR (`powerline-i3-git`).
+Alternatively, you may use `pip` for the installation:
 
+	pip install git+https://github.com/PH111P/powerline.git@develop
+
+Note that using this fork (or the powerline in general) requires some additional packages to be installed,
+namely:
+
+* [powerline-fonts](https://www.archlinux.org/packages/community/x86_64/powerline-fonts/)
+* [ttf-font-awesome-4](https://aur.archlinux.org/packages/ttf-font-awesome-4/) (Version 5 relocated some symbols)
 * i3 or i3-gaps
-* powerline-fonts-git
-* lemonbar-xft-git
-* ttf-font-awesome
-* wpa_actiond (wifi segment)
-* wireless_tools (wifi segment)
+* [lemonbar-xft-git](https://aur.archlinux.org/packages/lemonbar-xft-git/) ([Lemonbar](https://github.com/krypt-n/bar) supporting fontconfig fonts)
+* [python-xlib](https://github.com/python-xlib/python-xlib)
+* [i3ipc-python-git](https://github.com/acrisci/i3ipc-python) (workspace segment, available from AUR)
+
+Optionally, the following packages should be installed if you want to use the corresponding segments.
+
 * python-iwlib (wifi segment)
-* i3ipc-python-git (workspace segment)
-* python-pyalsaaudio (volume segment)
-
-If you have successfully installed all the previous packages, installing this fork becomes as easy
-as
-
-      pip install git+https://github.com/PH111P/powerline.git@develop
-
-or
-
-      yaourt -S powerline-i3-git
+* python-pyalsaaudio (volume segment, available from AUR)
+* xorg-xinput (screen rotation segment, used to map input devices to outputs)
+* xorg-xrandr (screen rotation segment, used to rotate the screen)
+* python-google-api-python-client (Google Calendar segment; this segment also requires a valid dev key to work)
+* python-psutil (cpu load segment)
+* python-pygit2 (better performance of the vcs segment)
 
 
 To actually _use_ the powerline in your i3 setup, replace the following lines in your `.config/i3/config`
@@ -91,9 +95,40 @@ To actually _use_ the powerline in your i3 setup, replace the following lines in
 
 with this line (you may want to adjust the height and the font size):
 
-      exec "powerline-lemonbar --i3 --height 16 -- -a 40 -b -f 'DejaVu Sans Mono for Powerline-11' -f 'FontAwesome-11'"
+      exec "powerline-lemonbar --i3 --height 16 -- -a 40 -b -f 'DejaVu Sans Mono-11' -f 'PowerlineSymbols-12' -f 'FontAwesome-11'"
 
 Note that ``Font Awesome`` is used to display some icons, thus changing it to some other font will likely break these icons.
+
+**Attention: `-f 'PowerlineSymbols-12'` is required if you have the non-git version of the powerline-fonts package installed. If you have the git version of that package installed (from the AUR), use `-f 'DejaVu Sans Mono for Powerline-11'` instead.**
+
+Configuration
+-------------
+
+Basic powerline configuration is done via `JSON` files located at `.config/powerline/`. It is a good idea to start by copying the default configuration located at `powerline_root/powerline/config_files/` to `.config/powerline/`. 
+If you installed the powerline from the AUR or via pip, `powerline_root` should be `/usr/lib/python3.6/site-packages/` or something similar, depending on your python version. 
+
+This should yield you the following directory structure:
+
+```
+.config/powerline/
+├── colorschemes
+│   ├── ...
+│   └── wm
+|       └── default.json  // Your configuration goes here
+├── colors.json
+├── config.json
+└── themes
+    ├── ...
+    └── wm
+        └── default.json  // Your configuration goes here
+
+```
+
+The files in the subdirectories of `themes` are used to specify which segments shall be shown; the files in subdirectories of `colorschemes` are used to specify which colors (as defined in `colors.json`) shall be used to display a segment.
+
+Note that your local configuration only overrides the global configuration, it does not replace it, i.e. if you don't configure something locally, the global default will be used instead.
+
+Consult the [documentation](https://powerline-i3.readthedocs.io/en/latest/configuration.html#quick-setup-guide) for more details. See also the [segment reference](https://powerline-i3.readthedocs.io/en/latest/configuration/segments.html) for available segments and their configuration.
 
 Some screens
 ------------
