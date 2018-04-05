@@ -355,9 +355,11 @@ class OutputSegment(ThreadedSegment):
 
     bar_needs_resize = None
 
+    auto_update = False
+
     lock = Lock()
 
-    def set_state(self, **kwargs):
+    def set_state(self, auto_update=False, **kwargs):
         from Xlib import X, display
         from Xlib.ext import randr
         self.d = display.Display()
@@ -366,11 +368,33 @@ class OutputSegment(ThreadedSegment):
 
         self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
 
+        self.auto_update = auto_update
+
         super(OutputSegment, self).set_state(**kwargs)
 
     def update(self, *args, **kwargs):
-        with self.lock:
-            self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
+        od_out = self.outputs
+        nw_out = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
+
+        old = [o['name'] for o in self.outputs]
+        new = [o['name'] for o in nw_out]
+
+        mg = [o for o in old if o in new]
+        mg = [o for o in new if o in mg]
+
+        change = not (len(mg) == len(old) and len(mg) == len(new))
+
+        if change:
+            if self.auto_update:
+                for o in old:
+                    if not o in mg:
+                        self.disable_output([out for out in od_out if out['name'] == o][0])
+                for o in new:
+                    if not o in mg:
+                        self.enable_output([out for out in nw_out if out['name'] == o][0])
+            else:
+                with self.lock:
+                    self.outputs = nw_out
         return None
 
     def update_mirror_state(self):

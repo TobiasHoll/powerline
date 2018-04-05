@@ -136,6 +136,19 @@
                 "priority":             70
             },
             {
+                "function":             "powerline.segments.randr.output",
+                "args": {
+                    "status_icons": {
+                        "on":           "",
+                        "off":          ""
+                    },
+                    "mirror_icons": {
+                        "extend":       "",
+                        "mirror":       ""
+                    }
+                }
+            },
+            {
                 "function":             "powerline.segments.randr.srot",
                 "args": {
                     "name":             "mode",
