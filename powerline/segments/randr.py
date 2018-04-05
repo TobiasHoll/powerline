@@ -299,7 +299,7 @@ srot = with_docstring(ScreenRotationSegment(),
         (e.g. from ``normal`` to ``left``).
         It will be executed after the rotation takes place, but before the inputs are
         mapped to the output and before the bar resizes itself.
-    :param (string, string_list)_list additional_controls:
+    :param (string,string_list)_list additional_controls:
         A list of (contents, highlight_groups) pairs. For each entry, an additional
         segment with the given contents and highlight groups is omitted. These segments
         obtain the same click values and may also be used to control the segment behavior.
@@ -564,12 +564,14 @@ class OutputSegment(ThreadedSegment):
         result += [{
             'contents': mirror_format.format(mirror_state=self.MIRROR_STATES[self.mirror_state],
                 mirror_icon=mirror_icons[self.MIRROR_STATES[self.mirror_state]]),
-            'highlight_groups': ['output:' + self.MIRROR_STATES[self.mirror_state], 'output:mirror',
-                'output'],
+            'highlight_groups': ['output:' + self.MIRROR_STATES[self.mirror_state],
+                'output:mirror_state', 'output'],
             'draw_inner_divider': True,
             'payload_name': channel_name,
             'click_values': {'mirror_state': self.MIRROR_STATES[self.mirror_state]}
         }]
+
+        # TODO Sort outputs by x coordinate
 
         result += [{
             'contents': output_format.format(output=o['name'],
@@ -589,4 +591,50 @@ class OutputSegment(ThreadedSegment):
     # In extend mode: sort outputs according to their relative position
 
 output = with_docstring(OutputSegment(),
-'''Manage connected outputs.''')
+'''Manage connected outputs, optionally detect newly (dis-)connected outputs automatically.
+
+    Requires ``python-xlib``.
+
+    :param string mirror_format:
+        Format used to display the mirror mode (extend/mirror) part of the segment.
+        Valid fields are ``mirror_state`` and ``mirror_icon``.
+    :param dict mirror_icons:
+        Icons used in the ``mirror_icon`` field of ``mirror_format``.
+        Needs the entries ``extend`` and ``mirror``.
+    :param string output_format:
+        Format used to display outputs and information about their status.
+        Valid fields are ``output`` and ``status_icon``.
+    :param dict status_icons:
+        Icons used in the ``status_icon`` field of ``output_format``.
+        Needs the entries ``off`` and ``on``.
+    :param bool hide_if_single_output:
+        Hide the segment if only a single output is connected. (Enabling this will still show
+        the segment if there is more than one output connected, of whom only one is not turned
+        ``off``.)
+    :param bool auto_update:
+        If set to true, this segment will automatically enable newly connected outputs
+        or disable newly disconnected outputs according to the current mode.
+        Also restarts bars appropriately.
+
+
+    Highlight groups used: ``output:mirror``, ``output:extend``, ``output:mirror_stata``,
+    ``output``, for the mirror mode part, and
+    ``output:off``, ``output:on``, ``output:status``, ``output``, for the outputs.
+
+    Click values supplied: ``mirror_state`` (string) for the mirror mode part and
+    ``output_name`` (string), ``output_status`` (string) in the remaining part.
+
+    Interaction: This segment supports interaction via bar commands in the following way.
+    (Note that parameters given to the bar may be combined with click values.)
+
+    +---------------------------------------------------+------------------------------------+
+    | Bar command                                       | Description                        |
+    +===================================================+====================================+
+    | #bar;pass_oneshot:mode:<mode/toggle>              | Set the mirror mode to <mode> or   |
+    |                                                   | <toggle> it.                       |
+    +---------------------------------------------------+------------------------------------+
+    | #bar;pass_oneshot:output:<output>:<on/off/toggle> | Turn output <output> <on/off> or   |
+    |                                                   | <toggle> its status. Restarts bars.|
+    +---------------------------------------------------+------------------------------------+
+
+''')
