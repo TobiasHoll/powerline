@@ -132,8 +132,37 @@
         ],
         "left": [
             {
-                "function":             "powerline.segments.common.net.hostname",
-                "priority":             70
+                "function":             "powerline.segments.common.generic.generic_growable",
+                "name":                 "power",
+                "args": {
+                    "channel_name":     "power",
+                    "segments_short": [
+                        [ "", ["power"] ]
+                    ],
+                    "segments_long": [
+                        [ "", ["power"] ],
+                        [ "", ["power:logout", "power"] ],
+                        [ "", ["power:poweroff", "power"] ],
+                        [ "", ["power:reboot", "power"] ]
+                    ]
+                }
+            },
+            {
+                "function":             "powerline.segments.common.generic.generic_growable",
+                "name":                 "launcher",
+                "args": {
+                    "channel_name":     "launcher",
+                    "segments_short": [
+                        [ "", ["launcher"] ]
+                    ],
+                    "segments_long": [
+                        [ "", ["launcher"] ],
+                        [ "", ["launcher:terminal", "launcher"] ],
+                        [ "", ["launcher:files", "launcher"] ],
+                        [ "", ["launcher:browser", "launcher"] ],
+                        [ "", ["launcher:evince", "launcher"] ]
+                    ]
+                }
             },
             {
                 "function":             "powerline.segments.randr.output",
