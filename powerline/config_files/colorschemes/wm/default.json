@@ -168,6 +168,70 @@
             "click": {
                 "left":         "#bar;ch_toggle"
             }
+        },
+        "launcher": {
+            "bg":               "level:1_bg",
+            "fg":               "level:1_fg",
+            "click": {
+                "left":         "#bar;ch_toggle",
+                "middle":       "#bar;ch_toggle"
+            }
+        },
+        "launcher:terminal": {
+            "bg":               "level:1_bg",
+            "fg":               "level:1_fg",
+            "click": {
+                "left":         "i3-sensible-terminal",
+                "middle":       "#bar;ch_toggle"
+            }
+        },
+        "launcher:files": {
+            "bg":               "level:1_bg",
+            "fg":               "level:1_fg",
+            "click": {
+                "left":         "xdg-open './'",
+                "middle":       "#bar;ch_toggle"
+            }
+        },
+        "launcher:browser": {
+            "bg":               "level:1_bg",
+            "fg":               "level:1_fg",
+            "click": {
+                "left":         "xdg-open 'https://'",
+                "middle":       "#bar;ch_toggle"
+            }
+        },
+        "power": {
+            "bg":               "level:1_bg",
+            "fg":               "level:1_fg",
+            "click": {
+                "left":         "#bar;ch_toggle",
+                "middle":       "#bar;ch_toggle"
+            }
+        },
+        "power:logout": {
+            "bg":               "level:1_bg",
+            "fg":               "darkorange",
+            "click": {
+                "left":         "logout",
+                "middle":       "#bar;ch_toggle"
+            }
+        },
+        "power:poweroff": {
+            "bg":               "level:1_bg",
+            "fg":               "mediumred",
+            "click": {
+                "left":         "poweroff",
+                "middle":       "#bar;ch_toggle"
+            }
+        },
+        "power:reboot": {
+            "bg":               "level:1_bg",
+            "fg":               "mediumpurple",
+            "click": {
+                "left":         "reboot",
+                "middle":       "#bar;ch_toggle"
+            }
         }
     }
 }
