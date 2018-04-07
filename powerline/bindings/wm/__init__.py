@@ -51,15 +51,15 @@ def get_randr_outputs(d = None, window = None):
 		npos += data['name_length']
 		modes[data['id']] = data
 
-	outputs = [(o, d.xrandr_get_output_info(o, ress.config_timestamp)) for o in outputs]
+	outputs = [(o, d.xrandr_get_output_info(o, 0)) for o in outputs]
 	outputs = [{
 	    'name': o[1].name,
 	    'crtc_id': o[1].crtc,
-	    'crtc': d.xrandr_get_crtc_info(o[1].crtc, ress.config_timestamp)if o[1].crtc else None,
+	    'crtc': d.xrandr_get_crtc_info(o[1].crtc, 0)if o[1].crtc else None,
 	    'primary': 'primary' if o[0] == primary else None,
 	    'connection': o[1].connection,
 	    'status': ['on', 'off'][o[1].crtc == 0],
-	    'modes': [modes[i] for i in o[1].modes],
+	    'modes': [modes[i] for i in o[1].modes if i in modes],
 	    'mode_ids': o[1].modes,
 	    'crtcs': o[1].crtcs,
 	    'id': o[0]

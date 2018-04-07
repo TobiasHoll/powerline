@@ -571,8 +571,6 @@ class OutputSegment(ThreadedSegment):
             'click_values': {'mirror_state': self.MIRROR_STATES[self.mirror_state]}
         }]
 
-        # TODO Sort outputs by x coordinate
-
         result += [{
             'contents': output_format.format(output=o['name'],
                 status_icon=status_icons[o['status']]),
@@ -580,7 +578,7 @@ class OutputSegment(ThreadedSegment):
             'draw_inner_divider': True,
             'payload_name': channel_name,
             'click_values': {'output_name': o['name'], 'output_status': o['status']}
-        } for o in self.outputs]
+        } for o in sorted(self.outputs, key=lambda o: -1.0/o['x'] if o['x'] else 0, reverse=True)]
 
         return result
 
