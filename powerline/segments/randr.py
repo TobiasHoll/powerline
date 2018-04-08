@@ -8,8 +8,13 @@ from subprocess import check_call, check_output, run
 from glob import glob
 from threading import Lock
 
+from Xlib import X, display
+from Xlib.ext import randr
+
 lock = Lock()
 
+xlib_rots = {'normal': randr.Rotate_0, 'inverted': randr.Rotate_180,
+        'left': randr.Rotate_90, 'right': randr.Rotate_270}
 MODES = ['locked', 'auto']
 @requires_segment_info
 class ScreenRotationSegment(ThreadedSegment):
@@ -56,11 +61,18 @@ class ScreenRotationSegment(ThreadedSegment):
     rotation_hook = None
     hide_controls = { }
 
+    d = None
+    window = None
+
     def set_state(self, output, states=['normal', 'inverted', 'left', 'right'],
             gravity_triggers=None, mapped_inputs=[], touchpads=[], touchpad_states=None,
             rotation_hook=None, hide_controls=True, **kwargs):
         self.output = output
         self.touch_output = output
+
+        self.d = display.Display()
+        s = self.d.screen()
+        self.window = s.root.create_window(0, 0, 1, 1, 1, s.root_depth)
 
         self.rotation_hook = rotation_hook
         self.hide_controls = { 'default': hide_controls, output: hide_controls }
@@ -102,7 +114,63 @@ class ScreenRotationSegment(ThreadedSegment):
         super(ScreenRotationSegment, self).set_state(**kwargs)
 
     def rotate(self, state):
-        check_call(['xrandr', '--output', self.output, '--rotate', self.STATES[state]])
+        outs = [o for o in get_randr_outputs(self.d, self.window) if o['crtc']]
+        op = [o for o in outs if o['name'] == self.output]
+        if not len(op):
+            # The output to be rotated doesn't exist :(
+            return False
+        op = op[0]
+
+        # Get all outputs that are mirrored to the output we shall rotate
+        # (We must also rotate these outputs)
+        current_mode = op['current_mode']
+
+        mirrored_outs = [o for o in outs if o['x'] == op['x'] and o['y'] == op['y'] and o['current_mode'] == op['current_mode']]
+
+        if (self.STATES[self.current_state] in ['left', 'right']) != (self.STATES[state] in ['left', 'right']):
+
+            # If the user has some non-mirrored setup, only normal and inverted
+            # layouts are implemented for now.
+            # Anything else requires work . . .
+
+            if len(outs) != len(mirrored_outs):
+                return False
+
+            # Disable all screens to be rotated
+            for o in mirrored_outs:
+                randr.set_crtc_config(self.d, o['crtc_id'], 0, 0, 0, 0, 1, [])
+
+            mx_x = 0
+            mx_y = 0
+            mx_mm_x = 0.0
+            mx_mm_y = 0.0
+
+            for o in outs:
+                if o['width']:
+                    mx_x = max(mx_x, o['x'] + o['width'])
+                if o['height']:
+                    mx_y = max(mx_y, o['y'] + o['height'])
+                if o in mirrored_outs and o['crtc'].rotation in [xlib_rots['left'],
+                        xlib_rots['right']]:
+                    if o['mm_width'] and o['width']:
+                        mx_mm_x = max(mx_mm_x, o['width'] * 1.0 / o['mm_width'])
+                    if o['mm_height'] and o['height']:
+                        mx_mm_y = max(mx_mm_y, o['height'] * 1.0 / o['mm_height'])
+                else:
+                    if o['mm_width'] and o['height']:
+                        mx_mm_y = max(mx_mm_y, o['height'] * 1.0 / o['mm_width'])
+                    if o['mm_height'] and o['width']:
+                        mx_mm_x = max(mx_mm_x, o['width'] * 1.0 / o['mm_height'])
+
+            # Don't ask where these magic numbers come from
+            if mx_x and mx_y and mx_mm_x and mx_mm_y:
+                self.window.xrandr_set_screen_size(mx_y, mx_x, int(mx_x / mx_mm_x * 1.75),
+                        int(mx_y / mx_mm_y * 1.75))
+
+        # Actually rotate these outputs, don't change anything besides the rotation
+        for o in mirrored_outs:
+            randr.set_crtc_config(self.d, o['crtc_id'], 0, o['x'], o['y'],
+                    current_mode, xlib_rots[self.STATES[state]], [o['id']])
 
         if (self.STATES[self.current_state] in ['left', 'right']) != (self.STATES[state] in ['left', 'right']):
             self.bar_needs_resize = self.output
@@ -116,6 +184,8 @@ class ScreenRotationSegment(ThreadedSegment):
                 for i in needs_map]
         for i in ids:
             check_call(['xinput', '--map-to-output', i, self.touch_output])
+
+        return True
 
     def update_touchpad(self, state):
         needs_map = [i.decode('utf-8') for i in self.devices if len([j for j in self.touchpads
@@ -144,9 +214,9 @@ class ScreenRotationSegment(ThreadedSegment):
                 with lock:
                     if i == self.current_state:
                         continue
-                    self.rotate(i)
-                    self.current_state = i
-                    self.update_touchpad(self.current_state)
+                    if self.rotate(i):
+                        self.current_state = i
+                        self.update_touchpad(self.current_state)
 
         return self.current_state
 
@@ -249,8 +319,11 @@ class ScreenRotationSegment(ThreadedSegment):
 
 srot = with_docstring(ScreenRotationSegment(),
 ''' Manage screen rotation and optionally display some information. Optionally disables
-    Touchpads in rotated states.
-    Requires ``xinput`` and ``xrandr`` and an accelerometer.
+    Touchpads in rotated states. (Note that rotating to the ``left`` and ``right``
+    states does not currently work if there is another output connected whose
+    displayed content is not mirrored to the screen to be rotated.)
+
+    Requires ``xinput`` and ``python-xlib`` and an accelerometer.
 
     :param string output:
         The initial output to be rotated and to which touchscreen and stylus inputs are mapped.
@@ -359,9 +432,9 @@ class OutputSegment(ThreadedSegment):
 
     lock = Lock()
 
-    def set_state(self, auto_update=False, **kwargs):
-        from Xlib import X, display
-        from Xlib.ext import randr
+    redraw_hook = None
+
+    def set_state(self, auto_update=False, redraw_hook=None, **kwargs):
         self.d = display.Display()
         s = self.d.screen()
         self.window = s.root.create_window(0, 0, 1, 1, 1, s.root_depth)
@@ -369,6 +442,8 @@ class OutputSegment(ThreadedSegment):
         self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
 
         self.auto_update = auto_update
+
+        self.redraw_hook = redraw_hook
 
         super(OutputSegment, self).set_state(**kwargs)
 
@@ -403,8 +478,47 @@ class OutputSegment(ThreadedSegment):
         elif self.mirror_state == 1:
             self.configure_mirror()
 
+    def resize_randr_screen(self):
+        outs = [o for o in self.outputs if o['crtc']]
+
+        for o in outs:
+            randr.set_crtc_config(self.d, o['crtc_id'], 0, 0, 0, 0, 1, [])
+
+        mx_x = 0
+        mx_y = 0
+        mx_mm_x = 0.0
+        mx_mm_y = 0.0
+
+        for o in outs:
+            if o['width']:
+                mx_x = max(mx_x, o['x'] + o['width'])
+            if o['height']:
+                mx_y = max(mx_y, o['y'] + o['height'])
+            if not o['crtc'].rotation in [xlib_rots['left'], xlib_rots['right']]:
+                if o['mm_width'] and o['width']:
+                    mx_mm_x = max(mx_mm_x, o['width'] * 1.0 / o['mm_width'])
+                if o['mm_height'] and o['height']:
+                    mx_mm_y = max(mx_mm_y, o['height'] * 1.0 / o['mm_height'])
+            else:
+                if o['mm_width'] and o['height']:
+                    mx_mm_y = max(mx_mm_y, o['height'] * 1.0 / o['mm_width'])
+                if o['mm_height'] and o['width']:
+                    mx_mm_x = max(mx_mm_x, o['width'] * 1.0 / o['mm_height'])
+
+        # Don't ask where these magic numbers come from
+        if mx_x and mx_y and mx_mm_x and mx_mm_y:
+            self.window.xrandr_set_screen_size(mx_x, mx_y, int(mx_x / mx_mm_x * 1.75),
+                    int(mx_y / mx_mm_y * 1.75))
+
+        for o in outs:
+            randr.set_crtc_config(self.d, o['crtc_id'], 0, o['x'], o['y'],
+                    o['current_mode'], o['crtc'].rotation, [o['id']])
+
+
+
     def configure_mirror(self, output=None):
-        from Xlib.ext import randr
+        with self.lock:
+            self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
 
         used_crtc = [o['crtc_id'] for o in self.outputs if o['crtc_id']]
         if output:
@@ -437,18 +551,21 @@ class OutputSegment(ThreadedSegment):
 
         for o in enabled_outputs:
             randr.set_crtc_config(self.d, o['crtc_id'],
-                0, 0, 0, mode[0], randr.Rotate_0, [o['id']])
+                0, 0, 0, mode[0], o['crtc'].rotation, [o['id']])
 
         with self.lock:
             self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
         enabled_outputs = [o for o in self.outputs if o['crtc']]
         # Everything worked (hopefully), so redraw the bar
         self.bar_needs_resize = [o['name'] for o in enabled_outputs]
+        self.resize_randr_screen()
+        if self.redraw_hook:
+            run(self.redraw_hook, shell=True)
         return True
 
     def configure_extend(self, output=None):
-        from Xlib.ext import randr
-
+        with self.lock:
+            self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
         used_crtc = [o['crtc_id'] for o in self.outputs if o['crtc_id']]
         if output:
             free_crtc = [c for c in output['crtcs'] if c not in used_crtc]
@@ -465,7 +582,7 @@ class OutputSegment(ThreadedSegment):
         wd = 0
         for o in enabled_outputs:
             randr.set_crtc_config(self.d, o['crtc_id'],
-                0, wd, 0, o['mode_ids'][0], randr.Rotate_0, [o['id']])
+                0, wd, 0, o['mode_ids'][0], o['crtc'].rotation, [o['id']])
             wd += [m['width'] for m in o['modes'] if m['id'] == o['mode_ids'][0]][0]
 
         if output:
@@ -477,6 +594,9 @@ class OutputSegment(ThreadedSegment):
         enabled_outputs = [o for o in self.outputs if o['crtc']]
         # Everything worked (hopefully), so redraw the bar
         self.bar_needs_resize = [o['name'] for o in enabled_outputs]
+        self.resize_randr_screen()
+        if self.redraw_hook:
+            run(self.redraw_hook, shell=True)
         return True
 
     def enable_output(self, output):
@@ -489,24 +609,26 @@ class OutputSegment(ThreadedSegment):
 
     def disable_output(self, output):
         enabled_outputs = [o for o in self.outputs if o['crtc']]
-        if len(enabled_outputs) <= 1:
+        if len(enabled_outputs) <= 1 and output in enabled_outputs:
             # Yeah, I know most users are stupid, but at least don't let them disable all outputs
             return False
 
-        from Xlib.ext import randr
         # disable the output
-        randr.set_crtc_config(self.d, output['crtc_id'], 0, 0, 0, 0, randr.Rotate_0, [])
-        with self.lock:
-            self.outputs = [o for o in get_randr_outputs(self.d, self.window) if o['connection']]
+        if output['crtc']:
+            randr.set_crtc_config(self.d, output['crtc_id'], 0, 0, 0, 0, randr.Rotate_0, [])
 
         if self.mirror_state == 0:
             res = self.configure_extend(None)
             if res:
+                if not self.bar_needs_resize:
+                    self.bar_needs_resize = []
                 self.bar_needs_resize += [output['name']]
             return res
         elif self.mirror_state == 1:
             res = self.configure_mirror(None)
             if res:
+                if not self.bar_needs_resize:
+                    self.bar_needs_resize = []
                 self.bar_needs_resize += [output['name']]
             return res
 
@@ -571,8 +693,6 @@ class OutputSegment(ThreadedSegment):
             'click_values': {'mirror_state': self.MIRROR_STATES[self.mirror_state]}
         }]
 
-        # TODO Sort outputs by x coordinate
-
         result += [{
             'contents': output_format.format(output=o['name'],
                 status_icon=status_icons[o['status']]),
@@ -580,7 +700,7 @@ class OutputSegment(ThreadedSegment):
             'draw_inner_divider': True,
             'payload_name': channel_name,
             'click_values': {'output_name': o['name'], 'output_status': o['status']}
-        } for o in self.outputs]
+        } for o in sorted(self.outputs, key=lambda o: -1.0/o['x'] if o['x'] else 0, reverse=True)]
 
         return result
 
