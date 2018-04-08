@@ -1,6 +1,7 @@
 {
 	"groups": {
         "background":           "level:3",
+        "background:divider":   "level:3",
 		"active_window_status": "level:3",
 		"window_status":        "level:3",
 		"activity_status":      "level:3",
