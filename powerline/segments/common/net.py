@@ -50,7 +50,7 @@ def wireless(pl, segment_info, device=None, format='{quality:3.0%} at {essid}',
 		only using ``format`` when any message is present on the ``net.wireless``
 		message channel.
 
-	Highlight groups used: ``wireless:quality`` (gradient), ``quality_gradient`` (gradient, deprecated),
+	Highlight groups used: ``wireless:quality`` (gradient),
 	    ``wireless:down`` (when no connection is present)
 
 	Click values supplied: ``quality`` (int), ``essid`` (string)
@@ -98,14 +98,14 @@ def wireless(pl, segment_info, device=None, format='{quality:3.0%} at {essid}',
 			return [{
 			    'contents': format.format(quality=quality/85,
 				essid=essid.decode(), frequency=frequency),
-			    'highlight_groups': ['wireless:gradient', 'quality_gradient'],
+			    'highlight_groups': ['wireless:quality', 'quality_gradient'],
 			    'gradient_level': 100 * (85 - quality) / 85,
 			    'click_values': {'essid': essid, 'quality': quality * 100 / 85},
 			    'payload_name': payload_name
 			    }]
 	return [{
 	    'contents': short_format.format(quality=quality/85, essid=essid.decode(), frequency=frequency),
-	    'highlight_groups': ['wireless:gradient', 'quality_gradient'],
+	    'highlight_groups': ['wireless:quality', 'quality_gradient'],
 	    'gradient_level': 100 * (85 - quality) / 85,
 	    'click_values': {'essid': essid, 'quality': quality * 100 / 85},
 	    'payload_name': payload_name,

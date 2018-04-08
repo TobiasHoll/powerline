@@ -11,6 +11,7 @@
         "background:divider":        "level:3",
 
         "attached_clients":          "level:3",
+        "appoint:count":             "level:2",
         "battery":                   "level:3",
         "battery:0":                 "level:3",
         "battery:100":               { "fg": "red",                 "bg": "level:3_bg" },
@@ -34,6 +35,7 @@
         "external_ip":               "level:3",
         "fuzzy_time":                "level:1",
         "generic_shell":             "level:3",
+        "generic_growable":          "level:3",
         "hostname":                  "level:1",
         "information:additional":    "level:3",
         "information:highlighted":   "level:3_bold",
@@ -44,7 +46,6 @@
         "network_load_gradient":     { "fg": "green_yellow_orange_red", "bg": "level:3_bg" },
         "output":                    "level:2",
         "player":                    { "fg": "level:3_fg",          "bg": "level:3_bg" },
-        "quality_gradient":          { "fg": "white_red",           "bg": "level:3_bg" },
         "session":                   "level:2_bold",
         "srot":                      "level:2",
         "superuser":                 { "fg": "level:1_fg",          "bg": "brightred",          "attrs": ["bold"] },
@@ -67,7 +68,7 @@
         "weather:condition_rainy":   { "fg": "skyblue1",            "bg": "level:3_bg" },
         "weather:condition_snowy":   { "fg": "skyblue1",            "bg": "level:3_bg" },
         "weather_temp_gradient":     { "fg": "blue_red",            "bg": "level:3_bg" },
-        "wireless:gradient":         { "fg": "white_red",           "bg": "level:3_bg" },
+        "wireless:quality":          { "fg": "white_red",           "bg": "level:3_bg" },
         "wireless:none":             "level:3"
     }
 }
