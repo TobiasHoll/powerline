@@ -1,11 +1,28 @@
 {
 	"colors": {
-        "level:1_fg": "0x585858",
-        "level:1_bg": "0xe4e4e4",
-        "level:2_fg": "0xe4e4e4",
-        "level:2_bg": "0x0087af",
-        "level:3_fg": "0xe4e4e4",
-        "level:3_bg": "0x005f87",
+        "level:1_fg":        23,
+        "level:1_bg": "0xffffff",
+        "level:2_fg": "0xffffff",
+        "level:2_bg":        36,
+        "level:3_fg": "0xffffff",
+        "level:3_bg":        29,
+        "level:4_fg": "0xffffff",
+        "level:4_bg":        23,
+
+        "level:1_fg_alt":   231,
+        "level:1_bg_alt":   106,
+        "level:2_fg_alt":   231,
+        "level:2_bg_alt":    36,
+        "level:3_fg_alt":   231,
+        "level:3_bg_alt":    29,
+        "level:4_fg_alt":   231,
+        "level:4_bg_alt":    23,
+
+        "level:1_fg_vis":   222,
+        "level:1_bg_vis":   208,
+
+        "level:1_fg_rep":   231,
+        "level:1_bg_rep":    52,
 
 		"black":             16,
 		"white":            231,

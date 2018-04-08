@@ -16,11 +16,6 @@
                 "priority":         10
             },
             {
-                "function":         "powerline.segments.vim.plugin.capslock.capslock_indicator",
-                "include_modes":    ["i", "R", "Rv"],
-                "priority":         10
-            },
-            {
                 "function":         "vcsinfo",
                 "exclude_modes":    ["nc"],
                 "args": {
@@ -34,10 +29,6 @@
                 "after":            " "
             },
             {
-                "function":         "file_scheme",
-                "priority":         20
-            },
-            {
                 "function":         "file_directory",
                 "priority":         40,
                 "draw_soft_divider": false
@@ -47,19 +38,14 @@
                 "draw_soft_divider": false
             },
             {
-                "function":         "file_vcs_status",
-                "before":           " ",
-                "draw_soft_divider": false
+                "function":         "file_vcs_status"
             },
             {
                 "function":         "modified_indicator",
-                "before":           " "
-            },
-            {
-                "exclude_modes":    ["i", "R", "Rv"],
-                "function":         "trailing_whitespace",
-                "display":          false,
-                "priority":         60
+                "draw_soft_divider": false,
+                "args": {
+                    "text":         "[+]"
+                }
             },
             {
                 "exclude_modes":    ["nc"],
@@ -82,10 +68,10 @@
         ],
         "right": [
             {
-                "function":         "file_format",
-                "draw_soft_divider": false,
+                "function":         "file_type",
                 "exclude_modes":    ["nc"],
-                "priority":         60
+                "priority":         60,
+                "draw_soft_divider": false
             },
             {
                 "function":         "file_encoding",
@@ -93,9 +79,12 @@
                 "priority":         60
             },
             {
-                "function":         "file_type",
+                "function":         "file_format",
+                "draw_soft_divider": false,
                 "exclude_modes":    ["nc"],
-                "priority":         60
+                "priority":         60,
+                "before":           "[",
+                "after":            "]"
             },
             {
                 "function":         "line_percent",
@@ -114,6 +103,13 @@
             },
             {
                 "function":         "line_current",
+                "draw_soft_divider": false,
+                "width":            3,
+                "align":            "r"
+            },
+            {
+                "before":           "/",
+                "function":         "line_count",
                 "draw_soft_divider": false,
                 "width":            3,
                 "align":            "r"

@@ -1,8 +1,5 @@
 {
 	"segments": {
-        "left": [
-
-        ],
 		"right": [
 			{
 				"function": "powerline.segments.common.sys.uptime",

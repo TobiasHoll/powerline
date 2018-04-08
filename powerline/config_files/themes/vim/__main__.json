@@ -2,7 +2,7 @@
 	"segment_data": {
 		"line_percent": {
 			"args": {
-				"gradient": true
+				"gradient": false
 			},
 			"after":        "%"
 		}

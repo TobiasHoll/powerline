@@ -7,8 +7,10 @@
         "level:2_bold":              { "fg": "level:2_fg",          "bg": "level:2_bg",           "attrs": ["bold"] },
         "level:3":                   { "fg": "level:3_fg",          "bg": "level:3_bg" },
         "level:3_bold":              { "fg": "level:3_fg",          "bg": "level:3_bg",           "attrs": ["bold"] },
-        "background":                "level:3",
-        "background:divider":        "level:3",
+        "level:4":                   { "fg": "level:4_fg",          "bg": "level:4_bg" },
+        "level:4_bold":              { "fg": "level:4_fg",          "bg": "level:4_bg",           "attrs": ["bold"] },
+        "background":                "level:4",
+        "background:divider":        "level:4",
 
         "attached_clients":          "level:3",
         "appoint:count":             "level:2",
