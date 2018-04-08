@@ -9,7 +9,7 @@
         "many_tabs":                "level:3",
 		"attached_clients":         "level:3",
 		"col_current":              "level:1",
-		"current_tag":              "level:3",
+		"current_tag":              "level:4",
 		"file_type":                "level:4",
 		"error":                    { "fg": "brightestred",     "bg": "darkred",        "attrs": ["bold"] },
 		"file_name":                "level:3_bold",
