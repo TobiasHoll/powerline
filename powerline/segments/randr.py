@@ -103,8 +103,6 @@ class ScreenRotationSegment(ThreadedSegment):
         self.current_state = 0
         self.STATES = states
 
-        self.accel_x = open(path.join(basedir, 'in_accel_x_raw'))
-        self.accel_y = open(path.join(basedir, 'in_accel_y_raw'))
 
         self.checks = {
             'normal':   lambda x, y: y < self.triggers['normal'],
@@ -199,7 +197,6 @@ class ScreenRotationSegment(ThreadedSegment):
             check_call(['xinput', self.touchpad_state[self.STATES[state]], dev])
 
     def read_accel(self, f):
-        f.seek(0)
         val = f.read()
         if not self.sensor_is_unsigned:
             return float(val) * self.scale
@@ -213,8 +210,13 @@ class ScreenRotationSegment(ThreadedSegment):
         if self.mode == 0:
             return -1
 
+        self.accel_x = open(path.join(basedir, 'in_accel_x_raw'))
+        self.accel_y = open(path.join(basedir, 'in_accel_y_raw'))
         x = self.read_accel(self.accel_x)
         y = self.read_accel(self.accel_y)
+        self.accel_x.close()
+        self.accel_y.close()
+
         self.devices = check_output(['xinput', '--list', '--name-only']).splitlines()
 
         for i in range(len(self.STATES)):
