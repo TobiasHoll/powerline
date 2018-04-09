@@ -66,9 +66,13 @@ class ScreenRotationSegment(ThreadedSegment):
 
     def set_state(self, output, states=['normal', 'inverted', 'left', 'right'],
             gravity_triggers=None, mapped_inputs=[], touchpads=[], touchpad_states=None,
-            rotation_hook=None, hide_controls=True, **kwargs):
+            rotation_hook=None, hide_controls=True, sensor_is_unsigned=False,
+            sensor_max_value=None, **kwargs):
         self.output = output
         self.touch_output = output
+
+        self.sensor_is_unsigned = sensor_is_unsigned
+        self.sensor_max_value = sensor_max_value
 
         self.d = display.Display()
         s = self.d.screen()
@@ -196,7 +200,14 @@ class ScreenRotationSegment(ThreadedSegment):
 
     def read_accel(self, f):
         f.seek(0)
-        return float(f.read()) * self.scale
+        val = fp.read()
+        if not self.sensor_is_unsigned:
+            return float(val) * self.scale
+        else:
+            if(int(val) <= self.sensor_max_value // 2):
+                return float(val) * self.scale
+            return float(int(val) - self.sensor_max_value) * self.scale
+
 
     def update(self, *args, **kwargs):
         if self.mode == 0:
