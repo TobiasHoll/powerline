@@ -210,8 +210,8 @@ class ScreenRotationSegment(ThreadedSegment):
         if self.mode == 0:
             return -1
 
-        self.accel_x = open(path.join(basedir, 'in_accel_x_raw'))
-        self.accel_y = open(path.join(basedir, 'in_accel_y_raw'))
+        self.accel_x = open(path.join(self.basedir, 'in_accel_x_raw'))
+        self.accel_y = open(path.join(self.basedir, 'in_accel_y_raw'))
         x = self.read_accel(self.accel_x)
         y = self.read_accel(self.accel_y)
         self.accel_x.close()
