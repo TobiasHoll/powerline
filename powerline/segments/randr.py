@@ -200,7 +200,7 @@ class ScreenRotationSegment(ThreadedSegment):
 
     def read_accel(self, f):
         f.seek(0)
-        val = fp.read()
+        val = f.read()
         if not self.sensor_is_unsigned:
             return float(val) * self.scale
         else:

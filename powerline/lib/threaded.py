@@ -61,7 +61,6 @@ class ThreadedSegment(Segment, MultiRunnedThread):
 			update_value = self.get_update_value(not self.updated)
 
 		if self.crashed:
-			print('Crashed')
 			return self.crashed_value
 
 		return self.render(update_value, update_first=update_first, pl=pl, **kwargs)
