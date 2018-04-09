@@ -152,7 +152,6 @@
                 "left":         "#bar;ch_toggle"
             }
         },
-        "generic_shell":        "level:1",
         "mode":                 "level:2",
         "active_window_title":  "level:2",
         "hostname": {
