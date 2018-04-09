@@ -82,15 +82,17 @@ class ScreenRotationSegment(ThreadedSegment):
         self.hide_controls = { 'default': hide_controls, output: hide_controls }
 
         for basedir in glob('/sys/bus/iio/devices/iio:device*'):
-            if 'accel' in open(path.join(basedir, 'name')).read():
-                self.basedir = basedir
-                break
+            with open(path.join(basedir, 'name')) as f:
+                if 'accel' in f.read():
+                    self.basedir = basedir
+                    break
         else:
             # No accels found, throw an error
             pass
 
         self.devices = check_output(['xinput', '--list', '--name-only']).splitlines()
-        self.scale = float(open(path.join(self.basedir, 'in_accel_scale')).read())
+        with open(path.join(self.basedir, 'in_accel_scale')) as f:
+            self.scale = float(f.read())
 
         if gravity_triggers:
             self.triggers = gravity_triggers
