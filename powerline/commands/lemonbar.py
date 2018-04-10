@@ -18,7 +18,7 @@ def get_argparser(ArgumentParser=argparse.ArgumentParser):
 		help='Don\'t Subscribe for i3 events.'
 	)
 	parser.add_argument(
-		'--use_defaults', action='store_true',
+		'--use_defaults', '-d', action='store_true',
 		help='Do also supply the bar with the default extra arguments.'
 	)
 	parser.add_argument(
@@ -30,11 +30,11 @@ def get_argparser(ArgumentParser=argparse.ArgumentParser):
 		help='Don\'t redirect lemonbar output to /bin/sh'
 	)
 	parser.add_argument(
-		'--alt_output', action='store_true',
+		'--alt_output', '-o', action='store_true',
 		help='Use alternative output detection'
 	)
 	parser.add_argument(
-		'--height', default='16',
+		'--height', '-H', default='16',
 		metavar='PIXELS', help='Bar height. Defaults to 16.'
 	)
 	parser.add_argument(
