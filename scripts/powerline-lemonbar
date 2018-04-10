@@ -16,6 +16,7 @@ shell = None
 powerline = None
 lock = Lock()
 args = []
+global_args = []
 
 segment_info={'payloads': {}}
 
@@ -105,6 +106,21 @@ def bar_callback(output_name, line, segment_name):
         for cmd in line.split(';'):
             handle_bar_command(output_name, cmd, segment_name)
 
+def process_extra_args(arg):
+    arg = [a for a in arg if a != '--']
+    res = []
+
+    if not '-a' in arg:
+        res += ['-a', '40']
+    if not '-b' in arg:
+        res += ['-b']
+
+    res += ['-f', 'DejaVu Sans Mono-' + str(int(int(args.height) * .75 - 1))]
+    res += ['-f', 'PowerlineSymbols-' + str(int(int(args.height) * .75))]
+    res += ['-f', 'FontAwesome-' + str(int(int(args.height) * .75 - 1))]
+    return res + arg
+
+
 def restart_bar(output_name):
     if not powerline:
         return
@@ -117,9 +133,9 @@ def restart_bar(output_name):
         if screen['name'] != output_name:
             continue
         if not args.alt_output:
-            command = [args.bar_command, '-g', '{0}x{1}+{2}+{3}'.format(screen['width'], args.height, screen['x'], screen['y'])] + args.args[1:]
+            command = [args.bar_command, '-g', '{0}x{1}+{2}+{3}'.format(screen['width'], args.height, screen['x'], screen['y'])] + global_args
         else:
-            command = [args.bar_command, '-O', screen['name'], '-g', 'x{0}'.format(args.height)] + args.args[1:]
+            command = [args.bar_command, '-O', screen['name'], '-g', 'x{0}'.format(args.height)] + global_args
         process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         if not args.no_clicks:
             thr = Thread(target=execute, args=(process, shell, lambda x, y: bar_callback(screen['name'], x, y)))
@@ -142,6 +158,11 @@ if __name__ == '__main__':
     parser = get_argparser()
     args = parser.parse_args()
 
+    if len(args.args) <= 1 or args.use_defaults:
+        global_args = process_extra_args(args.args)
+    else:
+        global_args = args.args[1:]
+
     powerline = LemonbarPowerline()
     powerline.update_renderer()
     if not args.no_clicks:
@@ -160,7 +181,7 @@ if __name__ == '__main__':
 
     render(reschedule=True)
 
-    if args.i3:
+    if not args.no_i3:
         import i3ipc
         conn = i3ipc.Connection()
         while True:

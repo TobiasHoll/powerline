@@ -81,7 +81,6 @@ Optionally, the following packages should be installed if you want to use the co
 * python-iwlib (wifi segment)
 * python-pyalsaaudio (volume segment, available from AUR)
 * xorg-xinput (screen rotation segment, used to map input devices to outputs)
-* xorg-xrandr (screen rotation segment, used to rotate the screen)
 * python-google-api-python-client (Google Calendar segment; this segment also requires a valid dev key to work)
 * python-psutil (cpu load segment)
 * python-pygit2 (better performance of the vcs segment)
@@ -95,7 +94,7 @@ To actually _use_ the powerline in your i3 setup, replace the following lines in
 
 with this line (you may want to adjust the height and the font size):
 
-      exec "powerline-lemonbar --i3 --height 16 -- -a 40 -b -f 'DejaVu Sans Mono-11' -f 'PowerlineSymbols-12' -f 'FontAwesome-11'"
+      exec "powerline-lemonbar --height 16 -- -a 40 -b -f 'DejaVu Sans Mono-11' -f 'PowerlineSymbols-12' -f 'FontAwesome-11'"
 
 Note that ``Font Awesome`` is used to display some icons, thus changing it to some other font will likely break these icons.
 
@@ -104,8 +103,8 @@ Note that ``Font Awesome`` is used to display some icons, thus changing it to so
 Configuration
 -------------
 
-Basic powerline configuration is done via `JSON` files located at `.config/powerline/`. It is a good idea to start by copying the default configuration located at `powerline_root/powerline/config_files/` to `.config/powerline/`. 
-If you installed the powerline from the AUR or via pip, `powerline_root` should be `/usr/lib/python3.6/site-packages/` or something similar, depending on your python version. 
+Basic powerline configuration is done via `JSON` files located at `.config/powerline/`. It is a good idea to start by copying the default configuration located at `powerline_root/powerline/config_files/` to `.config/powerline/`.
+If you installed the powerline from the AUR or via pip, `powerline_root` should be `/usr/lib/python3.6/site-packages/` or something similar, depending on your python version.
 
 This should yield you the following directory structure:
 
