@@ -4,13 +4,13 @@ from __future__ import (unicode_literals, division, absolute_import, print_funct
 import subprocess
 from powerline.theme import requires_segment_info
 
-def generic_shell(pl, command):
+def generic_shell(pl, command, highlight_groups=["generic_shell"]):
 	'''Execute the given command in a shell and return its result
 
-	:param str command:
+	:param string command:
 		The command to execute.
-
-	Highlight groups used: ``generic_shell``.
+	:param string_list highlight_groups:
+		The highlight groups to use.
 
 	Click values supplied: ``contents`` (string)
 	'''
@@ -24,8 +24,8 @@ def generic_shell(pl, command):
 
 	return [{
 		'contents': contents,
-		'highlight_groups': ['generic_shell'],
-		'click_values': {'contents': contents}
+		'click_values': {'contents': contents},
+		'highlight_groups': highlight_groups
 	}]
 
 
