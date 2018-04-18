@@ -63,7 +63,7 @@ def get_icon(w, separator, icons, show_multiple_icons):
     for key in icons:
         if not icons[key] or len(icons[key]) < 1:
             continue
-        if any(key in win.window_class for win in wins):
+        if any(key in win.window_class for win in wins if win.window_class):
             result += separator + icons[key]
             cnt += 1
     if not show_multiple_icons and cnt > 1:
