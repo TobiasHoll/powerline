@@ -45,6 +45,7 @@
         "information:regular":       "level:3",
         "internal_ip":               "level:3",
         "network_load":              "level:3",
+        "network_load:divider":      "level:3",
         "network_load_gradient":     { "fg": "green_yellow_orange_red", "bg": "level:3_bg" },
         "output":                    "level:2",
         "player":                    { "fg": "level:3_fg",          "bg": "level:3_bg" },
