@@ -188,7 +188,7 @@ else:
 		else:
 			return 0
 
-	def internal_ip(pl, interface='auto', ipv=4):
+	def internal_ip(pl, format="{addr}", interface='auto', ipv=4):
 		family = netifaces.AF_INET6 if ipv == 6 else netifaces.AF_INET
 		if interface == 'auto':
 			try:
@@ -204,7 +204,18 @@ else:
 				return None
 		addrs = netifaces.ifaddresses(interface)
 		try:
-			return addrs[family][0]['addr']
+			addr = addrs[family][0]['addr']
+			netmask = addrs[family][0]['netmask'] if "netmask" in addrs[family][0] else None
+			if ipv == 6 and netmask is not None:
+				# netifaces reports IPv6 subnet mask with suffix (e.g. /64)
+				cidr = netmask.split("/")[1]
+			elif netmask is not None:
+				# Turn subnet mask into a bitmask, then count the ones
+				bitmask = "".join("{0:08b}".format(int(number)) for number in netmask.split("."))
+				cidr = bitmask.count("1")
+			else:
+				cidr = 0
+			return format.format(addr=addr, netmask=netmask, cidr=cidr)
 		except (KeyError, IndexError):
 			pl.info("No IPv{0} address found for interface {1}", ipv, interface)
 			return None
@@ -231,6 +242,9 @@ Requires ``netifaces`` module to work properly.
 	`default gateway <https://en.wikipedia.org/wiki/Default_gateway>`_ (i.e.,
 	the router to which it is connected).
 
+:param string format:
+	Format string. Use ``addr`` to show the address, ``netmask`` to show the
+	subnet mask, and ``cidr`` to show the subnet in CIDR notation
 :param int ipv:
 	4 or 6 for ipv4 and ipv6 respectively, depending on which IP address you
 	need exactly.
